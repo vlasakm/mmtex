@@ -3,6 +3,8 @@
 # This script read information from PKGBUILD and builds a .deb package.
 # Dependencies: git, svn, curl, unzip, fakeroot, dpkg-deb
 
+# Michal Vlasák, 2020. Public domain.
+
 echo "Sourcing PKGBUILD.."
 source PKGBUILD
 

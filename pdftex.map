@@ -1,3 +1,5 @@
+% This file contains mapping needed by optex and plain tex.
+
 %% optex fonts
 ec-lmr5  LMRoman5-Regular <lm-ec.enc <lmr5.pfb
 ec-lmr6  LMRoman6-Regular <lm-ec.enc <lmr6.pfb

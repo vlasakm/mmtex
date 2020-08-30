@@ -1,3 +1,9 @@
+% Override these values in /etc/lltex/texmf.cnf for system wide configuration or
+% $XDG_CONFIG_HOME/lltex/texmf.cnf for user configuration.
+
+% Michal Vlasák, 2020. Public domain.
+
+
 % these are expected to be tuned in system/user config file or environment, but have default values
 XDG_CONFIG_HOME = ~/.config
 XDG_CACHE_HOME  = ~/.cache

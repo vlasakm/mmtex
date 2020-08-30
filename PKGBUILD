@@ -6,7 +6,7 @@ arch=('x86_64')
 url='https://gitlab.com/lahcim8/lltex'
 _ctan="http://mirrors.ctan.org"
 _texlive="svn://tug.org/texlive"
-source=("git+https://github.com/TeX-Live/luatex#branch=tags/1.12.0"
+source=("git+https://github.com/TeX-Live/luatex#branch=tags/1.12.0" # luatex binary source
 
         "git+https://github.com/hyphenation/tex-hyphen#tag=CTAN-2020.03.25" # hyph-utf8, etex.src
         "$_texlive/trunk/Master/texmf-dist/tex/plain/etex/" # etexdefs.lib
@@ -36,7 +36,7 @@ source=("git+https://github.com/TeX-Live/luatex#branch=tags/1.12.0"
         "$_texlive/trunk/Master/texmf-dist/tex/generic/config/" # luatexiniconfig.tex
 
         "$_ctan/macros/luatex/optex.zip" # optex
-	"$_texlive/trunk/Master/texmf-dist/tex/latex/lipsum" # optex needs lipsum.ltd.tex
+        "$_texlive/trunk/Master/texmf-dist/tex/latex/lipsum" # optex needs lipsum.ltd.tex
 
         "texmf.cnf" # custom kpathsea config file
         "pdftex.map" # mapping of used type1 fonts
@@ -65,9 +65,9 @@ sha256sums=('SKIP'
             'SKIP'
             'd616171229a90dcfbf702177537105241813f0bf2cbbc3c0d7da4476a65a74bb'
             'SKIP'
-            '659428579c5777f14a1df646a68c8442b0d8bbbae2c016aa437bdf425cfedc42'
-            'c4e677eeb72e6c402c4364fa0f62eaa75794c888f5143b6ef659d6b22181bbd7'
-            '85376395a7f5a1861d46dd356d96187f394758ae1a7ca075b46827ac3b45bb0d')
+            '2cabf75033450e45dc2fe5bbb1a3d30eb4c4d04acdf5d854fdeca0f90460ea62'
+            '3ece3e4cf465ac673ed7607e41457052db2cfd533ff55bb3e360e9bf11b9ad9f'
+            '8e64c7f8963355ec0bd2744bed62890cec8f1e7e8728a6a78dc25f83ddbd8dfe')
 
 build() {
     ## build luatex binary
