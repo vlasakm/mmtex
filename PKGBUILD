@@ -65,7 +65,7 @@ sha256sums=('SKIP'
             'd616171229a90dcfbf702177537105241813f0bf2cbbc3c0d7da4476a65a74bb'
             'SKIP'
             '2cabf75033450e45dc2fe5bbb1a3d30eb4c4d04acdf5d854fdeca0f90460ea62'
-            '3ece3e4cf465ac673ed7607e41457052db2cfd533ff55bb3e360e9bf11b9ad9f'
+            'b8b107aae1eb98c0708f79dc72ffd6b78e33ffe9f0574ff661bc2857ed0f80d1'
             '9340df8c64b917773d2da54e7a24f5b0e9418834326c0df7b851e945859cbef3'
             '8e64c7f8963355ec0bd2744bed62890cec8f1e7e8728a6a78dc25f83ddbd8dfe')
 

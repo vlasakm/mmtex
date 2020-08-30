@@ -1,33 +1,33 @@
 % This file contains mapping needed by optex and plain tex.
 
 %% optex fonts
-ec-lmr5  LMRoman5-Regular <lm-ec.enc <lmr5.pfb
-ec-lmr6  LMRoman6-Regular <lm-ec.enc <lmr6.pfb
-ec-lmr7  LMRoman7-Regular <lm-ec.enc <lmr7.pfb
-ec-lmr8  LMRoman8-Regular <lm-ec.enc <lmr8.pfb
-ec-lmr9  LMRoman9-Regular <lm-ec.enc <lmr9.pfb
+ec-lmr5  LMRoman5-Regular  <lm-ec.enc <lmr5.pfb
+ec-lmr6  LMRoman6-Regular  <lm-ec.enc <lmr6.pfb
+ec-lmr7  LMRoman7-Regular  <lm-ec.enc <lmr7.pfb
+ec-lmr8  LMRoman8-Regular  <lm-ec.enc <lmr8.pfb
+ec-lmr9  LMRoman9-Regular  <lm-ec.enc <lmr9.pfb
 ec-lmr10 LMRoman10-Regular <lm-ec.enc <lmr10.pfb
 ec-lmr12 LMRoman12-Regular <lm-ec.enc <lmr12.pfb
 ec-lmr17 LMRoman17-Regular <lm-ec.enc <lmr17.pfb
 
-ec-lmbx5  LMRoman5-Bold <lm-ec.enc <lmbx5.pfb
-ec-lmbx6  LMRoman6-Bold <lm-ec.enc <lmbx6.pfb
-ec-lmbx7  LMRoman7-Bold <lm-ec.enc <lmbx7.pfb
-ec-lmbx8  LMRoman8-Bold <lm-ec.enc <lmbx8.pfb
-ec-lmbx9  LMRoman9-Bold <lm-ec.enc <lmbx9.pfb
+ec-lmbx5  LMRoman5-Bold  <lm-ec.enc <lmbx5.pfb
+ec-lmbx6  LMRoman6-Bold  <lm-ec.enc <lmbx6.pfb
+ec-lmbx7  LMRoman7-Bold  <lm-ec.enc <lmbx7.pfb
+ec-lmbx8  LMRoman8-Bold  <lm-ec.enc <lmbx8.pfb
+ec-lmbx9  LMRoman9-Bold  <lm-ec.enc <lmbx9.pfb
 ec-lmbx10 LMRoman10-Bold <lm-ec.enc <lmbx10.pfb
 ec-lmbx12 LMRoman12-Bold <lm-ec.enc <lmbx12.pfb
 
-ec-lmri7  LMRoman7-Italic <lm-ec.enc <lmri7.pfb
-ec-lmri8  LMRoman8-Italic <lm-ec.enc <lmri8.pfb
-ec-lmri9  LMRoman9-Italic <lm-ec.enc <lmri9.pfb
+ec-lmri7  LMRoman7-Italic  <lm-ec.enc <lmri7.pfb
+ec-lmri8  LMRoman8-Italic  <lm-ec.enc <lmri8.pfb
+ec-lmri9  LMRoman9-Italic  <lm-ec.enc <lmri9.pfb
 ec-lmri10 LMRoman10-Italic <lm-ec.enc <lmri10.pfb
 ec-lmri12 LMRoman12-Italic <lm-ec.enc <lmri12.pfb
 
 ec-lmbxi10 LMRoman10-BoldItalic <lm-ec.enc <lmbxi10.pfb
 
-ec-lmtt8  LMMono8-Regular <lm-ec.enc <lmtt8.pfb
-ec-lmtt9  LMMono9-Regular <lm-ec.enc <lmtt9.pfb
+ec-lmtt8  LMMono8-Regular  <lm-ec.enc <lmtt8.pfb
+ec-lmtt9  LMMono9-Regular  <lm-ec.enc <lmtt9.pfb
 ec-lmtt10 LMMono10-Regular <lm-ec.enc <lmtt10.pfb
 ec-lmtt12 LMMono12-Regular <lm-ec.enc <lmtt12.pfb
 
@@ -40,12 +40,12 @@ cmmi9  CMMI9  <cmmi9.pfb
 cmmi10 CMMI10 <cmmi10.pfb
 cmmi12 CMMI12 <cmmi12.pfb
 
-cmmib5  CMMIB5 <cmmib5.pfb
-cmmib6  CMMIB6 <cmmib6.pfb
-cmmib7  CMMIB7 <cmmib7.pfb
-cmmib8  CMMIB8 <cmmib8.pfb
-cmmib9  CMMIB9 <cmmib9.pfb
-cmmib10 CMMIB10  <cmmib10.pfb
+cmmib5  CMMIB5  <cmmib5.pfb
+cmmib6  CMMIB6  <cmmib6.pfb
+cmmib7  CMMIB7  <cmmib7.pfb
+cmmib8  CMMIB8  <cmmib8.pfb
+cmmib9  CMMIB9  <cmmib9.pfb
+cmmib10 CMMIB10 <cmmib10.pfb
 
 cmsy5  CMSY5  <cmsy5.pfb
 cmsy6  CMSY6  <cmsy6.pfb
@@ -68,28 +68,28 @@ cmex10 CMEX10 <cmex10.pfb
 
 cmexb10 CMEXB10 <cmexb10.pfb
 
-cmr5     CMR5     <cmr5.pfb
-cmr6     CMR6     <cmr6.pfb
-cmr7     CMR7     <cmr7.pfb
-cmr8     CMR8     <cmr8.pfb
-cmr9     CMR9     <cmr9.pfb
-cmr10    CMR10    <cmr10.pfb
-cmr12    CMR12    <cmr12.pfb
-cmr17    CMR17    <cmr17.pfb
+cmr5  CMR5  <cmr5.pfb
+cmr6  CMR6  <cmr6.pfb
+cmr7  CMR7  <cmr7.pfb
+cmr8  CMR8  <cmr8.pfb
+cmr9  CMR9  <cmr9.pfb
+cmr10 CMR10 <cmr10.pfb
+cmr12 CMR12 <cmr12.pfb
+cmr17 CMR17 <cmr17.pfb
 
-cmbx5    CMBX5    <cmbx5.pfb
-cmbx6    CMBX6    <cmbx6.pfb
-cmbx7    CMBX7    <cmbx7.pfb
-cmbx8    CMBX8    <cmbx8.pfb
-cmbx9    CMBX9    <cmbx9.pfb
-cmbx10   CMBX10   <cmbx10.pfb
-cmbx12   CMBX12   <cmbx12.pfb
+cmbx5  CMBX5  <cmbx5.pfb
+cmbx6  CMBX6  <cmbx6.pfb
+cmbx7  CMBX7  <cmbx7.pfb
+cmbx8  CMBX8  <cmbx8.pfb
+cmbx9  CMBX9  <cmbx9.pfb
+cmbx10 CMBX10 <cmbx10.pfb
+cmbx12 CMBX12 <cmbx12.pfb
 
-cmti7    CMTI7    <cmti7.pfb
-cmti8    CMTI8    <cmti8.pfb
-cmti9    CMTI9    <cmti9.pfb
-cmti10   CMTI10   <cmti10.pfb
-cmti12   CMTI12   <cmti12.pfb
+cmti7  CMTI7  <cmti7.pfb
+cmti8  CMTI8  <cmti8.pfb
+cmti9  CMTI9  <cmti9.pfb
+cmti10 CMTI10 <cmti10.pfb
+cmti12 CMTI12 <cmti12.pfb
 
 cmtt8  CMTT8  <cmtt8.pfb
 cmtt9  CMTT9  <cmtt9.pfb
