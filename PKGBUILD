@@ -4,40 +4,41 @@ pkgrel=1
 pkgdesc='A leightweight LuaTeX distribution'
 arch=('x86_64')
 url='https://gitlab.com/lahcim8/lltex'
-source=('git+https://github.com/TeX-Live/luatex#branch=tags/1.12.0'
+_ctan="http://mirrors.ctan.org"
+source=("git+https://github.com/TeX-Live/luatex#branch=tags/1.12.0"
 
-        'git+https://github.com/hyphenation/tex-hyphen#tag=CTAN-2020.03.25' # hyph-utf8, etex.src
-        'svn://tug.org/texlive/trunk/Master/texmf-dist/tex/plain/etex/' # etexdefs.lib
-        'http://mirrors.ctan.org/macros/generic/unicode-data.zip' # unicode-data
+        "git+https://github.com/hyphenation/tex-hyphen#tag=CTAN-2020.03.25" # hyph-utf8, etex.src
+        "svn://tug.org/texlive/trunk/Master/texmf-dist/tex/plain/etex/" # etexdefs.lib
+        "$_ctan/macros/generic/unicode-data.zip" # unicode-data
 
-        'http://mirrors.ctan.org/systems/knuth/dist/lib.zip' # plain.tex, hyphen.tex
-        'http://mirrors.ctan.org/fonts/amsfonts.zip' # computer modern .pfb files
-        'http://mirrors.ctan.org/fonts/cm/tfm.zip' # computer modern .tfm files
-        'http://mirrors.ctan.org/fonts/manual.zip' # manfnt font
-        'http://mirrors.ctan.org/fonts/ec.zip' # ecso, ecsx .tfm files
-        'http://mirrors.ctan.org/fonts/lm.zip' # ec-lm .pfb files
-        'http://mirrors.ctan.org/fonts/rsfs.zip' # rsfs .pfb files
-        'svn://tug.org/texlive/trunk/Master/texmf-dist/fonts/tfm/public/rsfs' # rsfs .tfm file
-        'http://mirrors.ctan.org/fonts/ps-type1/cm-super.zip' # ecso, ecsx .pfb files
-        'http://mirrors.ctan.org/macros/cstex/base/cmexb.tar.gz' # cmexb font
+        "$_ctan/systems/knuth/dist/lib.zip" # plain.tex, hyphen.tex
+        "$_ctan/fonts/amsfonts.zip" # computer modern .pfb files
+        "$_ctan/fonts/cm/tfm.zip" # computer modern .tfm files
+        "$_ctan/fonts/manual.zip" # manfnt font
+        "$_ctan/fonts/ec.zip" # ecso, ecsx .tfm files
+        "$_ctan/fonts/lm.zip" # ec-lm .pfb files
+        "$_ctan/fonts/rsfs.zip" # rsfs .pfb files
+        "svn://tug.org/texlive/trunk/Master/texmf-dist/fonts/tfm/public/rsfs" # rsfs .tfm file
+        "$_ctan/fonts/ps-type1/cm-super.zip" # ecso, ecsx .pfb files
+        "$_ctan/macros/cstex/base/cmexb.tar.gz" # cmexb font
 
-        'http://mirrors.ctan.org/install/macros/luatex/generic/lualibs.tds.zip' # lualibs
-        'http://mirrors.ctan.org/install/macros/latex/latex-base.tds.zip' # ltluatex
-        'http://mirrors.ctan.org/macros/luatex/generic/luaotfload.zip' # luaotfload
-        'http://mirrors.ctan.org/install/macros/luatex/generic/luamplib.tds.zip' # luamplib
+        "$_ctan/install/macros/luatex/generic/lualibs.tds.zip" # lualibs
+        "$_ctan/install/macros/latex/latex-base.tds.zip" # ltluatex
+        "$_ctan/macros/luatex/generic/luaotfload.zip" # luaotfload
+        "$_ctan/install/macros/luatex/generic/luamplib.tds.zip" # luamplib
 
         # metapost base files
-        # 'https://ctan.org/tex-archive/obsolete/graphics/metapost/base/texmf/metapost/base/'
-        'svn://tug.org/texlive/trunk/Master/texmf-dist/metapost/base/'
+        # "https://ctan.org/tex-archive/obsolete/graphics/metapost/base/texmf/metapost/base/"
+        "svn://tug.org/texlive/trunk/Master/texmf-dist/metapost/base/"
 
-        'http://mirrors.ctan.org/macros/generic/tex-ini-files.zip' # luatex.ini, etc
-        'svn://tug.org/texlive/trunk/Master/texmf-dist/tex/generic/config/' # luatexiniconfig.tex
+        "$_ctan/macros/generic/tex-ini-files.zip" # luatex.ini, etc
+        "svn://tug.org/texlive/trunk/Master/texmf-dist/tex/generic/config/" # luatexiniconfig.tex
 
-        'http://mirrors.ctan.org/macros/luatex/optex.zip' # optex
+        "$_ctan/macros/luatex/optex.zip" # optex
 
-        'texmf.cnf' # custom kpathsea config file
-        'pdftex.map' # mapping of used type1 fonts
-        'extract-language-data.awk' # creates language.def, language.dat.lua)
+        "texmf.cnf" # custom kpathsea config file
+        "pdftex.map" # mapping of used type1 fonts
+        "extract-language-data.awk") # creates language.def, language.dat.lua
 sha256sums=('SKIP'
             'SKIP'
             'SKIP'
