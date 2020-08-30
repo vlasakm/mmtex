@@ -1,0 +1,9 @@
+% enable luatex primitives
+\begingroup
+  \catcode`\{=1
+  \catcode`\}=2
+  \directlua{
+    tex.enableprimitives('',       tex.extraprimitives())
+    tex.enableprimitives('luatex', tex.extraprimitives())
+  }
+\endgroup

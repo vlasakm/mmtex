@@ -9,7 +9,7 @@ _texlive="svn://tug.org/texlive"
 source=("git+https://github.com/TeX-Live/luatex#branch=tags/1.12.0" # luatex binary source
 
         "git+https://github.com/hyphenation/tex-hyphen#tag=CTAN-2020.03.25" # hyph-utf8, etex.src
-        "$_texlive/trunk/Master/texmf-dist/tex/plain/etex/" # etexdefs.lib
+        "$_ctan/obsolete/systems/e-tex/v2/src/etexdefs.lib" # etexdefs.lib
         "$_ctan/macros/generic/unicode-data.zip" # unicode-data
 
         "$_ctan/systems/knuth/dist/lib.zip" # plain.tex, hyphen.tex
@@ -33,18 +33,18 @@ source=("git+https://github.com/TeX-Live/luatex#branch=tags/1.12.0" # luatex bin
         "$_texlive/trunk/Master/texmf-dist/metapost/base/"
 
         "$_ctan/macros/generic/tex-ini-files.zip" # luatex.ini, etc
-        "$_texlive/trunk/Master/texmf-dist/tex/generic/config/" # luatexiniconfig.tex
 
         "$_ctan/macros/luatex/optex.zip" # optex
         "$_texlive/trunk/Master/texmf-dist/tex/latex/lipsum" # optex needs lipsum.ltd.tex
 
         "texmf.cnf" # custom kpathsea config file
         "pdftex.map" # mapping of used type1 fonts
+        "luatexiniconfig.tex" # config for plain luatex format
         "extract-language-data.awk") # creates language.def, language.dat.lua
 
 sha256sums=('SKIP'
             'SKIP'
-            'SKIP'
+            '09af6198ac22a824b63ea4176fe584ef62802c1c7fb87f585fa97266d4142f03'
             'd38bc164d143a7d3cc1b99482509d7debaa7d2b12c8d652868264275014be5bd'
             'f697b665c835d4888b2417edbbf1c23322c722fc8163b1a231916f4e40dcd8fe'
             'aaab3930b952128b7ed65260144493eb3d88cb063b50da1f90272e23c7e08ba2'
@@ -62,11 +62,11 @@ sha256sums=('SKIP'
             '9d89f3532e45831f9f1c4233deaa4ec566f14556ede10e34fc4cf6299ddd6a31'
             'SKIP'
             'f0d1846073e7c8043750461af379a81e6498ebd38968f3fc5a8a996c61054fec'
-            'SKIP'
             'd616171229a90dcfbf702177537105241813f0bf2cbbc3c0d7da4476a65a74bb'
             'SKIP'
             '2cabf75033450e45dc2fe5bbb1a3d30eb4c4d04acdf5d854fdeca0f90460ea62'
             '3ece3e4cf465ac673ed7607e41457052db2cfd533ff55bb3e360e9bf11b9ad9f'
+            '9340df8c64b917773d2da54e7a24f5b0e9418834326c0df7b851e945859cbef3'
             '8e64c7f8963355ec0bd2744bed62890cec8f1e7e8728a6a78dc25f83ddbd8dfe')
 
 build() {
@@ -118,8 +118,8 @@ package() {
     xargs -a tfm_files -Ifile find -name file -print -quit | xargs install -Dm644 -t "$texmf/fonts/tfm"
     xargs -a pfb_files -Ifile find -name file -print -quit | xargs install -Dm644 -t "$texmf/fonts/type1"
 
-    # replace etex.src with one from hyph-utf8, which is luatex aware
-    cp tex-hyphen/hyph-utf8/tex/luatex/hyph-utf8/etex.src etex/etex.src
+    # need etex.src from depths of hyph-utf8
+    cp tex-hyphen/hyph-utf8/tex/luatex/hyph-utf8/etex.src .
 
     # install optex files
     install -Dm644 optex/{base,pkg}/*.opm -t "$texmf/tex/optex"
