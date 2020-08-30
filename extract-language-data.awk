@@ -1,3 +1,14 @@
+# This script parses TL/tlpkg/tlpsrc/*.tlpsrc files from https://github.com/hyphenation/tex-hyphen.
+# It creates two files:
+# 1) language.def, which is used at etex format creation to register languages.
+# 2) language.dat.lua, which is used at runtime by luatex based formats (through
+#    luatex-hyphen.lua). That file contains names of files containing hyphenation
+#    and exception patterns.
+
+# Usage: awk -f extract-language-data.awk tex-hyphen/TL/tlpkg/tlpsrc/*.tlpsrc
+
+# Michal Vlasák, 2020, public domain
+
 BEGIN {
 	FS = "[= ]"
 
@@ -33,7 +44,7 @@ in_addhyphen {
 		patterns = '%s',\n\
 		hyphenation = '%s',\n\
 	},\n", map["name"], map["file_patterns"], map["file_exceptions"] > DATLUA
-}
+		}
 
 		in_addhyphen = $1 == "execute"
 	} else {
