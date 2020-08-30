@@ -5,10 +5,11 @@ pkgdesc='A leightweight LuaTeX distribution'
 arch=('x86_64')
 url='https://gitlab.com/lahcim8/lltex'
 _ctan="http://mirrors.ctan.org"
+_texlive="svn://tug.org/texlive"
 source=("git+https://github.com/TeX-Live/luatex#branch=tags/1.12.0"
 
         "git+https://github.com/hyphenation/tex-hyphen#tag=CTAN-2020.03.25" # hyph-utf8, etex.src
-        "svn://tug.org/texlive/trunk/Master/texmf-dist/tex/plain/etex/" # etexdefs.lib
+        "$_texlive/trunk/Master/texmf-dist/tex/plain/etex/" # etexdefs.lib
         "$_ctan/macros/generic/unicode-data.zip" # unicode-data
 
         "$_ctan/systems/knuth/dist/lib.zip" # plain.tex, hyphen.tex
@@ -18,7 +19,7 @@ source=("git+https://github.com/TeX-Live/luatex#branch=tags/1.12.0"
         "$_ctan/fonts/ec.zip" # ecso, ecsx .tfm files
         "$_ctan/fonts/lm.zip" # ec-lm .pfb files
         "$_ctan/fonts/rsfs.zip" # rsfs .pfb files
-        "svn://tug.org/texlive/trunk/Master/texmf-dist/fonts/tfm/public/rsfs" # rsfs .tfm file
+        "$_texlive/trunk/Master/texmf-dist/fonts/tfm/public/rsfs" # rsfs .tfm file
         "$_ctan/fonts/ps-type1/cm-super.zip" # ecso, ecsx .pfb files
         "$_ctan/macros/cstex/base/cmexb.tar.gz" # cmexb font
 
@@ -29,16 +30,18 @@ source=("git+https://github.com/TeX-Live/luatex#branch=tags/1.12.0"
 
         # metapost base files
         # "https://ctan.org/tex-archive/obsolete/graphics/metapost/base/texmf/metapost/base/"
-        "svn://tug.org/texlive/trunk/Master/texmf-dist/metapost/base/"
+        "$_texlive/trunk/Master/texmf-dist/metapost/base/"
 
         "$_ctan/macros/generic/tex-ini-files.zip" # luatex.ini, etc
-        "svn://tug.org/texlive/trunk/Master/texmf-dist/tex/generic/config/" # luatexiniconfig.tex
+        "$_texlive/trunk/Master/texmf-dist/tex/generic/config/" # luatexiniconfig.tex
 
         "$_ctan/macros/luatex/optex.zip" # optex
+	"$_texlive/trunk/Master/texmf-dist/tex/latex/lipsum" # optex needs lipsum.ltd.tex
 
         "texmf.cnf" # custom kpathsea config file
         "pdftex.map" # mapping of used type1 fonts
         "extract-language-data.awk") # creates language.def, language.dat.lua
+
 sha256sums=('SKIP'
             'SKIP'
             'SKIP'
@@ -61,6 +64,7 @@ sha256sums=('SKIP'
             'f0d1846073e7c8043750461af379a81e6498ebd38968f3fc5a8a996c61054fec'
             'SKIP'
             'd616171229a90dcfbf702177537105241813f0bf2cbbc3c0d7da4476a65a74bb'
+            'SKIP'
             '659428579c5777f14a1df646a68c8442b0d8bbbae2c016aa437bdf425cfedc42'
             'c4e677eeb72e6c402c4364fa0f62eaa75794c888f5143b6ef659d6b22181bbd7'
             '85376395a7f5a1861d46dd356d96187f394758ae1a7ca075b46827ac3b45bb0d')
@@ -119,6 +123,7 @@ package() {
 
     # install optex files
     install -Dm644 optex/{base,pkg}/*.opm -t "$texmf/tex/optex"
+    install -Dm644 lipsum/lipsum.ltd.tex -t "$texmf/tex/lipsum"
 
     export TEXMF="{$texmf,$_TEXMFMAIN}"
     export TEXMFCNF=.
