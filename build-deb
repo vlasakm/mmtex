@@ -6,16 +6,27 @@
 echo "Sourcing PKGBUILD.."
 source PKGBUILD
 
-pkgdir="${pkgname}_${pkgver}-${pkgrel}_${arch[0]}"
+declare -A archmap
+archmap[x86_64]=amd64
+arch=${archmap[${arch[0]}]}
+
+pkgdir="${pkgname}_${pkgver}-${pkgrel}_${arch}"
 srcdir=src
 mkdir -p "$pkgdir" "$srcdir"
 pkgdir=$(readlink -f "$pkgdir")
 srcdir=$(readlink -f "$srcdir")
 
-if [[ -d "pkg" ]]; then
-	# use what makepkg already built
-	echo "Package already built by makepkg, using that."
-	cp -Rf pkg "$pkgdir"
+if [ -v USE_MAKEPKG_PKG ]; then
+	echo "Using what makepkg built."
+
+	# remove makepkg metadata
+	rm -rf pkg/lltex/.[A-Z]*
+
+	# change name of package directory so dpkg names result correctly
+	rmdir "$pkgdir"
+	mv pkg/lltex "$pkgdir"
+
+	# return back what we moved
 else
 	echo "Getting sources.."
 	cd "$srcdir"
@@ -51,6 +62,13 @@ else
 		esac
 	done
 
+	# flags from makepkg.conf
+	export CPPFLAGS="-D_FORTIFY_SOURCE=2"
+	export CFLAGS="-march=native -O2 -pipe -fno-plt"
+	export CXXFLAGS="${CFLAGS}"
+	export LDFLAGS="-Wl,-O1,--sort-common,--as-needed,-z,relro,-z,now"
+	export MAKEFLAGS="-j$(($(nproc)+1))"
+
 	echo "Running build function.."
 	build
 	echo "Running package function.."
@@ -58,11 +76,6 @@ else
 
 	cd -
 fi
-
-declare -A archmap
-archmap[x86_64]=amd64
-
-arch=${archmap[${arch[0]}]}
 
 echo "Creating Debian metadata"
 mkdir -p "$pkgdir/DEBIAN"
@@ -77,4 +90,4 @@ Description: $pkgdesc
 EOF
 
 echo "Creating .deb"
-fakeroot -- dpkg-deb -b "$pkgdir"
+dpkg-deb --root-owner-group -b "$pkgdir"
