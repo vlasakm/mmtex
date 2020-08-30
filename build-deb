@@ -23,7 +23,7 @@ if [ -v USE_MAKEPKG_PKG ]; then
 	rm -rf pkg/lltex/.[A-Z]*
 
 	# change name of package directory so dpkg names result correctly
-	rmdir "$pkgdir"
+	rm -rf "$pkgdir"
 	mv pkg/lltex "$pkgdir"
 
 	# return back what we moved
@@ -77,7 +77,7 @@ else
 	cd -
 fi
 
-echo "Creating Debian metadata"
+echo "Creating Debian metadata."
 mkdir -p "$pkgdir/DEBIAN"
 cat > "$pkgdir/DEBIAN/control" << EOF
 Package: $pkgname
@@ -89,5 +89,5 @@ Maintainer: Michal Vlasák <lahcim8@gmail.com>
 Description: $pkgdesc
 EOF
 
-echo "Creating .deb"
+echo "Creating .deb."
 dpkg-deb --root-owner-group -b "$pkgdir"

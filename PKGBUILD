@@ -93,7 +93,7 @@ package() {
 
     # install luatex packages needed by both plain luatex and optex
     install -Dm644 tex-hyphen/hyph-utf8/tex/generic/hyph-utf8/patterns/txt/* -t "$texmf/tex/hyph-utf8"
-    install -Dm644 unicode-data/*.{tex,txt} -t "$texmf/tex/unicode-data"
+    install -Dm644 unicode-data/{CaseFolding.txt,load-unicode-data.tex,PropList.txt,ScriptExtensions.txt,Scripts.txt,UnicodeData.txt} -t "$texmf/tex/unicode-data"
     install -Dm644 tex/luatex/lualibs/*.lua -t "$texmf/tex/lualibs"
     install -Dm644 tex/latex/base/ltluatex.{lua,tex} -t "$texmf/tex/latex"
     install -Dm644 luaotfload/*.{lua,sty} -t "$texmf/tex/luaotfload"
