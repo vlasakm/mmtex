@@ -1,0 +1,80 @@
+#!/bin/bash
+
+# This script read information from PKGBUILD and builds a .deb package.
+# Dependencies: git, svn, curl, unzip, fakeroot, dpkg-deb
+
+echo "Sourcing PKGBUILD.."
+source PKGBUILD
+
+pkgdir="${pkgname}_${pkgver}-${pkgrel}_${arch[0]}"
+srcdir=src
+mkdir -p "$pkgdir" "$srcdir"
+pkgdir=$(readlink -f "$pkgdir")
+srcdir=$(readlink -f "$srcdir")
+
+if [[ -d "pkg" ]]; then
+	# use what makepkg already built
+	echo "Package already built by makepkg, using that."
+	cp -Rf pkg "$pkgdir"
+else
+	echo "Getting sources.."
+	cd "$srcdir"
+	for src in "${source[@]}"; do
+		echo "Getting '$src'"
+		case "$src" in
+		git+*)
+			url=${src##git+}
+			ref=${url##*=}
+			url=${url%[#@]*}
+			dir=${url##*/}
+
+			if [[ ! -d "$dir" ]]; then
+				git clone --depth=1 --branch="$ref" -c advice.detachedHead=false "$url" "$dir"
+			fi
+		;;
+		svn://*)
+			svn checkout "$src"
+		;;
+		http://*|https://*)
+			dest=${src##*/}
+			if [[ ! -f "$dest" ]]; then
+				curl -fLo "$dest" "$src"
+			fi
+
+			case "$dest" in
+			*.zip)
+				unzip -uo "$dest"
+			esac
+		;;
+		*)
+			cp -rf "../$src" .
+		esac
+	done
+
+	echo "Running build function.."
+	build
+	echo "Running package function.."
+	package
+
+	cd -
+fi
+
+declare -A archmap
+archmap[x86_64]=amd64
+
+arch=${archmap[${arch[0]}]}
+
+echo "Creating Debian metadata"
+mkdir -p "$pkgdir/DEBIAN"
+cat > "$pkgdir/DEBIAN/control" << EOF
+Package: $pkgname
+Version: $pkgver
+Section: user/hiddewn
+Priority: optional
+Architecture: $arch
+Maintainer: Michal Vlasák <lahcim8@gmail.com>
+Description: $pkgdesc
+EOF
+
+echo "Creating .deb"
+fakeroot -- dpkg-deb -b "$pkgdir"
