@@ -1,0 +1,295 @@
+\report
+\fontfam[Latin Modern]
+\enlang
+\enquotes
+\let\_firstnoindent=\relax
+\activettchar`
+
+\def\LLTeX{LL\TeX}
+\def\Metapost{Metapost}
+\def\eTeX{\leavevmode\hbox{$\varepsilon$}-\TeX}
+
+\tit \LLTeX
+
+\author Michal Vlasák, 2020
+
+\sec Introduction
+
+\LLTeX\ is a lightweight \LuaTeX\ distribution for Linux. It aims to provide
+minimalist and modern base for Plain \LuaTeX\ and \OpTeX\ formats, but doesn't
+limit their potential.
+
+\LLTeX\ was created as a semestral work for the purposes of BI-TEX course at
+FIT CTU in Prague. It's repository is hosted at
+\url{https://github.com/lahcim8/lltex/}.
+
+\sec Motivation
+
+I have been dissatisfied with TeX Live. It is complicated and huge. The full
+scheme installation, which is the default, takes $7\,075\,\hbox{MiB}$. Even the
+minimal scheme which only includes Plain \TeX\ is 106\,MiB in size. There are
+options to exclude source files and documentation which reduce size of full
+scheme to 3\,899\,MiB, but that is still a lot.
+
+As a monolith it also doesn't really fit very much into a Unix system. It's
+default locations of `TEXMF` trees are not complaint to `hier(7)`. Instead,
+everything is in an isolated tree.
+
+I also wanted to explore how things really worked and what is really needed to
+get Plain running, while not missing any of \LuaTeX\ features.
+
+\sec Target users
+
+We target users who want to easily install a small ($\approx 32\,\hbox{MiB}$),
+but very functional \TeX\ system. As \LLTeX\ includes \OpTeX\ it can even serve
+as a replacement of \LaTeX\ and it's packages.
+
+We also target use in Docker images where the small size matters too. While
+being able to install \LLTeX\ from a Linux distribution package manager makes
+it easy to use.
+
+\sec \LuaTeX\ as the only \TeX\ engine
+
+Historically there have been a few \TeX\ engines. Each brought it's advancement
+over Knuth's original `tex`. The one which has had most development over the
+last years is \LuaTeX. It's distinct aspect is that a Lua language interpreter
+is baked into it. A lot of aspects of how \TeX\ works can now be influenced or
+completly changed with Lua code. Another nice feature is integrated \Metapost\
+in the form of `mplib`.
+
+But for a \TeX\ outsider the main benefits are that it outputs PDF files, fully
+supports Unicode and can use OpenType fonts. There aren't many reasons for not
+using \LuaTeX\ for new documents. That is why \LLTeX\ includes only this
+enginge.
+
+\sec \OpTeX\ and Plain \LuaTeX\ formats
+
+The first choice for a format was Plain \TeX\ or rather it's adaptation for
+\LuaTeX. Plain has what most users would need anyway, and has been a base for
+other formats. One of them is \OpTeX\ which is a \LuaTeX\ only format. It keeps
+the simplicity of Plain \TeX\ while in a sense offers even more then \LaTeX\
+--- where \LaTeX\ needs a package or external binary, \OpTeX\ has it built in.
+
+As the dependencies of these two formats are mostly the same they are both
+included in \LLTeX\ without much of an overhead.
+
+\sec Language support
+
+Previous \TeX\ engines had the limitation of being able to load hyphenation
+patterns only at format creation time --- when running ini\TeX. \LuaTeX\ has no
+such limitation and by using Lua it is possible to load hyphenation patterns at
+any time.
+
+Nowadays virtually all hyphenation patterns that have been used by \TeX\ users
+are included in the `hyph-utf8` CTAN package. All patterns are provided in the
+form usable by older \TeX\ enginges (which had to deal with 8-bit font
+encodings) and the new plain text patterns directly loadable by \LuaTeX.
+
+To save space and to not include hyphenation patterns of all languages in the
+format, TeX Live provides hyphenation patterns for each language in a different
+package. Each package then registers itself using the TeX Live \"execute
+AddHyphen". An example for Czech language:
+
+\begtt
+execute AddHyphen \
+	name=czech \
+	lefthyphenmin=2 \
+	righthyphenmin=3 \
+	file=loadhyph-cs.tex \
+	file_patterns=hyph-cs.pat.txt \
+	file_exceptions=hyph-cs.hyp.txt
+\endtt
+
+This information is written to the `language.dat`, `language.def` and
+`language.dat.lua` files. Only the last two are used by \eTeX\ language
+mechanism, which is used by Plain \LuaTeX.
+
+This is what the above `AddHyphen` directive adds to `language.def`:
+
+\begtt
+\addlanguage{czech}{loadhyph-cs.tex}{}{2}{3}
+\endtt
+
+and this is what gets added to `language.dat.lua`:
+
+\begtt
+	['czech'] = {
+		loader = 'loadhyph-cs.tex',
+		lefthyphenmin = 2,
+		righthyphenmin = 3,
+		synonyms = {  },
+		patterns = 'hyph-cs.pat.txt',
+		hyphenation = 'hyph-cs.hyp.txt',
+	},
+\endtt
+
+
+Normally `language.def` is read by `etex.src` at format creation time and for
+listed language registers them and loads their hyphenation patterns. That
+enables their use later with `\uselanguage`.
+
+As in \LuaTeX\ it is even discouraged to load patterns into format, the
+mechanism is changed by `hyph-utf8`'s own `etex.src`. Instead of loading the
+patterns on `\addlanguage` the language is only registred and the patterns are
+loaded on the first `\uselanguage`. Both `\addlanguage` and `\uselangauge`
+actually use `luatex-hyphen.lua`, which uses information in `language.dat.lua`
+for handling synonyms and finding the names of pattern files (other fields in
+`language.dat.lua` are unused).
+
+\LLTeX\ includes all hyphenation patterns in the `txt` format --- they take up
+only 260\ KiB afterall. To enable the use of all of them a `language.def` file
+is generated, which allows `etex.src` to register all languages. A minimal
+`language.dat.lua` file is also generated and contains the file names of
+pattern files of all supported languages.
+
+In \OpTeX\ the situation is simpler as it already includes the information that
+\eTeX\ expects in  `language.def`. However it still uses `luatex-hyphen.lua`
+and `language.dat.lua`.
+
+\sec Fonts
+
+To use \LuaTeX\ to it's full potential it is better to use OpenType fonts.
+These are the same fonts that are used by other programs and as such some of
+them are already preinstalled on operating systems. And probably many more are
+additionally installed by users or administrators.
+
+Traditionally Computer Modern family of fonts has been used as the default for
+\TeX. There are OpenType adaptations of Computer Modern --- most notably Latin
+Modern. But Latin Modern fonts are often already packaged for many systems. For
+example there is `fonts-lmodern` in Ubuntu and `otf-latin-modern` in Arch
+Linux. As \LLTeX\ aims to integrate well into these systems it doesn't provide
+any OpenType fonts and instead expects the user to install fonts in the
+standard ways. \LLTeX\ can easily find them and use them.
+
+\secc 8-bit fonts
+
+Only 8-bit fonts can be preloaded into a \TeX\ format. Both \OpTeX\ and Plain
+do it. To support this \LLTeX\ includes minimal set of Type 1 fonts and their
+respective metric and encoding files. A minimal `pdftex.map` file was created
+which is used to map names of `.tfm` metric files, to font names and font
+files, with optional reencodings. As this file isn't supposed to be used by
+`dvips` it's directives are not included. This is an example from `pdftex.map`:
+
+\begtt
+cmr5 CMR5 <cmr5.pfb
+\endtt
+
+This line makes connection between cmr5.tfm metric file, cmr5.pfb Type 1 font
+file and CMR5 font name. (CMR5 stands for Computer Modern Roman in 5 point
+optical size).
+
+Another example:
+
+\begtt
+ec-lmr5 LMRoman5-Regular <lm-ec.enc <lmr5.pfb
+\endtt
+
+This is similiar as the previous case but additionally uses the encoding vector
+stored in file `lm-ec.enc`. This is necessary because `lmr5.pfb` actually
+contains many glyphs, while \TeX\ can use only 256 of them and expects the
+order to correspond with `ec-lmr5.tfm` which contains metric information for
+those selected 256 glyphs. In this particular case the Cork (\"EC") encoding is
+used.
+
+\secc OpenType fonts
+
+In order to handle OpenType fonts some Lua code is needed. `luaotfload` is
+included for this purpose as it is already used internally by \OpTeX. It can
+also be used from Plain \LuaTeX, by using `\input luaotfload.sty`.
+
+\sec `luamplib`
+
+\LLTeX\ includes `luamplib` package which provides user level macros for using
+`mplib`. `mplib` is \Metapost{} in form of a library built into \LuaTeX. To use
+it: `\input luamplib.sty`.
+
+\sec Finding files
+
+\LuaTeX\ uses the `kpathsea` library for finding files. `kpathsea` uses path
+specifications and variables similiar to the `PATH` environment variable. But
+different variables are used for different file types. For example the variable
+`TEXINPUTS` determines the location of files for `\input` (most likely `.tex`
+files). These variables can be set from (in order of significance):
+
+\begitems
+* environment variables,
+* `texmf.cnf` files,
+* defaults set at compilation.
+\enditems
+
+For finding `texmf.cnf` files the same path searching mechanism is used (but
+the location cannot be set from configuration file). This time the variable
+`TEXMFCNF` is used. All found `texmf.cnf`'s are taken into account. Earlier
+assignments in configuration files override later ones. That's why in \LLTeX\
+we compile \LuaTeX\ such that it first looks for `texmf.cnf` first in
+`$XDG_CONFIG_HOME/lltex/texmf.cnf` (where `$XDG_CONFIG_HOME` defaults to
+`~/.config`) for user configuration, then in `/etc/lltex/texmf.cnf`, for system
+wide configuration. The last possible llocation is set to \LLTeX's own config
+file. This order essentially means that the user can always change anything.
+
+The fallback \LLTeX\ `texmf.cnf` resides in `../share/lltex/web2c/texmf.cnf`
+(relative to `luatex` binary). It sets `TEXMFVAR` (for cache files) and
+`OSFONTDIR` (for font files) to locations expected on Unix systems, so
+everything should work out of the box.
+
+We also use the variable `TEXMFDOTDIR` (which defaults to `.`) as a primary
+search path for every file type. This can be useful for temporary overrides on
+the command line, and was inspired by TeX Live.
+
+All other interesting variables are set so they are complain with the \"\TeX\
+Directory Structure" standard. All roots of TDS trees are expected in the
+`TEXMF` variable, which as always can be overriden by user and defaults to our
+own tree (`_TEXMFMAIN`), user tree `TEXMFUSER` and system tree `TEXMFSYSTEM`.
+The order is important again here. We look first amongst our files because they
+are important for basic functionality and users most likely don't wont to
+override them (and if they do, they can use `TEXMFDOTDIR`).
+
+\sec Building \LLTeX
+
+\LLTeX\ is easily packagable as one of it's goals is to integrate well into
+Unix systems. As an example of that the implementation of \LLTeX\ is really a
+`PKGBUILD` file which contains metadata used by `makepkg` program to create
+Arch Linux package. To accomodate other distributions a `build-deb` script is
+provided, which uses information in `PKGBUILD` to create a `.deb` package,
+which should be usable by a large part of Linux users.
+
+\secc[build] Build instructions
+
+To build Arch Linux package run in the root of \LLTeX\ repository:
+
+\begtt
+makepkg
+\endtt
+
+To build `.deb` package, run:
+
+\begtt
+./build-deb
+\endtt
+
+To build both packages without rebuilding everything twice, you can:
+
+\begtt
+makepkg
+env USE_MAKEPKG_PKG=1 ./build-deb
+\endtt
+
+\sec Installing \LLTeX
+
+\secc Arch Linux
+
+After obtaining `.pkg.tar.zst` file (see Section~\ref[build]), you can install it by executing:
+
+\begtt
+pacman -U lltex-0.1-1-x86_64.pkg.tar.zst
+\endtt
+
+\secc Debian-based systems
+
+After obtaining `.deb` file (see Section~\ref[build]), you can install it by executing:
+
+\begtt
+dpkg -i lltex_0.1-1_amd64.deb
+\endtt
+
+\bye
