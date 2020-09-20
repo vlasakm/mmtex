@@ -1,5 +1,5 @@
-pkgver=1.12.0
-pkgdesc='LuaTeX binary for MMTeX'
+pkgver=20200920
+pkgdesc='A minimal modern (Lua)TeX distribution'
 pkgurl='https://gitlab.com/vlasakm/mmtex'
 arch_arch=x86_64
 debian_arch=amd64

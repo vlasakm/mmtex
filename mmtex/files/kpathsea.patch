@@ -20,7 +20,7 @@
 +    hash_insert(&(kpse->cnf_hash), tmp1, tmp2); \
 +  } while (0)
 +
-+  SET_VAR("_TEXMFMMTEX", "!!$SELFAUTODIR/share/mmtex-$progname:!!$SELFAUTODIR/share/mmtex-base");
++  SET_VAR("_TEXMFMMTEX", "!!$SELFAUTODIR/share/mmtex-$progname:!!$SELFAUTODIR/share/mmtex");
 +
 +  SET_VAR("XDG_CONFIG_HOME", "~/.config");
 +  SET_VAR("XDG_CACHE_HOME", "~/.cache");
@@ -38,7 +38,7 @@
 @@ -308,11 +321,19 @@
    string ctry;
    const_string ret, *ret_list;
- 
+
 -  /* When we expand the compile-time value for DEFAULT_TEXMFCNF,
 -     we end up needing the value for assorted variables,
 -     so kpse_var_expand ends up calling us again.  Just return.  */
@@ -56,6 +56,6 @@
 +
      return NULL;
 +  }
- 
+
    /* If no cnf hash yet, initialize.  */
    if (kpse->cnf_hash.size == 0) {
