@@ -105,11 +105,10 @@ for f in ./*.w; do ./ctangle $f >/dev/null; done
 cd ../luatexdir
 $CC -o luatex \
 	$LDFLAGS $CPPFLAGS $CFLAGS  \
-	-I /usr/include/libpng16 -DHAVE_CONFIG_H -DLUASOCKET_DEBUG \
-	-DLUA_COMPAT_MODULE -DLUA_COMPAT_5_2 -DLUAI_HASHLIMIT=6 \
-	-DLUA_USE_POSIX -DLUA_USE_DLOPEN -DLUA_FF_LIB -D_NO_PYTHON \
-	-DX_DISPLAY_MISSING -DUSE_OUR_MEMORY \
-	-DSYNCTEX_ENGINE_H='<synctex-luatex.h>' \
+	-DHAVE_CONFIG_H -DLUASOCKET_DEBUG -DLUA_COMPAT_MODULE \
+	-DLUA_COMPAT_5_2 -DLUAI_HASHLIMIT=6 -DLUA_USE_POSIX \
+	-DLUA_USE_DLOPEN -DLUA_FF_LIB -D_NO_PYTHON -DX_DISPLAY_MISSING \
+	-DUSE_OUR_MEMORY -DSYNCTEX_ENGINE_H='<synctex-luatex.h>' \
 	-I ../../lua53-src/src/ -I luapplib/src/util/ \
 	-I luapplib/src/ -I unilib/ -I ../w2c/ -I ../../ -I ../ -I ./ \
 	-I luafontloader/fontforge/inc/ \
@@ -399,7 +398,7 @@ $CC -o luatex \
 		luapplib/src/util/utilsha.c \
 		../libmd5/md5.c \
 		"$srcdir/libkpathsea.a" \
-	-lm -ldl -lzzip -lz -lpng
+	-lm -ldl $(pkg-config --cflags --libs zziplib libpng zlib)
 
 strip --strip-all luatex
 

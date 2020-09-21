@@ -25,7 +25,7 @@
 #define HAVE_FLOAT_H 1
 #define HAVE_FMAX 1
 #define HAVE_FSEEKO 1
-#define HAVE_FTIME 1
+#define HAVE_FTIME 0
 #define HAVE_GETCWD 1
 #define HAVE_GETTIMEOFDAY 1
 #define HAVE_GETWD 1
