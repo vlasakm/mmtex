@@ -176,7 +176,9 @@ number of Type 1 fonts a minimal `pdftex.map` was created by hand. As this file
 isn't supposed to be used by `dvips` it's directives are not included. This is
 an example line from `pdftex.map`:
 
-\begtt cmr5 CMR5 <cmr5.pfb \endtt
+\begtt
+cmr5 CMR5 <cmr5.pfb
+\endtt
 
 This line makes connection between cmr5.tfm metric file, cmr5.pfb Type 1 font
 file and CMR5 font name. (CMR5 stands for Computer Modern Roman in 5 point
@@ -240,17 +242,14 @@ useful for temporary overrides on the command line, and was inspired by
 Other interesting variables are set to comply with \"\TeX\ Directory Structure"
 or \"XDG Base Directory" standards. All roots of TDS trees are expected in the
 variable `TEXMF`, which defaults to `TEXMFUSER` and `TEXMFSYSTEM` for user and
-system TDS roots. `TEXMFUSER`'s default value is `$XDG_DATA_HOME/{mmtex,texmf}`
-which usually is `~/.local/share/mmtex` and `~/.local/share/texmf`.
-`TEXMFSYSTEM` % fix $ syntax highlting defaults to
-`/usr/local/share/{mmtex,texmf}` and `/usr/share/{mmtex,texmf}`. The user (or
-system administrator) can customize these at any level they want. The order is
-important here, because earlier directories are search first and we want to
-prioritize user files over system files.
-
-\MMTeX\ core files are always available and preferred over any other. Usually
-the user doesn't want to override basic functionality and if they really do,
-they can always use `TEXMFDOTDIR`.
+system TDS roots. The order is important here, because earlier directories are
+searched first and we want to prioritize user files over system files. These
+variables currently don't have defaults but can be set arbitrarily. The user
+(or system administrator) can set these at any level they want (in the
+environment, system or user configuration file). \MMTeX\ core files are always
+available and preferred over any other. Usually the user doesn't want to
+override basic functionality and if they really do, they can always use
+`TEXMFDOTDIR`.
 
 \sec Building \MMTeX
 
@@ -264,26 +263,22 @@ included which along with some metadata uses `build` and can create packages in
 
 \secc Build instructions
 
-To build `mmtex` package files into a `pkg` directory, run:
+To build packages `mmtex` and `mmtex-optex` of requested types, run:
 
 \begtt
-./package-builder
+./package-builder package [--all] [--deb] [--arch] [--tar] [package_names]..
 \endtt
 
-To package these files into usable package(s), you can instead pass one or more
-arguments:
-
-\begitems
-* `arch` (creates an Arch Linux package)
-* `deb` (creates `.deb` package)
-* `tar` (creates tarball)
-* `all` (all of the above)
-\enditems
-
-For example to create `.deb` package and a tarball:
+For example to do a full build of both packages of all package types, run:
 
 \begtt
-./package-builder deb tar
+./package-builder package --all mmtex mmtex-optex
+\endtt
+
+`mmtex-optex` depends on `mmtex` that is why it is listed second. To create `.deb` and tarball packages of only `mmtex`, run:
+
+\begtt
+./package-builder package --deb --tar mmtex
 \endtt
 
 \sec Installing \MMTeX
@@ -293,7 +288,7 @@ For example to create `.deb` package and a tarball:
 After obtaining `.pkg.tar.zst` file, you can install it by executing:
 
 \begtt
-pacman -U mmtex-<VERSION>-x86_64.pkg.tar.zst
+pacman -U <PACKAGE_NAME>-<VERSION>-x86_64.pkg.tar.zst
 \endtt
 
 \secc Debian-based systems
@@ -301,7 +296,7 @@ pacman -U mmtex-<VERSION>-x86_64.pkg.tar.zst
 After obtaining `.deb` file, you can install it by executing:
 
 \begtt
-dpkg -i mmtex_<VERSION>_amd64.deb
+dpkg -i <PACKAGE_NAME>_<VERSION>_amd64.deb
 \endtt
 
 \secc Any Linux
@@ -310,7 +305,7 @@ You can \"install" the tarball to `/usr/local` (or any other prefix) by
 executing:
 
 \begtt
-tar -C /usr/local -xf mmtex-<VERSION>.tar.gz
+tar -C /usr/local -xf <PACKAGE_NAME>-<VERSION>.tar.gz
 \endtt
 
 \bye
