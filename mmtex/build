@@ -21,6 +21,14 @@ install() {
 # patch missing include in web2c
 sed -i '6i #include <w2c/config.h>' web2c/lib/lib.h
 
+# simplify path to lua, don't fail if already done by previous build
+ln -sf lua-5.3.5 lua
+
+# patch LuaTeX's patches and then patch lua with them
+cd lua/src
+for f in "$srcdir/TLpatches/patch"*; do sed '2 s/\.orig//' "$f" | patch -p0; done
+cd "$srcdir"
+
 # patch kpathsea
 patch -i kpathsea.patch
 
@@ -109,7 +117,7 @@ $CC -o luatex \
 	-DLUA_COMPAT_5_2 -DLUAI_HASHLIMIT=6 -DLUA_USE_POSIX \
 	-DLUA_USE_DLOPEN -DLUA_FF_LIB -D_NO_PYTHON -DX_DISPLAY_MISSING \
 	-DUSE_OUR_MEMORY -DSYNCTEX_ENGINE_H='<synctex-luatex.h>' \
-	-I ../../lua53-src/src/ -I luapplib/src/util/ \
+	-I "$srcdir/lua/src/" -I luapplib/src/util/ \
 	-I luapplib/src/ -I unilib/ -I ../w2c/ -I ../../ -I ../ -I ./ \
 	-I luafontloader/fontforge/inc/ \
 	-I luafontloader/fontforge/fontforge/ -I ../libmd5/ \
@@ -316,39 +324,39 @@ $CC -o luatex \
 		luaffi/parser.c \
 		luatex.c \
 		../mplibdir/lmplib.c \
-		../../lua53-src/src/lapi.c \
-		../../lua53-src/src/lauxlib.c \
-		../../lua53-src/src/lbaselib.c \
-		../../lua53-src/src/lbitlib.c \
-		../../lua53-src/src/lcode.c \
-		../../lua53-src/src/lcorolib.c \
-		../../lua53-src/src/lctype.c \
-		../../lua53-src/src/ldblib.c \
-		../../lua53-src/src/ldebug.c \
-		../../lua53-src/src/ldo.c \
-		../../lua53-src/src/ldump.c \
-		../../lua53-src/src/lfunc.c \
-		../../lua53-src/src/lgc.c \
-		../../lua53-src/src/linit.c \
-		../../lua53-src/src/liolib.c \
-		../../lua53-src/src/llex.c \
-		../../lua53-src/src/lmathlib.c \
-		../../lua53-src/src/lmem.c \
-		../../lua53-src/src/loadlib.c \
-		../../lua53-src/src/lobject.c \
-		../../lua53-src/src/lopcodes.c \
-		../../lua53-src/src/loslib.c \
-		../../lua53-src/src/lparser.c \
-		../../lua53-src/src/lstate.c \
-		../../lua53-src/src/lstring.c \
-		../../lua53-src/src/lstrlib.c \
-		../../lua53-src/src/ltable.c \
-		../../lua53-src/src/ltablib.c \
-		../../lua53-src/src/ltm.c \
-		../../lua53-src/src/lundump.c \
-		../../lua53-src/src/lutf8lib.c \
-		../../lua53-src/src/lvm.c \
-		../../lua53-src/src/lzio.c \
+		../../lua/src/lapi.c \
+		../../lua/src/lauxlib.c \
+		../../lua/src/lbaselib.c \
+		../../lua/src/lbitlib.c \
+		../../lua/src/lcode.c \
+		../../lua/src/lcorolib.c \
+		../../lua/src/lctype.c \
+		../../lua/src/ldblib.c \
+		../../lua/src/ldebug.c \
+		../../lua/src/ldo.c \
+		../../lua/src/ldump.c \
+		../../lua/src/lfunc.c \
+		../../lua/src/lgc.c \
+		../../lua/src/linit.c \
+		../../lua/src/liolib.c \
+		../../lua/src/llex.c \
+		../../lua/src/lmathlib.c \
+		../../lua/src/lmem.c \
+		../../lua/src/loadlib.c \
+		../../lua/src/lobject.c \
+		../../lua/src/lopcodes.c \
+		../../lua/src/loslib.c \
+		../../lua/src/lparser.c \
+		../../lua/src/lstate.c \
+		../../lua/src/lstring.c \
+		../../lua/src/lstrlib.c \
+		../../lua/src/ltable.c \
+		../../lua/src/ltablib.c \
+		../../lua/src/ltm.c \
+		../../lua/src/lundump.c \
+		../../lua/src/lutf8lib.c \
+		../../lua/src/lvm.c \
+		../../lua/src/lzio.c \
 		../mplibdir/tfmin.c \
 		../mplibdir/mp.c \
 		../mplibdir/mpmath.c \
