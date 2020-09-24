@@ -269,19 +269,20 @@ included which along with some metadata uses `build` and can create packages in
 To build packages `mmtex` and `mmtex-optex` of requested types, run:
 
 \begtt
-./package-builder package [--all] [--deb] [--arch] [--tar] [package_names]..
+./package-builder [--all] [--deb] [--arch] [--tar] [package_names]..
 \endtt
 
 For example to do a full build of both packages of all package types, run:
 
 \begtt
-./package-builder package --all mmtex mmtex-optex
+./package-builder --all mmtex mmtex-optex
 \endtt
 
-`mmtex-optex` depends on `mmtex` that is why it is listed second. To create `.deb` and tarball packages of only `mmtex`, run:
+`mmtex-optex` depends on `mmtex` that is why it is listed second. To create
+`.deb` and tarball packages of only `mmtex`, run:
 
 \begtt
-./package-builder package --deb --tar mmtex
+./package-builder --deb --tar mmtex
 \endtt
 
 \sec Installing \MMTeX

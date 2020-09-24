@@ -151,37 +151,18 @@ tar_package() {
 	fakeroot -- tar -caf "${pkgname}-${pkgver}.tar.gz" -C "$pkgdir/usr" .
 }
 
-if [ $# -lt 1 ]; then
-	echo "Missing arguments" >&2
-	exit 1
-fi
-
-cmd=$1
-shift 1
-case "$cmd" in
-build)
-	for pkgname in "$@"; do
+deb_pkg=0 arch_pkg=0 tar_pkg=0
+for arg in "$@"; do
+	case "$arg" in
+	--deb)  deb_pkg=1  ;;
+	--arch) arch_pkg=1 ;;
+	--tar)  tar_pkg=1  ;;
+	--all)  deb_pkg=1 arch_pkg=1 tar_pkg=1 ;;
+	*)
+		pkgname=$arg
 		build_package
-	done
-;;
-package)
-	deb_pkg=0 arch_pkg=0 tar_pkg=0
-	for arg in "$@"; do
-		case "$arg" in
-		--deb)  deb_pkg=1  ;;
-		--arch) arch_pkg=1 ;;
-		--tar)  tar_pkg=1  ;;
-		--all)  deb_pkg=1 arch_pkg=1 tar_pkg=1 ;;
-		*)
-			pkgname=$arg
-			build_package
-			[ $deb_pkg -eq 1 ] && deb_package
-			[ $arch_pkg -eq 1 ] && arch_package
-			[ $tar_pkg -eq 1 ] && tar_package
-		esac
-	done
-;;
-*)
-	echo "Invalid command '$cmd'" >&2
-	exit 1
-esac
+		if [ $deb_pkg  -eq 1 ]; then deb_package ; fi
+		if [ $arch_pkg -eq 1 ]; then arch_package; fi
+		if [ $tar_pkg  -eq 1 ]; then tar_package ; fi
+	esac
+done
