@@ -266,23 +266,16 @@ included which along with some metadata uses `build` and can create packages in
 
 \secc Build instructions
 
-To build packages `mmtex` and `mmtex-optex` of requested types, run:
+To build `mmtex` package of requested types, run:
 
 \begtt
-./package-builder [--all] [--deb] [--arch] [--tar] [package_names]..
+./package-builder [--all] [--deb] [--arch] [--tar] mmtex..
 \endtt
 
-For example to do a full build of both packages of all package types, run:
+For example to do a full build of all package types, run:
 
 \begtt
-./package-builder --all mmtex mmtex-optex
-\endtt
-
-`mmtex-optex` depends on `mmtex` that is why it is listed second. To create
-`.deb` and tarball packages of only `mmtex`, run:
-
-\begtt
-./package-builder --deb --tar mmtex
+./package-builder --all mmtex
 \endtt
 
 \sec Installing \MMTeX
@@ -292,7 +285,7 @@ For example to do a full build of both packages of all package types, run:
 After obtaining `.pkg.tar.zst` file, you can install it by executing:
 
 \begtt
-pacman -U <PACKAGE_NAME>-<VERSION>-x86_64.pkg.tar.zst
+pacman -U mmtex-<VERSION>-x86_64.pkg.tar.zst
 \endtt
 
 \secc Debian-based systems
@@ -300,7 +293,7 @@ pacman -U <PACKAGE_NAME>-<VERSION>-x86_64.pkg.tar.zst
 After obtaining `.deb` file, you can install it by executing:
 
 \begtt
-dpkg -i <PACKAGE_NAME>_<VERSION>_amd64.deb
+dpkg -i mmtex_<VERSION>_amd64.deb
 \endtt
 
 \secc Any Linux
@@ -309,7 +302,7 @@ You can \"install" the tarball to `/usr/local` (or any other prefix) by
 executing:
 
 \begtt
-tar -C /usr/local -xf <PACKAGE_NAME>-<VERSION>.tar.gz
+tar -C /usr/local -xf mmtex-<VERSION>.tar.gz
 \endtt
 
 \bye

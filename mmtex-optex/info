@@ -1,7 +1,0 @@
-pkgver=20200921
-pkgdesc='OpTeX format for MMTeX'
-pkgurl='https://gitlab.com/vlasakm/mmtex'
-arch_arch=x86_64
-debian_arch=amd64
-arch_depends="mmtex"
-debian_depends="mmtex"
