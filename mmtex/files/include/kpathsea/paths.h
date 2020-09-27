@@ -1,19 +1,19 @@
 /* Actually useful variables. */
 #define DEFAULT_TEXMFCNF      "$TEXMFDOTDIR:{$XDG_CONFIG_HOME,/etc}/mmtex"
-#define DEFAULT_TEXFORMATS    "$TEXMFDOTDIR:{$_TEXMFMMTEX,$TEXMF}/web2c//"
-#define DEFAULT_TEXINPUTS     "$TEXMFDOTDIR:{$_TEXMFMMTEX,$TEXMF}/tex//"
-#define DEFAULT_LUAINPUTS     "$TEXMFDOTDIR:{$_TEXMFMMTEX,$TEXMF}/tex//"
-#define DEFAULT_MPINPUTS      "$TEXMFDOTDIR:{$_TEXMFMMTEX,$TEXMF}/metapost//"
-#define DEFAULT_BIBINPUTS     "$TEXMFDOTDIR:{$_TEXMFMMTEX,$TEXMF}/bibtex/bib//"
-#define DEFAULT_BSTINPUTS     "$TEXMFDOTDIR:{$_TEXMFMMTEX,$TEXMF}/bibtex/bst//"
-#define DEFAULT_TTFONTS       "$TEXMFDOTDIR:{$_TEXMFMMTEX,$TEXMF}/fonts/truetype//"
-#define DEFAULT_OPENTYPEFONTS "$TEXMFDOTDIR:{$_TEXMFMMTEX,$TEXMF}/fonts/opentype//"
+#define DEFAULT_TEXFORMATS    "$TEXMFDOTDIR:{$TEXMF,$_TEXMFMMTEX}/web2c//"
+#define DEFAULT_TEXINPUTS     "$TEXMFDOTDIR:{$TEXMF,$_TEXMFMMTEX}/tex//"
+#define DEFAULT_LUAINPUTS     "$TEXMFDOTDIR:{$TEXMF,$_TEXMFMMTEX}/tex//"
+#define DEFAULT_MPINPUTS      "$TEXMFDOTDIR:{$TEXMF,$_TEXMFMMTEX}/metapost//"
+#define DEFAULT_BIBINPUTS     "$TEXMFDOTDIR:{$TEXMF,$_TEXMFMMTEX}/bibtex/bib//"
+#define DEFAULT_BSTINPUTS     "$TEXMFDOTDIR:{$TEXMF,$_TEXMFMMTEX}/bibtex/bst//"
+#define DEFAULT_TTFONTS       "$TEXMFDOTDIR:{$TEXMF,$_TEXMFMMTEX}/fonts/truetype//"
+#define DEFAULT_OPENTYPEFONTS "$TEXMFDOTDIR:{$TEXMF,$_TEXMFMMTEX}/fonts/opentype//"
 
 /* Hopefully these will die someday. */
-#define DEFAULT_TEXFONTMAPS   "$TEXMFDOTDIR:{$_TEXMFMMTEX,$TEXMF}/fonts/map//"
-#define DEFAULT_TFMFONTS      "$TEXMFDOTDIR:{$_TEXMFMMTEX,$TEXMF}/fonts/tfm//"
-#define DEFAULT_T1FONTS       "$TEXMFDOTDIR:{$_TEXMFMMTEX,$TEXMF}/fonts/type1//"
-#define DEFAULT_ENCFONTS      "$TEXMFDOTDIR:{$_TEXMFMMTEX,$TEXMF}/fonts/enc//"
+#define DEFAULT_TEXFONTMAPS   "$TEXMFDOTDIR:{$TEXMF,$_TEXMFMMTEX}/fonts/map//"
+#define DEFAULT_TFMFONTS      "$TEXMFDOTDIR:{$TEXMF,$_TEXMFMMTEX}/fonts/tfm//"
+#define DEFAULT_T1FONTS       "$TEXMFDOTDIR:{$TEXMF,$_TEXMFMMTEX}/fonts/type1//"
+#define DEFAULT_ENCFONTS      "$TEXMFDOTDIR:{$TEXMF,$_TEXMFMMTEX}/fonts/enc//"
 
 /* Shouldn't be used. */
 #define DEFAULT_GFFONTS       "/none"

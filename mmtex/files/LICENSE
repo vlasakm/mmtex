@@ -1,5 +1,7 @@
 MMTeX is a distribution of TeX and as such contains mainly works of others.
-Some of the licenses are included in the distribution.
+Licenses of such works are included in the distribution. The few changes that
+were made to to these works, as well as build files of MMTeX distribution are
+available at https://github.com/vlasakm/mmtex.
 
 "luatex" binary is compiled from LuaTeX sources, which you can find at
 http://luatex.org/download.html. It is distributed according to the terms of
