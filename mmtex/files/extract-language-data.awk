@@ -10,8 +10,8 @@
 BEGIN {
 	FS = "[= ]"
 
-	DEF = "mmtex/files/language.def"
-	DATLUA = "mmtex/files/language.dat.lua"
+	DEF = "language.def"
+	DATLUA = "language.dat.lua"
 
 	print "%% e-TeX V2.1;0-luatex2" > DEF
 	print "\\addlanguage{USenglish}{hyphen}{}{2}{3}" > DEF

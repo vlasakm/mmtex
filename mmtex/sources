@@ -2,13 +2,13 @@
 svn+https://serveur-svn.lri.fr/svn/modhel/luatex/tags/1.12.0/source/texk/web2c # luatex + mplib + web2c
 svn+https://serveur-svn.lri.fr/svn/modhel/luatex/tags/1.12.0/source/texk/kpathsea # kpathsea (for luatex and ctangle)
 svn+https://serveur-svn.lri.fr/svn/modhel/luatex/tags/1.12.0/source/libs/lua53/TLpatches # luatex's lua patches
-https://www.lua.org/ftp/lua-5.3.5.tar.gz # lua (for luatex)
+svn+https://serveur-svn.lri.fr/svn/modhel/luatex/tags/1.12.0/source/libs/lua53/lua53-src/src # lua (for luatex)
 
 include # headers for kpathsea and web2c
 kpathsea.patch # patch for "extending" kpathsea
 
 # "Generic"
-http://mirrors.ctan.org/language/hyph-utf8.zip # hyph-utf8
+git+https://github.com/hyphenation/tex-hyphen#tag=CTAN-2020.03.25 # hyph-utf8, etex.src
 http://mirrors.ctan.org/macros/generic/unicode-data.zip # unicode-data
 http://mirrors.ctan.org/macros/luatex/generic/lualibs.zip # lualibs
 http://mirrors.ctan.org/macros/latex/base.zip # ltluatex + docstrip
@@ -16,7 +16,7 @@ http://mirrors.ctan.org/macros/luatex/generic/luaotfload.zip # luaotfload
 http://mirrors.ctan.org/macros/luatex/generic/luamplib.zip # luamplib
 svn+https://serveur-svn.lri.fr/svn/modhel/metapost/trunk/texmf/metapost/base # metapost base
 luaotfload.patch # patch bug in luaotfload
-language.dat.lua # hyphenation/language information
+extract-language-data.awk # extract language information from hyph-utf8
 
 # For OpTeX and Plain
 http://mirrors.ctan.org/macros/luatex/optex.zip # optex
@@ -25,6 +25,7 @@ http://mirrors.ctan.org/macros/latex/contrib/lipsum.zip # optex needs lipsum.ltd
 http://mirrors.ctan.org/macros/latex/contrib/l3kernel/l3docstrip.dtx # l3docstrip needed by lipsum
 http://mirrors.ctan.org/obsolete/systems/e-tex/v2/src/etexdefs.lib # etexdefs.lib
 http://mirrors.ctan.org/macros/generic/tex-ini-files.zip # luatex.ini, etc
+luatexiniconfig.tex # config for plain luatex format
 
 # Fonts
 http://mirrors.ctan.org/fonts/amsfonts.zip # computer modern .pfb files
@@ -36,6 +37,8 @@ http://mirrors.ctan.org/fonts/lm.zip # ec-lm .pfb files
 http://mirrors.ctan.org/fonts/rsfs.zip # rsfs .pfb files
 http://mirrors.ctan.org/fonts/ps-type1/cm-super.zip # ecso, ecsx .pfb files
 http://mirrors.ctan.org/macros/cstex/base/cmexb.tar.gz # cmexb font
+pdftex.map # mapping of used type1 fonts
+mfplain.lua # for generating .tfm from .mf using mplib
 
 # Licenses
 https://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
@@ -51,8 +54,3 @@ LICENSE.Knuth
 LICENSE.Lua
 LICENSE.MIT
 LICENSE.unicode
-
-pdftex.map # mapping of used type1 fonts
-luatexiniconfig.tex # config for plain luatex format
-language.def # language list
-mfplain.lua # for generating .tfm from .mf using mplib

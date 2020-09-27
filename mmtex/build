@@ -30,11 +30,8 @@ docstrip_bootstrap() {
 # patch missing include in web2c
 sed -i '6i #include <w2c/config.h>' web2c/lib/lib.h
 
-# simplify path to lua, don't fail if already done by previous build
-ln -sf lua-5.3.5 lua
-
 # patch LuaTeX's patches and then patch lua with them
-cd lua/src
+cd src
 for f in "$srcdir/TLpatches/patch"*; do sed '2 s/\.orig//' "$f" | patch -p0; done
 cd "$srcdir"
 
@@ -126,7 +123,7 @@ $CC -o luatex \
 	-DLUA_COMPAT_5_2 -DLUAI_HASHLIMIT=6 -DLUA_USE_POSIX \
 	-DLUA_USE_DLOPEN -DLUA_FF_LIB -D_NO_PYTHON -DX_DISPLAY_MISSING \
 	-DUSE_OUR_MEMORY -DSYNCTEX_ENGINE_H='<synctex-luatex.h>' \
-	-I "$srcdir/lua/src/" -I luapplib/src/util/ \
+	-I "$srcdir/src/" -I luapplib/src/util/ \
 	-I luapplib/src/ -I unilib/ -I ../w2c/ -I ../../ -I ../ -I ./ \
 	-I luafontloader/fontforge/inc/ \
 	-I luafontloader/fontforge/fontforge/ -I ../libmd5/ \
@@ -333,39 +330,39 @@ $CC -o luatex \
 		luaffi/parser.c \
 		luatex.c \
 		../mplibdir/lmplib.c \
-		../../lua/src/lapi.c \
-		../../lua/src/lauxlib.c \
-		../../lua/src/lbaselib.c \
-		../../lua/src/lbitlib.c \
-		../../lua/src/lcode.c \
-		../../lua/src/lcorolib.c \
-		../../lua/src/lctype.c \
-		../../lua/src/ldblib.c \
-		../../lua/src/ldebug.c \
-		../../lua/src/ldo.c \
-		../../lua/src/ldump.c \
-		../../lua/src/lfunc.c \
-		../../lua/src/lgc.c \
-		../../lua/src/linit.c \
-		../../lua/src/liolib.c \
-		../../lua/src/llex.c \
-		../../lua/src/lmathlib.c \
-		../../lua/src/lmem.c \
-		../../lua/src/loadlib.c \
-		../../lua/src/lobject.c \
-		../../lua/src/lopcodes.c \
-		../../lua/src/loslib.c \
-		../../lua/src/lparser.c \
-		../../lua/src/lstate.c \
-		../../lua/src/lstring.c \
-		../../lua/src/lstrlib.c \
-		../../lua/src/ltable.c \
-		../../lua/src/ltablib.c \
-		../../lua/src/ltm.c \
-		../../lua/src/lundump.c \
-		../../lua/src/lutf8lib.c \
-		../../lua/src/lvm.c \
-		../../lua/src/lzio.c \
+		../../src/lapi.c \
+		../../src/lauxlib.c \
+		../../src/lbaselib.c \
+		../../src/lbitlib.c \
+		../../src/lcode.c \
+		../../src/lcorolib.c \
+		../../src/lctype.c \
+		../../src/ldblib.c \
+		../../src/ldebug.c \
+		../../src/ldo.c \
+		../../src/ldump.c \
+		../../src/lfunc.c \
+		../../src/lgc.c \
+		../../src/linit.c \
+		../../src/liolib.c \
+		../../src/llex.c \
+		../../src/lmathlib.c \
+		../../src/lmem.c \
+		../../src/loadlib.c \
+		../../src/lobject.c \
+		../../src/lopcodes.c \
+		../../src/loslib.c \
+		../../src/lparser.c \
+		../../src/lstate.c \
+		../../src/lstring.c \
+		../../src/lstrlib.c \
+		../../src/ltable.c \
+		../../src/ltablib.c \
+		../../src/ltm.c \
+		../../src/lundump.c \
+		../../src/lutf8lib.c \
+		../../src/lvm.c \
+		../../src/lzio.c \
 		../mplibdir/tfmin.c \
 		../mplibdir/mp.c \
 		../mplibdir/mpmath.c \
@@ -446,20 +443,23 @@ TEXMFDOTDIR=.:luamplib luatex -ini '\catcode`\{=1 \catcode`\}=2 \let\obeyspaces\
 TEXMFDOTDIR=.:lualibs luatex -ini '\catcode`\{=1 \catcode`\}=2 \let\obeyspaces\relax \input lualibs.dtx'
 
 # install luatex packages
-install hyph-utf8/tex/generic/hyph-utf8/patterns/txt/* -t "$TEXMF/tex/hyph-utf8"
+install tex-hyphen/hyph-utf8/tex/generic/hyph-utf8/patterns/txt/* -t "$TEXMF/tex/hyph-utf8"
 (cd unicode-data; install CaseFolding.txt PropList.txt ScriptExtensions.txt Scripts.txt UnicodeData.txt -t "$TEXMF/tex/unicode-data")
 install lualibs*.lua lualibs/lualibs*.lua -t "$TEXMF/tex/lualibs"
 install ltluatex.lua ltluatex.tex -t "$TEXMF/tex/latex"
 install luaotfload/*.lua luaotfload/*.sty -t "$TEXMF/tex/luaotfload"
 install luamplib.lua luamplib.sty -t "$TEXMF/tex/luamplib"
 install base/*.mp -t "$TEXMF/metapost"
-install hyph-utf8/tex/luatex/hyph-utf8/luatex-hyphen.lua -t "$TEXMF/tex/hyph-utf8"
+install tex-hyphen/hyph-utf8/tex/luatex/hyph-utf8/luatex-hyphen.lua -t "$TEXMF/tex/hyph-utf8"
 
-# language.dat.lua containts language information and is needed at run time
+# extract language information to language.def and language.dat.lua
+awk -f extract-language-data.awk tex-hyphen/TL/tlpkg/tlpsrc/*.tlpsrc
+# language.dat.lua is needed at run time, language.def is needed only by
+# etex.src at luatex plain format creation
 install language.dat.lua -t "$TEXMF/tex/$pkgname"
 
 # temporarily need etex.src from depths of hyph-utf8
-cp hyph-utf8/tex/luatex/hyph-utf8/etex.src .
+cp tex-hyphen/hyph-utf8/tex/luatex/hyph-utf8/etex.src .
 
 # install optex files
 install optex/*/*.opm -t "$TEXMF/tex/optex"
