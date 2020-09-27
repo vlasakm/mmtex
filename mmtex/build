@@ -498,3 +498,15 @@ ln -s luatex "$pkgdir/usr/bin/optex"
 
 # create ls-R database
 (cd "$TEXMF" && ls -LAR ./ > ls-R)
+
+# copy licenses
+licensedir="$pkgdir/usr/share/licenses/$pkgname"
+install gpl-2.0.txt "$licensedir/LICENSE.GPLv2"
+install lgpl-3.0.txt "$licensedir/LICENSE.LGPLv3"
+install lgpl-2.1.txt "$licensedir/LICENSE.LGPLv2.1"
+install legalcode.txt "$licensedir/LICENSE.CC0"
+install lppl-1-3c.txt "$licensedir/LICENSE.LPPLv1.3c"
+install GUST-FONT-LICENSE.txt "$licensedir/LICENSE.GUST"
+install LICENSE.* -t "$licensedir"
+install ec/src/copyrite.txt "$licensedir/LICENSE.ec"
+install amsfonts/doc/OFL.txt "$licensedir/LICENSE.OFL"
