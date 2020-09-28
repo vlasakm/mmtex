@@ -424,7 +424,7 @@ PATH="$pkgdir/usr/bin:$PATH"
 export TEXMF="$pkgdir/usr/share/$pkgname"
 
 # patch luaotfload
-patch -i kpathsea.patch
+patch -i luaotfload.patch
 
 # bootstrap docstrip and l3docstrip
 TEXMFDOTDIR=.:base docstrip_bootstrap docstrip initex,program,stats # create docstrip.tex
