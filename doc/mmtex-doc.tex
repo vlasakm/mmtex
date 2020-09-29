@@ -234,7 +234,7 @@ For finding `texmf.cnf` files the same path searching mechanism is used, the
 variable being `TEXMFCNF` (but it cannot be set from configuration file). All
 found `texmf.cnf`'s are taken into account. Earlier assignments in
 configuration files override later ones. That's why in \MMTeX\ we compile
-`kpathsea` such that it first looks for `texmf.cnf` first in
+`kpathsea` such that it first looks for `texmf.cnf` in
 `$XDG_CONFIG_HOME/mmtex/texmf.cnf` (where `$XDG_CONFIG_HOME` defaults to
 `~/.config`) for user configuration, then in `/etc/mmtex/texmf.cnf`, for system
 wide configuration.
@@ -246,15 +246,9 @@ useful for temporary overrides on the command line, and was inspired by
 
 Other interesting variables are set to comply with \"\TeX\ Directory Structure"
 or \"XDG Base Directory" standards. All roots of TDS trees are expected in the
-variable `TEXMF`, which defaults to `TEXMFUSER` and `TEXMFSYSTEM` for user and
-system TDS roots. The order is important here, because earlier directories are
-searched first and we want to prioritize user files over system files. These
-variables currently don't have defaults but can be set arbitrarily. The user
-(or system administrator) can set these at any level they want (in the
-environment, system or user configuration file). \MMTeX\ core files are always
-available and preferred over any other. Usually the user doesn't want to
-override basic functionality and if they really do, they can always use
-`TEXMFDOTDIR`.
+variable `TEXMF`, which currently doesn't have default value, but can be set
+arbitrarily. The user (or system administrator) can set it at any level they
+need at the moment (in the environment, system/user/local configuration file).
 
 \sec Building \MMTeX
 
