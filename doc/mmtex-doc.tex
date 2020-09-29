@@ -301,4 +301,65 @@ executing:
 tar -C /usr/local -xf mmtex-<VERSION>.tar.gz
 \endtt
 
+\sec Using \MMTeX
+
+After installing \MMTeX\ you should now have two programs available: `optex`
+and `luatex`. These binaries let you use the `luatex` engine with either
+\OpTeX\ or (\LuaTeX) plain formats respectively. Beware that only a few very
+basic fonts are included in the distribution and for any reasonable document
+you should use OpenType fonts. Either system fonts which are found
+automatically or fonts installed in TEXMF trees according to TDS.
+
+You should point \MMTeX\ to your TEXMF trees by setting the `TEXMF` Kpathsea
+variable. As usual with Kpathsea, sort these directories by priority and
+separate them with colons. The paths in `TEXMF` {\em should not} contain
+trailing slashes. You can set the variable either in the environment or in a
+configuration file. For example to use files from your own `TEXMF` trees in
+`$HOME/texmf`, and `/usr/share/texmf`, do:
+%
+\begtt
+export TEXMF="$HOME/texmf:/usr/share/texmf"
+\endtt
+%
+in the shell from which you invoke \TeX, or create a configuration file called
+`texmf.cnf` containing:
+%
+\begtt
+TEXMF = $HOME/texmf:/usr/share/texmf
+\endtt
+
+You can put the configuration file in either the current directory,
+`$XDG_CONFIG_HOME/mmtex` (where `$XDG_CONFIG_HOME` is usually `~/.config`), or
+`/etc/mmtex`.
+
+\secc \OpTeX
+
+For using \OpTeX\ you should check its documentation at
+\url{http://petr.olsak.net/ftp/olsak/optex/optex-doc.pdf}.
+
+\secc Plain \LuaTeX
+
+You should set your language with `\uselanguage{<LANGUAGE_NAME>}`. This is
+neccessary for languages other than American English to ensure that hyphenation
+works correctly. For list of available languages see the file `language.dat.lua`, which is located at
+`$PREFIX/share/mmtex/tex/mmtex`, where `$PREFIX` is the prefix
+for package installation (probably `/usr` if you installed \MMTeX\ with your package
+manager, or maybe `/usr/local` if you installed the `.tar.gz` package).
+
+You should use `luaotfload` for loading OpenType fonts. First you need to
+`\input` it, and then you can define your fonts. For example:
+
+\begtt
+\input luaotfload.sty
+
+\font\mainfont="Fira Sans Light" at 12pt
+\mainfont
+
+Hello there
+\bye
+\endtt
+
+Note that plain \TeX's preloaded fonts (like `\tenrm`) will be still used for a lot of things,
+if you don't want that, you need to redefine them manually.
+
 \bye
