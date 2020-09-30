@@ -5,7 +5,7 @@
 #    luatex-hyphen.lua). That file contains names of files containing hyphenation
 #    and exception patterns.
 
-# Usage: awk -f extract-language-data.awk tex-hyphen/TL/tlpkg/tlpsrc/*.tlpsrc
+# Usage: gawk -f extract-language-data.awk tex-hyphen/TL/tlpkg/tlpsrc/*.tlpsrc
 
 BEGIN {
 	FS = "[= ]"

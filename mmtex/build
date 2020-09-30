@@ -422,6 +422,7 @@ cd "$srcdir"
 
 PATH="$pkgdir/usr/bin:$PATH"
 export TEXMF="$pkgdir/usr/share/$pkgname"
+export TEXMFDOTDIR
 
 # patch luaotfload
 patch -i luaotfload.patch
@@ -453,7 +454,7 @@ install base/*.mp -t "$TEXMF/metapost"
 install tex-hyphen/hyph-utf8/tex/luatex/hyph-utf8/luatex-hyphen.lua -t "$TEXMF/tex/hyph-utf8"
 
 # extract language information to language.def and language.dat.lua
-awk -f extract-language-data.awk tex-hyphen/TL/tlpkg/tlpsrc/*.tlpsrc
+gawk -f extract-language-data.awk tex-hyphen/TL/tlpkg/tlpsrc/*.tlpsrc
 # language.dat.lua is needed at run time, language.def is needed only by
 # etex.src at luatex plain format creation
 install language.dat.lua -t "$TEXMF/tex/$pkgname"

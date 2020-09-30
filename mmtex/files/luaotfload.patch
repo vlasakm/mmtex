@@ -36,3 +36,23 @@
      logreport ("both", 3, "db",
                 "Initiating scan of %d directories.", #tasks)
  
+--- a/luaotfload/luaotfload-parsers.lua
++++ b/luaotfload/luaotfload-parsers.lua
+@@ -288,14 +288,9 @@
+       if stringsub(path, 1, 1) == "~" then
+         path = filejoin(home, stringsub(path, 2))
+       end
+-      --- We exclude paths with texmf in them, as they should be
+-      --- found anyway; also duplicates are ignored by checking
+-      --- if they are elements of dirs_done.
+-      ---
+-      --- FIXME does this mean we cannot access paths from
+-      --- distributions (e.g. Context minimals) installed
+-      --- separately?
+-      if not (stringfind(path, "texmf") or dirs_done[path]) then
++      --- Duplicate paths are ignored by checking if they are
++      --- elements of dirs_done.
++      if not dirs_done[path] then
+         logreport ("log", 5, "db",
+                    "New fontconfig path at %s.",
+                    path)
