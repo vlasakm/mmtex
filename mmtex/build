@@ -18,14 +18,6 @@ install() {
 	command install -Dm644 "$@"
 }
 
-docstrip_bootstrap() {
-	jobname=$1
-	options=$2
-	luatex -ini "\let\jobname\relax \input $jobname.dtx \
-		\askforoverwritefalse \
-		\generate{\file{$jobname.tex}{\from{$jobname.dtx}{$options}}} \
-		\end"
-}
 
 # patch missing include in web2c
 sed -i '6i #include <w2c/config.h>' web2c/lib/lib.h
@@ -427,15 +419,11 @@ export TEXMFDOTDIR
 # patch luaotfload
 patch -i luaotfload.patch
 
-# bootstrap docstrip and l3docstrip
-TEXMFDOTDIR=.:base docstrip_bootstrap docstrip initex,program,stats # create docstrip.tex
-docstrip_bootstrap l3docstrip program # create l3docstrip
+# generate ltluatex.{lua,tex}, lipsum.ltd.tex
+luatex -ini mmtex.ins
 
-# generate lipsum.ltd.tex
-TEXMFDOTDIR=.:lipsum luatex -ini '\let\obeyspaces=\relax \input lipsum.ins'
-
-# generate ltluatex.{lua,tex}
-yes | env TEXMFDOTDIR=.:base luatex -ini format.ins
+# use docstrip.dtx as docstrip.tex
+ln -sf docstrip.dtx docstrip.tex
 
 # generate luamplib.{sty.lua}
 TEXMFDOTDIR=.:luamplib luatex -ini '\catcode`\{=1 \catcode`\}=2 \let\obeyspaces\relax \input luamplib.dtx'
@@ -445,7 +433,7 @@ TEXMFDOTDIR=.:lualibs luatex -ini '\catcode`\{=1 \catcode`\}=2 \let\obeyspaces\r
 
 # install luatex packages
 install tex-hyphen/hyph-utf8/tex/generic/hyph-utf8/patterns/txt/* -t "$TEXMF/tex/hyph-utf8"
-(cd unicode-data; install CaseFolding.txt PropList.txt ScriptExtensions.txt Scripts.txt UnicodeData.txt -t "$TEXMF/tex/unicode-data")
+install CaseFolding.txt PropList.txt ScriptExtensions.txt Scripts.txt UnicodeData.txt -t "$TEXMF/tex/unicode-data"
 install lualibs*.lua lualibs/lualibs*.lua -t "$TEXMF/tex/lualibs"
 install ltluatex.lua ltluatex.tex -t "$TEXMF/tex/latex"
 install luaotfload/*.lua luaotfload/*.sty -t "$TEXMF/tex/luaotfload"
@@ -466,36 +454,25 @@ cp tex-hyphen/hyph-utf8/tex/luatex/hyph-utf8/etex.src .
 install optex/*/*.opm -t "$TEXMF/tex/optex"
 install lipsum.ltd.tex -t "$TEXMF/tex/lipsum"
 
-# install pdftex.map and needed .enc files
-install pdftex.map -t "$TEXMF/fonts/map"
-install lm/fonts/enc/dvips/lm/lm-ec.enc -t "$TEXMF/fonts/enc"
-install cm-super/dvips/cm-super-t1.enc -t "$TEXMF/fonts/enc"
-
 # generate rsfs*.tfm files
 TEXMFDOTDIR=".:rsfs" luatex --luaonly mfplain.lua rsfs5 rsfs7 rsfs10
 
-# there are two manfnt.tfm files, one from cm-tfm package and one from manual package
-# use the one from manual package
-rm -f tfm/manfnt.tfm
-# delete comments and empty lines from .map file, prepare .tfm, .pfb file names
-sed -e 's/%.*//' -e '/^$/d' pdftex.map > pdftex.map.tmp
-awk '{print "/" $1 ".tfm$"}' pdftex.map.tmp > tfm_files
-awk -F'[[:blank:]]|<' '{print "/" $NF "$"}' pdftex.map.tmp > pfb_files
-# find all possible font files
-find . -type f -regex '.*\.\(tfm\|pfb\)$' > available_files
-# install only needed font files
-grep -f tfm_files available_files | xargs install -Dm644 -t "$TEXMF/fonts/tfm"
-grep -f pfb_files available_files | xargs install -Dm644 -t "$TEXMF/fonts/type1"
+# install font files
+xargs install -Dm644 -t "$TEXMF/fonts/tfm" < tfm_files
+xargs install -Dm644 -t "$TEXMF/fonts/type1" < pfb_files
+xargs install -Dm644 -t "$TEXMF/fonts/map" < map_files
+xargs install -Dm644 -t "$TEXMF/fonts/enc" < enc_files
+xargs install -Dm644 -t "$TEXMF/fonts/source" < mf_files
 
 # run iniluatex to create formats
-TEXMFDOTDIR=".:tex-ini-files:lib:unicode-data" luatex -ini tex-ini-files/luatex.ini
+TEXMFDOTDIR=".:tex-ini-files:lib" luatex -ini tex-ini-files/luatex.ini
 TEXMFDOTDIR=".:lib" luatex -ini optex/base/optex.ini
 
 # install format files
 install *.fmt -t "$TEXMF/web2c"
 
 # create optex -> luatex symlink
-ln -s luatex "$pkgdir/usr/bin/optex"
+ln -sf luatex "$pkgdir/usr/bin/optex"
 
 # create ls-R database
 (cd "$TEXMF" && ls -LAR ./ > ls-R)
@@ -507,7 +484,7 @@ install lgpl-3.0.txt "$licensedir/LICENSE.LGPLv3"
 install lgpl-2.1.txt "$licensedir/LICENSE.LGPLv2.1"
 install legalcode.txt "$licensedir/LICENSE.CC0"
 install lppl-1-3c.txt "$licensedir/LICENSE.LPPLv1.3c"
-install GUST-FONT-LICENSE.txt "$licensedir/LICENSE.GUST"
-install LICENSE* -t "$licensedir"
+install lm/doc/fonts/lm/GUST-FONT-LICENSE.TXT "$licensedir/LICENSE.GUST"
+install licenses/LICENSE* -t "$licensedir"
 install ec/src/copyrite.txt "$licensedir/LICENSE.ec"
 install amsfonts/doc/OFL.txt "$licensedir/LICENSE.amsfonts"

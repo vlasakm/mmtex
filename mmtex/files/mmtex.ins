@@ -1,0 +1,24 @@
+\let\jobname\relax
+\input docstrip.dtx
+
+\keepsilent
+\askforoverwritefalse
+\nopostamble
+
+\let\MetaPrefix\relax
+\preamble
+
+Part of MMTeX, see LICENSE file
+
+\endpreamble
+
+% tex files
+\let\MetaPrefix\DoubleperCent
+\generate{\file{ltluatex.tex}{\from{ltluatex.dtx}{tex,plain}}}
+\generate{\file{lipsum.ltd.tex}{\from{lipsum.dtx}{lipsum}}}
+
+% lua files
+\def\MetaPrefix{-- }
+\generate{\file{ltluatex.lua}{\from{ltluatex.dtx}{lua}}}
+
+\end
