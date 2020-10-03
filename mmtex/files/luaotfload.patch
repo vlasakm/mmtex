@@ -1,6 +1,16 @@
 --- a/luaotfload/luaotfload-database.lua
 +++ b/luaotfload/luaotfload-database.lua
 @@ -2331,8 +2331,7 @@ local path_separator = os.type == "windows" and ";" or ":"
+@@ -2323,6 +2323,8 @@
+             logreport ("both", 3, "db",
+                        "Path %q matches $PWD (%q), skipping.",
+                        dir, pwd)
++            -- we should also look for local files
++            config.luaotfload.db.scan_local = true
+         else
+             result[#result+1] = dir
+         end
+@@ -2335,8 +2337,7 @@
  --[[doc--
  
      collect_font_filenames_texmf -- Scan texmf tree for font files
@@ -10,7 +20,7 @@
      The current working directory comes as “.” (texlive) or absolute
      path (miktex) and will always be filtered out.
  
-@@ -2358,16 +2357,19 @@ local function collect_font_filenames_texmf ()
+@@ -2362,16 +2363,19 @@
          end
      end
  
