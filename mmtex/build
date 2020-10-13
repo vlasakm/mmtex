@@ -419,11 +419,15 @@ export TEXMFDOTDIR
 # patch luaotfload
 patch -i luaotfload.patch
 
-# generate ltluatex.{lua,tex}, lipsum.ltd.tex
-luatex -ini mmtex.ins
+# use docstrip.dtx as docstrip.tex and l3docstrip.tex
+ln -sf base/docstrip.dtx docstrip.tex
+ln -sf base/docstrip.dtx l3docstrip.tex
 
-# use docstrip.dtx as docstrip.tex
-ln -sf docstrip.dtx docstrip.tex
+# generate lipsum.ltd.tex
+TEXMFDOTDIR=.:lipsum luatex -ini '\let\obeyspaces=\relax \input lipsum.ins'
+
+# generate ltluatex.{lua,tex}
+yes | env TEXMFDOTDIR=.:base luatex -ini format.ins
 
 # generate luamplib.{sty.lua}
 TEXMFDOTDIR=.:luamplib luatex -ini '\catcode`\{=1 \catcode`\}=2 \let\obeyspaces\relax \input luamplib.dtx'
@@ -435,7 +439,7 @@ TEXMFDOTDIR=.:lualibs luatex -ini '\catcode`\{=1 \catcode`\}=2 \let\obeyspaces\r
 install tex-hyphen/hyph-utf8/tex/generic/hyph-utf8/patterns/txt/* -t "$TEXMF/tex/hyph-utf8"
 install CaseFolding.txt PropList.txt ScriptExtensions.txt Scripts.txt UnicodeData.txt -t "$TEXMF/tex/unicode-data"
 install lualibs*.lua lualibs/lualibs*.lua -t "$TEXMF/tex/lualibs"
-install ltluatex.lua ltluatex.tex -t "$TEXMF/tex/latex"
+install ltluatex.lua ltluatex.tex base/ltluatex.pdf -t "$TEXMF/tex/latex"
 install luaotfload/*.lua luaotfload/*.sty -t "$TEXMF/tex/luaotfload"
 install luamplib.lua luamplib.sty -t "$TEXMF/tex/luamplib"
 install base/*.mp -t "$TEXMF/metapost"
@@ -452,7 +456,7 @@ cp tex-hyphen/hyph-utf8/tex/luatex/hyph-utf8/etex.src .
 
 # install optex files
 install optex/*/*.opm -t "$TEXMF/tex/optex"
-install lipsum.ltd.tex -t "$TEXMF/tex/lipsum"
+install lipsum.sty *.ltd.tex -t "$TEXMF/tex/lipsum"
 
 # generate rsfs*.tfm files
 TEXMFDOTDIR=".:rsfs" luatex --luaonly mfplain.lua rsfs5 rsfs7 rsfs10
@@ -485,6 +489,6 @@ install lgpl-2.1.txt "$licensedir/LICENSE.LGPLv2.1"
 install legalcode.txt "$licensedir/LICENSE.CC0"
 install lppl-1-3c.txt "$licensedir/LICENSE.LPPLv1.3c"
 install lm/doc/fonts/lm/GUST-FONT-LICENSE.TXT "$licensedir/LICENSE.GUST"
-install licenses/LICENSE* -t "$licensedir"
+install LICENSE* licenses/LICENSE* -t "$licensedir"
 install ec/src/copyrite.txt "$licensedir/LICENSE.ec"
 install amsfonts/doc/OFL.txt "$licensedir/LICENSE.amsfonts"

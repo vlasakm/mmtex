@@ -1,6 +1,5 @@
 --- a/luaotfload/luaotfload-database.lua
 +++ b/luaotfload/luaotfload-database.lua
-@@ -2331,8 +2331,7 @@ local path_separator = os.type == "windows" and ";" or ":"
 @@ -2323,6 +2323,8 @@
              logreport ("both", 3, "db",
                         "Path %q matches $PWD (%q), skipping.",

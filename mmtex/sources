@@ -16,19 +16,17 @@ https://unicode.org/Public/UNIDATA/ScriptExtensions.txt
 https://unicode.org/Public/UNIDATA/Scripts.txt
 https://unicode.org/Public/UNIDATA/UnicodeData.txt
 http://mirrors.ctan.org/macros/luatex/generic/lualibs.zip # lualibs
-http://mirrors.ctan.org/macros/latex/base/docstrip.dtx # docstrip
-http://mirrors.ctan.org/macros/latex/base/ltluatex.dtx # ltluatex
+http://mirrors.ctan.org/macros/latex/base.zip # ltluatex + docstrip
 http://mirrors.ctan.org/macros/luatex/generic/luaotfload.zip # luaotfload
 http://mirrors.ctan.org/macros/luatex/generic/luamplib.zip # luamplib
 svn+https://serveur-svn.lri.fr/svn/modhel/metapost/trunk/texmf/metapost/base # metapost base
 luaotfload.patch # patch bug in luaotfload
 extract-language-data.awk # extract language information from hyph-utf8
-mmtex.ins # install file for ltluatex and lipsum
 
 # For OpTeX and Plain
 http://mirrors.ctan.org/macros/luatex/optex.zip # optex
 http://mirrors.ctan.org/systems/knuth/dist/lib.zip # plain.tex, hyphen.tex
-http://mirrors.ctan.org/macros/latex/contrib/lipsum/lipsum.dtx # optex needs lipsum.ltd.tex
+http://mirrors.ctan.org/macros/latex/contrib/lipsum.zip # optex needs lipsum.ltd.tex
 http://mirrors.ctan.org/obsolete/systems/e-tex/v2/src/etexdefs.lib # etexdefs.lib for plain
 http://mirrors.ctan.org/macros/generic/tex-ini-files.zip # luatex.ini, etc for plain
 luatexiniconfig.tex # config for plain luatex format
@@ -58,3 +56,5 @@ https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt
 https://creativecommons.org/publicdomain/zero/1.0/legalcode.txt
 https://www.latex-project.org/lppl/lppl-1-3c.txt
 licenses # directory with remaining licenses
+../../LICENSE # top level license file
+../../LICENSE.mmtex # MMTeX license file
