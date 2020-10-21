@@ -1,12 +1,9 @@
 amsfonts/tfm/cmmib5.tfm
-amsfonts/tfm/eufm9.tfm
 amsfonts/tfm/msbm10.tfm
 amsfonts/tfm/eufm5.tfm
-amsfonts/tfm/eufb8.tfm
 amsfonts/tfm/cmbsy5.tfm
 amsfonts/tfm/cmmib9.tfm
 amsfonts/tfm/msam7.tfm
-amsfonts/tfm/eufb6.tfm
 amsfonts/tfm/eufm7.tfm
 amsfonts/tfm/eufb10.tfm
 amsfonts/tfm/cmbsy6.tfm
@@ -25,14 +22,11 @@ amsfonts/tfm/msam5.tfm
 amsfonts/tfm/cmmib8.tfm
 amsfonts/tfm/msam8.tfm
 amsfonts/tfm/cmex7.tfm
-amsfonts/tfm/eufb9.tfm
 amsfonts/tfm/eufm10.tfm
-amsfonts/tfm/eufm6.tfm
 amsfonts/tfm/msbm8.tfm
 amsfonts/tfm/cmex9.tfm
 amsfonts/tfm/cmbsy8.tfm
 amsfonts/tfm/msam10.tfm
-amsfonts/tfm/eufm8.tfm
 amsfonts/tfm/eufb7.tfm
 amsfonts/tfm/cmmib7.tfm
 tfm/cmmi5.tfm
@@ -94,7 +88,6 @@ ec/tfm/ecso0700.tfm
 ec/tfm/ecso0800.tfm
 ec/tfm/ecso0900.tfm
 ec/tfm/ecso1000.tfm
-ec/tfm/ecso1095.tfm
 ec/tfm/ecso1200.tfm
 ec/tfm/ecsx0500.tfm
 ec/tfm/ecsx0600.tfm
@@ -102,7 +95,6 @@ ec/tfm/ecsx0700.tfm
 ec/tfm/ecsx0800.tfm
 ec/tfm/ecsx0900.tfm
 ec/tfm/ecsx1000.tfm
-ec/tfm/ecsx1095.tfm
 ec/tfm/ecsx1200.tfm
 lm/fonts/tfm/public/lm/ec-lmbx10.tfm
 lm/fonts/tfm/public/lm/ec-lmbx12.tfm

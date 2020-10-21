@@ -112,17 +112,11 @@ msbm10 MSBM10 <msbm10.pfb
 
 
 eufm5  EUFM5  <eufm5.pfb
-eufm6  EUFM7  <eufm7.pfb
 eufm7  EUFM7  <eufm7.pfb
-eufm8  EUFM7  <eufm7.pfb
-eufm9  EUFM10 <eufm10.pfb
 eufm10 EUFM10 <eufm10.pfb
 
 eufb5  EUFB5  <eufb5.pfb
-eufb6  EUFB7  <eufb7.pfb
 eufb7  EUFB7  <eufb7.pfb
-eufb8  EUFB7  <eufb7.pfb
-eufb9  EUFB10 <eufb10.pfb
 eufb10 EUFB10 <eufb10.pfb
 
 
@@ -137,7 +131,6 @@ ecsx0700 SFSX0700 <cm-super-t1.enc <sfsx0700.pfb
 ecsx0800 SFSX0800 <cm-super-t1.enc <sfsx0800.pfb
 ecsx0900 SFSX0900 <cm-super-t1.enc <sfsx0900.pfb
 ecsx1000 SFSX1000 <cm-super-t1.enc <sfsx1000.pfb
-ecsx1095 SFSX1095 <cm-super-t1.enc <sfsx1095.pfb
 ecsx1200 SFSX1200 <cm-super-t1.enc <sfsx1200.pfb
 
 ecso0500 SFSO0500 <cm-super-t1.enc <sfso0500.pfb
@@ -146,7 +139,6 @@ ecso0700 SFSO0700 <cm-super-t1.enc <sfso0700.pfb
 ecso0800 SFSO0800 <cm-super-t1.enc <sfso0800.pfb
 ecso0900 SFSO0900 <cm-super-t1.enc <sfso0900.pfb
 ecso1000 SFSO1000 <cm-super-t1.enc <sfso1000.pfb
-ecso1095 SFSO1095 <cm-super-t1.enc <sfso1095.pfb
 ecso1200 SFSO1200 <cm-super-t1.enc <sfso1200.pfb
 
 % These mappings needed by Plain TeX, not already needed by OpTeX
