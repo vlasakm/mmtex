@@ -438,9 +438,9 @@ TEXMFDOTDIR=.:lualibs luatex -ini '\catcode`\{=1 \catcode`\}=2 \let\obeyspaces\r
 # install luatex packages
 install tex-hyphen/hyph-utf8/tex/generic/hyph-utf8/patterns/txt/* -t "$TEXMF/tex/hyph-utf8"
 install CaseFolding.txt PropList.txt ScriptExtensions.txt Scripts.txt UnicodeData.txt -t "$TEXMF/tex/unicode-data"
-install lualibs*.lua lualibs/lualibs*.lua -t "$TEXMF/tex/lualibs"
+install lualibs*.lua lualibs/lualibs*-merged.lua lualibs/*-compat.lua -t "$TEXMF/tex/lualibs"
 install ltluatex.lua ltluatex.tex base/ltluatex.pdf -t "$TEXMF/tex/latex"
-install luaotfload/*.lua luaotfload/*.sty -t "$TEXMF/tex/luaotfload"
+install luaotfload/luaotfload-*.lua luaotfload/fontloader-????-??-??.lua luaotfload/fontloader-basics-gen.lua luaotfload/*.sty -t "$TEXMF/tex/luaotfload"
 install luamplib.lua luamplib.sty -t "$TEXMF/tex/luamplib"
 install base/*.mp -t "$TEXMF/metapost"
 install tex-hyphen/hyph-utf8/tex/luatex/hyph-utf8/luatex-hyphen.lua -t "$TEXMF/tex/hyph-utf8"
