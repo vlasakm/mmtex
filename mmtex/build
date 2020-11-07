@@ -115,6 +115,7 @@ $CC -o luatex \
 	-DLUA_COMPAT_5_2 -DLUAI_HASHLIMIT=6 -DLUA_USE_POSIX \
 	-DLUA_USE_DLOPEN -DLUA_FF_LIB -D_NO_PYTHON -DX_DISPLAY_MISSING \
 	-DUSE_OUR_MEMORY -DSYNCTEX_ENGINE_H='<synctex-luatex.h>' \
+	-DLUATEX_HARFBUZZ_ENABLED \
 	-I "$srcdir/src/" -I luapplib/src/util/ \
 	-I luapplib/src/ -I unilib/ -I ../w2c/ -I ../../ -I ../ -I ./ \
 	-I luafontloader/fontforge/inc/ \
@@ -403,8 +404,22 @@ $CC -o luatex \
 		luapplib/src/util/utilnumber.c \
 		luapplib/src/util/utilsha.c \
 		../libmd5/md5.c \
+		luaharfbuzz/src/luaharfbuzz/blob.c \
+		luaharfbuzz/src/luaharfbuzz/buffer.c \
+		luaharfbuzz/src/luaharfbuzz/class_utils.c \
+		luaharfbuzz/src/luaharfbuzz/direction.c \
+		luaharfbuzz/src/luaharfbuzz/face.c \
+		luaharfbuzz/src/luaharfbuzz/feature.c \
+		luaharfbuzz/src/luaharfbuzz/font.c \
+		luaharfbuzz/src/luaharfbuzz/language.c \
+		luaharfbuzz/src/luaharfbuzz/luaharfbuzz.c \
+		luaharfbuzz/src/luaharfbuzz/luaharfbuzz.h \
+		luaharfbuzz/src/luaharfbuzz/ot.c \
+		luaharfbuzz/src/luaharfbuzz/script.c \
+		luaharfbuzz/src/luaharfbuzz/tag.c \
+		luaharfbuzz/src/luaharfbuzz/unicode.c \
 		"$srcdir/libkpathsea.a" \
-	-lm -ldl $(pkg-config --cflags --libs zziplib libpng zlib)
+	-lm -ldl $(pkg-config --cflags --libs zziplib libpng zlib harfbuzz)
 
 strip --strip-all luatex
 
