@@ -420,14 +420,11 @@ export TEXMFDOTDIR
 patch -i luaotfload.patch
 
 # use docstrip.dtx as docstrip.tex and l3docstrip.tex
-ln -sf base/docstrip.dtx docstrip.tex
-ln -sf base/docstrip.dtx l3docstrip.tex
+ln -sf docstrip.dtx docstrip.tex
+ln -sf docstrip.dtx l3docstrip.tex
 
 # generate lipsum.ltd.tex
 TEXMFDOTDIR=.:lipsum luatex -ini '\let\obeyspaces=\relax \input lipsum.ins'
-
-# generate ltluatex.{lua,tex}
-yes | env TEXMFDOTDIR=.:base luatex -ini format.ins
 
 # generate luamplib.{sty.lua}
 TEXMFDOTDIR=.:luamplib luatex -ini '\catcode`\{=1 \catcode`\}=2 \let\obeyspaces\relax \input luamplib.dtx'
@@ -436,23 +433,15 @@ TEXMFDOTDIR=.:luamplib luatex -ini '\catcode`\{=1 \catcode`\}=2 \let\obeyspaces\
 TEXMFDOTDIR=.:lualibs luatex -ini '\catcode`\{=1 \catcode`\}=2 \let\obeyspaces\relax \input lualibs.dtx'
 
 # install luatex packages
-install hyph-utf8/tex/generic/hyph-utf8/patterns/txt/* -t "$TEXMF/tex/hyph-utf8"
+install hyph-utf8/tex/generic/hyph-utf8/patterns/tex/* -t "$TEXMF/tex/hyph-utf8"
 install CaseFolding.txt PropList.txt ScriptExtensions.txt Scripts.txt UnicodeData.txt -t "$TEXMF/tex/unicode-data"
 install lualibs*.lua lualibs/lualibs*-merged.lua lualibs/*-compat.lua -t "$TEXMF/tex/lualibs"
-install ltluatex.lua ltluatex.tex base/ltluatex.pdf -t "$TEXMF/tex/latex"
 install luaotfload/luaotfload-*.lua luaotfload/fontloader-????-??-??.lua luaotfload/fontloader-basics-gen.lua luaotfload/*.sty -t "$TEXMF/tex/luaotfload"
 install luamplib.lua luamplib.sty -t "$TEXMF/tex/luamplib"
 install base/*.mp -t "$TEXMF/metapost"
 
-# extract language information to language.def and language.dat.lua
-# TODO: delete this for new optex
-gawk -f extract-language-data.awk tex-hyphen/TL/tlpkg/tlpsrc/*.tlpsrc
-# language.dat.lua is needed at run time, language.def is needed only by
-# etex.src at luatex plain format creation
-install language.dat.lua -t "$TEXMF/tex/$pkgname"
-
 # install optex files
-install optex/*/*.opm -t "$TEXMF/tex/optex"
+install optex/optex/*/*.opm optex/optex/*/*.lua -t "$TEXMF/tex/optex"
 install lipsum.sty *.ltd.tex -t "$TEXMF/tex/lipsum"
 
 # generate rsfs*.tfm files
@@ -466,7 +455,7 @@ xargs install -Dm644 -t "$TEXMF/fonts/enc" < enc_files
 xargs install -Dm644 -t "$TEXMF/fonts/source" < mf_files
 
 # run iniluatex to create formats
-TEXMFDOTDIR=".:lib" luatex -ini optex/base/optex.ini
+TEXMFDOTDIR=".:lib" luatex -ini optex/optex/base/optex.ini
 
 # install format files
 install *.fmt -t "$TEXMF/web2c"

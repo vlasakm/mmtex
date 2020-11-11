@@ -15,16 +15,15 @@ https://unicode.org/Public/UNIDATA/ScriptExtensions.txt
 https://unicode.org/Public/UNIDATA/Scripts.txt
 https://unicode.org/Public/UNIDATA/UnicodeData.txt
 http://mirrors.ctan.org/macros/luatex/generic/lualibs.zip # lualibs
-http://mirrors.ctan.org/macros/latex/base.zip # ltluatex + docstrip
+http://mirrors.ctan.org/macros/latex/base/docstrip.dtx # docstrip (also l3docstrip)
 http://mirrors.ctan.org/macros/luatex/generic/luaotfload.zip # luaotfload
 http://mirrors.ctan.org/macros/luatex/generic/luamplib.zip # luamplib
 svn+https://serveur-svn.lri.fr/svn/modhel/metapost/trunk/texmf/metapost/base # metapost base
 luaotfload.patch # patch bug in luaotfload
-extract-language-data.awk # extract language information from hyph-utf8
 
-# For OpTeX and Plain
-http://mirrors.ctan.org/macros/luatex/optex.zip # optex
-http://mirrors.ctan.org/systems/knuth/dist/lib.zip # plain.tex, hyphen.tex
+# For OpTeX
+git+https://github.com/olsak/optex#branch=master # optex-git
+http://mirrors.ctan.org/systems/knuth/dist/lib/hyphen.tex # Knuth's hyphen.tex
 http://mirrors.ctan.org/macros/latex/contrib/lipsum.zip # optex needs lipsum.ltd.tex
 
 # Fonts
