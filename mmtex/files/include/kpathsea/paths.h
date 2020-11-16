@@ -10,6 +10,7 @@
 #define DEFAULT_OPENTYPEFONTS "$TEXMFDOTDIR:{$TEXMF,$_TEXMFMMTEX}/fonts/opentype//"
 
 /* Hopefully these will die someday. */
+#define DEFAULT_AFMFONTS      "$TEXMFDOTDIR:{$TEXMF,$_TEXMFMMTEX}/fonts/afm//"
 #define DEFAULT_TEXFONTMAPS   "$TEXMFDOTDIR:{$TEXMF,$_TEXMFMMTEX}/fonts/map//"
 #define DEFAULT_TFMFONTS      "$TEXMFDOTDIR:{$TEXMF,$_TEXMFMMTEX}/fonts/tfm//"
 #define DEFAULT_T1FONTS       "$TEXMFDOTDIR:{$TEXMF,$_TEXMFMMTEX}/fonts/type1//"
@@ -19,7 +20,6 @@
 #define DEFAULT_GFFONTS       "/none"
 #define DEFAULT_PKFONTS       "/none"
 #define DEFAULT_GLYPHFONTS    "/none"
-#define DEFAULT_AFMFONTS      "/none"
 #define DEFAULT_MFBASES       "/none"
 #define DEFAULT_TEXMFDBS      "/none"
 #define DEFAULT_MPMEMS        "/none"

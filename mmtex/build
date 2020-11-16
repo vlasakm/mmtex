@@ -440,22 +440,15 @@ install luaotfload/luaotfload-*.lua luaotfload/fontloader-????-??-??.lua luaotfl
 install luamplib.lua luamplib.sty -t "$TEXMF/tex/luamplib"
 install base/*.mp -t "$TEXMF/metapost"
 
+install rsfs/type1/afm/* -t "$TEXMF/fonts/afm"
+install rsfs/type1/*.pfb -t "$TEXMF/fonts/type1"
+
 # install optex files
 install optex/optex/*/*.opm optex/optex/*/*.lua -t "$TEXMF/tex/optex"
 install lipsum.sty *.ltd.tex -t "$TEXMF/tex/lipsum"
 
-# generate rsfs*.tfm files
-TEXMFDOTDIR=".:rsfs" luatex --luaonly mfplain.lua rsfs5 rsfs7 rsfs10
-
-# install font files
-xargs install -Dm644 -t "$TEXMF/fonts/tfm" < tfm_files
-xargs install -Dm644 -t "$TEXMF/fonts/type1" < pfb_files
-xargs install -Dm644 -t "$TEXMF/fonts/map" < map_files
-xargs install -Dm644 -t "$TEXMF/fonts/enc" < enc_files
-xargs install -Dm644 -t "$TEXMF/fonts/source" < mf_files
-
 # run iniluatex to create formats
-TEXMFDOTDIR=".:lib" luatex -ini optex/optex/base/optex.ini
+TEXMFDOTDIR=".:lib" luatex -ini -jobname optex custom-optex.ini
 
 # install format files
 install *.fmt -t "$TEXMF/web2c"
@@ -472,7 +465,4 @@ install gpl-2.0.txt "$licensedir/LICENSE.GPLv2"
 install lgpl-3.0.txt "$licensedir/LICENSE.LGPLv3"
 install lgpl-2.1.txt "$licensedir/LICENSE.LGPLv2.1"
 install lppl-1-3c.txt "$licensedir/LICENSE.LPPLv1.3c"
-install lm/doc/fonts/lm/GUST-FONT-LICENSE.TXT "$licensedir/LICENSE.GUST"
 install LICENSE* licenses/LICENSE* -t "$licensedir"
-install ec/src/copyrite.txt "$licensedir/LICENSE.ec"
-install amsfonts/doc/OFL.txt "$licensedir/LICENSE.amsfonts"
