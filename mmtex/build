@@ -444,11 +444,11 @@ install rsfs/type1/afm/* -t "$TEXMF/fonts/afm"
 install rsfs/type1/*.pfb -t "$TEXMF/fonts/type1"
 
 # install optex files
-install optex/optex/*/*.opm optex/optex/*/*.lua -t "$TEXMF/tex/optex"
+install optex/*/*.opm optex/*/*.lua -t "$TEXMF/tex/optex"
 install lipsum.sty *.ltd.tex -t "$TEXMF/tex/lipsum"
 
 # run iniluatex to create formats
-TEXMFDOTDIR=".:lib" luatex -ini -jobname optex custom-optex.ini
+TEXMFDOTDIR=".:lib:optex/base" luatex -ini -jobname optex "\input custom-optex.tex \input optex.ini"
 
 # install format files
 install *.fmt -t "$TEXMF/web2c"
