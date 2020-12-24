@@ -21,20 +21,16 @@ install() {
 
 ## PATCH SOURCES
 
-# patch LuaTeX's patches and then patch lua with them
-cd src
-for f in "$srcdir/TLpatches/patch"*; do sed '2 s/\.orig//' "$f" | patch -p0; done
-cd "$srcdir"
 # patch kpathsea
 patch -i kpathsea.patch
 # patch luaotfload
 patch -i luaotfload.patch
 
+## BUILD LUATEX BINARY
+
 # let meson recognize cxx as C file
 ln -sf ctangle.cxx ctangle.c
 ln -sf common.cxx common.c
-
-## BUILD LUATEX BINARY
 
 if ! [ -f "$pkgdir/usr/bin/luatex" ]; then
 
