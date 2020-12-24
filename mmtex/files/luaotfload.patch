@@ -1,5 +1,14 @@
 --- a/luaotfload/luaotfload-database.lua
 +++ b/luaotfload/luaotfload-database.lua
+@@ -721,7 +721,7 @@
+ 
+ -- MK Added mini scope to avoid variable limit
+ do
+-local type1_metrics = { "tfm", "ofm", }
++local type1_metrics = { "tfm", "ofm", "afm" }
+ -- /MK
+ 
+ function lookup_font_file (filename)
 @@ -2323,6 +2323,8 @@
              logreport ("both", 3, "db",
                         "Path %q matches $PWD (%q), skipping.",
