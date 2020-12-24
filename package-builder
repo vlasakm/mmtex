@@ -2,7 +2,7 @@
 
 set -e
 
-# Build dependencies: git, svn, curl, unzip, tar
+# Build dependencies: git, svn, curl, unzip, tar, meson (+ python), ninja
 # Dependencies for making Arch package: pacman (makepkg)
 # Dependencies for making .deb package: dpkg-deb
 # Dependencies for making .tar package: fakeroot
