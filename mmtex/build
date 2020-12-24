@@ -19,405 +19,49 @@ install() {
 }
 
 
-# patch missing include in web2c
-sed -i '6i #include <w2c/config.h>' web2c/lib/lib.h
+## PATCH SOURCES
 
 # patch LuaTeX's patches and then patch lua with them
 cd src
 for f in "$srcdir/TLpatches/patch"*; do sed '2 s/\.orig//' "$f" | patch -p0; done
 cd "$srcdir"
-
 # patch kpathsea
 patch -i kpathsea.patch
+# patch luaotfload
+patch -i luaotfload.patch
 
-cd kpathsea
+# let meson recognize cxx as C file
+ln -sf ctangle.cxx ctangle.c
+ln -sf common.cxx common.c
 
-# compile kpathsea to a static library as it is used twice
-$CC -c $CPPFLAGS $CFLAGS \
-	-DMAKE_KPSE_DLL -I ../ -I "$srcdir/include" \
-		tex-file.c \
-		absolute.c \
-		atou.c \
-		cnf.c \
-		concat.c \
-		concat3.c \
-		concatn.c \
-		db.c \
-		debug.c \
-		dir.c \
-		elt-dirs.c \
-		expand.c \
-		extend-fname.c \
-		file-p.c \
-		find-suffix.c \
-		fn.c \
-		fontmap.c \
-		hash.c \
-		kdefault.c \
-		kpathsea.c \
-		line.c \
-		magstep.c \
-		make-suffix.c \
-		path-elt.c \
-		pathsearch.c \
-		proginit.c \
-		progname.c \
-		readable.c \
-		rm-suffix.c \
-		str-list.c \
-		str-llist.c \
-		tex-glyph.c \
-		tex-hush.c \
-		tex-make.c \
-		tilde.c \
-		uppercasify.c \
-		variable.c \
-		version.c \
-		xbasename.c \
-		xcalloc.c \
-		xdirname.c \
-		xfopen.c \
-		xfseek.c \
-		xfseeko.c \
-		xftell.c \
-		xftello.c \
-		xgetcwd.c \
-		xmalloc.c \
-		xopendir.c \
-		xputenv.c \
-		xrealloc.c \
-		xstat.c \
-		xstrdup.c
-ar rcs "$srcdir/libkpathsea.a" ./*.o
+## BUILD LUATEX BINARY
 
-# compile `ctangle`, which is needed for mplib
-cd ../web2c/cwebdir
-$CC -w ctangle.c common.c -o bootstrap
-./bootstrap ctangle ctang-w2c real-ctangle.c
-./bootstrap common comm-w2c real-common.c
-$CC -o ../mplibdir/ctangle \
-	-I "$srcdir/include/" -I ../../ -I ../ \
-		real-ctangle.c real-common.c \
-		../lib/printversion.c \
-		../lib/uexit.c \
-		../lib/version.c \
-		"$srcdir/libkpathsea.a"
+if ! [ -f "$pkgdir/usr/bin/luatex" ]; then
 
-# `ctangle` cweb files of mplib
-cd ../mplibdir
-for f in ./*.w; do ./ctangle $f >/dev/null; done
+	meson setup \
+	  --prefix        /usr \
+	  --libexecdir    lib \
+	  --sbindir       bin \
+	  --buildtype     plain \
+	  --auto-features enabled \
+	  --wrap-mode     nodownload \
+	  -D              b_lto=true \
+	  -D              b_pie=true \
+	  builddir
 
-# build luatex binary
-cd ../luatexdir
-$CC -o luatex \
-	$LDFLAGS $CPPFLAGS $CFLAGS  \
-	-DHAVE_CONFIG_H -DLUASOCKET_DEBUG -DLUA_COMPAT_MODULE \
-	-DLUA_COMPAT_5_2 -DLUAI_HASHLIMIT=6 -DLUA_USE_POSIX \
-	-DLUA_USE_DLOPEN -DLUA_FF_LIB -D_NO_PYTHON -DX_DISPLAY_MISSING \
-	-DUSE_OUR_MEMORY -DSYNCTEX_ENGINE_H='<synctex-luatex.h>' \
-	-I "$srcdir/src/" -I luapplib/src/util/ \
-	-I luapplib/src/ -I unilib/ -I ../w2c/ -I ../../ -I ../ -I ./ \
-	-I luafontloader/fontforge/inc/ \
-	-I luafontloader/fontforge/fontforge/ -I ../libmd5/ \
-	-I ../synctexdir/ -I ../mplibdir/ -I "$srcdir/include/" \
-	-I "$srcdir/include/w2c/" \
-		luafilesystem/src/lfs.c \
-		luamd5/md5.c \
-		luamd5/md5lib.c \
-		luapeg/lpeg.c \
-		luazip/src/luazip.c \
-		luazlib/lgzip.c \
-		luazlib/lzlib.c \
-		slnunicode/slnunico.c \
-		luasocket/src/auxiliar.c \
-		luasocket/src/buffer.c \
-		luasocket/src/compat.c \
-		luasocket/src/except.c \
-		luasocket/src/inet.c \
-		luasocket/src/io.c \
-		luasocket/src/lua_preload.c \
-		luasocket/src/luasocket.c \
-		luasocket/src/mime.c \
-		luasocket/src/options.c \
-		luasocket/src/select.c \
-		luasocket/src/serial.c \
-		luasocket/src/socket.c \
-		luasocket/src/tcp.c \
-		luasocket/src/timeout.c \
-		luasocket/src/udp.c \
-		unilib/alphabet.c \
-		unilib/ArabicForms.c \
-		unilib/char.c \
-		unilib/cjk.c \
-		unilib/gwwiconv.c \
-		unilib/ucharmap.c \
-		unilib/unialt.c \
-		unilib/usprintf.c \
-		unilib/ustring.c \
-		unilib/utype.c \
-		luafontloader/fontforge/fontforge/autohint.c \
-		luafontloader/fontforge/fontforge/clipnoui.c \
-		luafontloader/fontforge/fontforge/cvundoes.c \
-		luafontloader/fontforge/fontforge/dumppfa.c \
-		luafontloader/fontforge/fontforge/encoding.c \
-		luafontloader/fontforge/fontforge/featurefile.c \
-		luafontloader/fontforge/fontforge/fontviewbase.c \
-		luafontloader/fontforge/fontforge/fvcomposit.c \
-		luafontloader/fontforge/fontforge/fvfonts.c \
-		luafontloader/fontforge/fontforge/lookups.c \
-		luafontloader/fontforge/fontforge/macbinary.c \
-		luafontloader/fontforge/fontforge/macenc.c \
-		luafontloader/fontforge/fontforge/mathconstants.c \
-		luafontloader/fontforge/fontforge/memory.c \
-		luafontloader/fontforge/fontforge/mm.c \
-		luafontloader/fontforge/fontforge/namelist.c \
-		luafontloader/fontforge/fontforge/noprefs.c \
-		luafontloader/fontforge/fontforge/nouiutil.c \
-		luafontloader/fontforge/fontforge/parsepfa.c \
-		luafontloader/fontforge/fontforge/parsettf.c \
-		luafontloader/fontforge/fontforge/parsettfatt.c \
-		luafontloader/fontforge/fontforge/psread.c \
-		luafontloader/fontforge/fontforge/pua.c \
-		luafontloader/fontforge/fontforge/python.c \
-		luafontloader/fontforge/fontforge/sfd1.c \
-		luafontloader/fontforge/fontforge/splinechar.c \
-		luafontloader/fontforge/fontforge/splinefill.c \
-		luafontloader/fontforge/fontforge/splinefont.c \
-		luafontloader/fontforge/fontforge/splineorder2.c \
-		luafontloader/fontforge/fontforge/splineoverlap.c \
-		luafontloader/fontforge/fontforge/splinerefigure.c \
-		luafontloader/fontforge/fontforge/splinesave.c \
-		luafontloader/fontforge/fontforge/splinesaveafm.c \
-		luafontloader/fontforge/fontforge/splinestroke.c \
-		luafontloader/fontforge/fontforge/splineutil.c \
-		luafontloader/fontforge/fontforge/splineutil2.c \
-		luafontloader/fontforge/fontforge/start.c \
-		luafontloader/fontforge/fontforge/stemdb.c \
-		luafontloader/fontforge/fontforge/tottf.c \
-		luafontloader/fontforge/fontforge/tottfgpos.c \
-		luafontloader/fontforge/fontforge/ttfspecial.c \
-		luafontloader/fontforge/gutils/fsys.c \
-		lua/lstrlibext.c \
-		lua/helpers.c \
-		lua/texluac.c \
-		utils/utils.c \
-		lua/luastuff.c \
-		lua/luainit.c \
-		tex/printing.c \
-		luafontloader/src/ffdummies.c \
-		luafontloader/src/luafflib.c \
-		dvi/dvigen.c \
-		font/dofont.c \
-		font/luafont.c \
-		font/mapfile.c \
-		font/pkin.c \
-		font/sfnt.c \
-		font/texfont.c \
-		font/tfmofm.c \
-		font/tounicode.c \
-		font/tt_glyf.c \
-		font/tt_table.c \
-		font/vfovf.c \
-		font/vfpacket.c \
-		font/writecff.c \
-		font/writeenc.c \
-		font/writefont.c \
-		font/writet1.c \
-		font/writet3.c \
-		font/writettf.c \
-		font/writetype0.c \
-		font/writetype2.c \
-		image/pdftoepdf.c \
-		image/writeimg.c \
-		image/writejbig2.c \
-		image/writejp2.c \
-		image/writejpg.c \
-		image/writepng.c \
-		lang/hnjalloc.c \
-		lang/hyphen.c \
-		lang/texlang.c \
-		lua/lcallbacklib.c \
-		lua/lfontlib.c \
-		lua/limglib.c \
-		lua/lpdfelib.c \
-		lua/lpdfscannerlib.c \
-		lua/lkpselib.c \
-		lua/llanglib.c \
-		lua/llualib.c \
-		lua/lnodelib.c \
-		lua/liolibext.c \
-		lua/loslibext.c \
-		lua/lpdflib.c \
-		lua/lstatslib.c \
-		lua/ltexiolib.c \
-		lua/ltexlib.c \
-		lua/lnewtokenlib.c \
-		lua/luatex-core.c \
-		lua/helpers.c \
-		lua/luanode.c \
-		lua/luatoken.c \
-		lua/mplibstuff.c \
-		pdf/pdfaction.c \
-		pdf/pdfannot.c \
-		pdf/pdfcolorstack.c \
-		pdf/pdfdest.c \
-		pdf/pdffont.c \
-		pdf/pdfgen.c \
-		pdf/pdfglyph.c \
-		pdf/pdfimage.c \
-		pdf/pdflink.c \
-		pdf/pdflistout.c \
-		pdf/pdfliteral.c \
-		pdf/pdfobj.c \
-		pdf/pdfoutline.c \
-		pdf/pdfpage.c \
-		pdf/pdfpagetree.c \
-		pdf/pdfrule.c \
-		pdf/pdfsaverestore.c \
-		pdf/pdfsetmatrix.c \
-		pdf/pdfshipout.c \
-		pdf/pdftables.c \
-		pdf/pdfthread.c \
-		pdf/pdfxform.c \
-		tex/backend.c \
-		tex/align.c \
-		tex/arithmetic.c \
-		tex/buildpage.c \
-		tex/commands.c \
-		tex/conditional.c \
-		tex/directions.c \
-		tex/dumpdata.c \
-		tex/equivalents.c \
-		tex/errors.c \
-		tex/expand.c \
-		tex/extensions.c \
-		tex/filename.c \
-		tex/inputstack.c \
-		tex/linebreak.c \
-		tex/mainbody.c \
-		tex/maincontrol.c \
-		tex/mathcodes.c \
-		tex/memoryword.c \
-		tex/mlist.c \
-		tex/nesting.c \
-		tex/packaging.c \
-		tex/postlinebreak.c \
-		tex/primitive.c \
-		tex/scanning.c \
-		tex/stringpool.c \
-		tex/texdeffont.c \
-		tex/texfileio.c \
-		tex/texmath.c \
-		tex/texnodes.c \
-		tex/textcodes.c \
-		tex/textoken.c \
-		utils/avl.c \
-		utils/avlstuff.c \
-		utils/managed-sa.c \
-		utils/unistring.c \
-		../synctexdir/synctex.c \
-		luaffi/call.c \
-		luaffi/ctype.c \
-		luaffi/ffi.c \
-		luaffi/parser.c \
-		luatex.c \
-		../mplibdir/lmplib.c \
-		../../src/lapi.c \
-		../../src/lauxlib.c \
-		../../src/lbaselib.c \
-		../../src/lbitlib.c \
-		../../src/lcode.c \
-		../../src/lcorolib.c \
-		../../src/lctype.c \
-		../../src/ldblib.c \
-		../../src/ldebug.c \
-		../../src/ldo.c \
-		../../src/ldump.c \
-		../../src/lfunc.c \
-		../../src/lgc.c \
-		../../src/linit.c \
-		../../src/liolib.c \
-		../../src/llex.c \
-		../../src/lmathlib.c \
-		../../src/lmem.c \
-		../../src/loadlib.c \
-		../../src/lobject.c \
-		../../src/lopcodes.c \
-		../../src/loslib.c \
-		../../src/lparser.c \
-		../../src/lstate.c \
-		../../src/lstring.c \
-		../../src/lstrlib.c \
-		../../src/ltable.c \
-		../../src/ltablib.c \
-		../../src/ltm.c \
-		../../src/lundump.c \
-		../../src/lutf8lib.c \
-		../../src/lvm.c \
-		../../src/lzio.c \
-		../mplibdir/tfmin.c \
-		../mplibdir/mp.c \
-		../mplibdir/mpmath.c \
-		../mplibdir/mpmathdecimal.c \
-		../mplibdir/mpmathdouble.c \
-		../mplibdir/mpstrings.c \
-		../mplibdir/psout.c \
-		../mplibdir/avl.h \
-		../mplibdir/avl.c \
-		../mplibdir/decNumber.c \
-		../mplibdir/decContext.c \
-		../lib/basechsuffix.c \
-		../lib/chartostring.c \
-		../lib/coredump.c \
-		../lib/eofeoln.c \
-		../lib/fprintreal.c \
-		../lib/inputint.c \
-		../lib/input2int.c \
-		../lib/lib.h \
-		../lib/openclose.c \
-		../lib/printversion.c \
-		../lib/setupvar.c \
-		../lib/uexit.c \
-		../lib/usage.c \
-		../lib/version.c \
-		../lib/zround.c \
-		luapplib/src/pparray.c \
-		luapplib/src/ppcrypt.c \
-		luapplib/src/ppdict.c \
-		luapplib/src/ppheap.c \
-		luapplib/src/ppload.c \
-		luapplib/src/ppstream.c \
-		luapplib/src/ppxref.c \
-		luapplib/src/util/utilbasexx.c \
-		luapplib/src/util/utilcrypt.c \
-		luapplib/src/util/utilflate.c \
-		luapplib/src/util/utilfpred.c \
-		luapplib/src/util/utiliof.c \
-		luapplib/src/util/utillog.c \
-		luapplib/src/util/utillzw.c \
-		luapplib/src/util/utilmd5.c \
-		luapplib/src/util/utilmem.c \
-		luapplib/src/util/utilmemheap.c \
-		luapplib/src/util/utilmemheapiof.c \
-		luapplib/src/util/utilmeminfo.c \
-		luapplib/src/util/utilnumber.c \
-		luapplib/src/util/utilsha.c \
-		../libmd5/md5.c \
-		"$srcdir/libkpathsea.a" \
-	-lm -ldl $(pkg-config --cflags --libs zziplib libpng zlib)
+	meson compile -C builddir
 
-strip --strip-all luatex
+	DESTDIR=$pkgdir meson install -C builddir
 
-install -Dm755 luatex "$pkgdir/usr/bin/luatex"
+	strip --strip-all "$pkgdir/usr/bin/luatex"
+fi
 
-cd "$srcdir"
+
+# INSTALL TEX PACKAGES
 
 PATH="$pkgdir/usr/bin:$PATH"
 export TEXMF="$pkgdir/usr/share/$pkgname"
 export TEXMFDOTDIR
-
-# patch luaotfload
-patch -i luaotfload.patch
 
 # use docstrip.dtx as docstrip.tex and l3docstrip.tex
 ln -sf docstrip.dtx docstrip.tex

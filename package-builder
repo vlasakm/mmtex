@@ -29,10 +29,22 @@ get_package_sources() (
 				git clone --depth=1 --branch="$ref" -c advice.detachedHead=false "$url" "$dir"
 			fi
 		;;
-		svn*)
+		svn+*)
 			src=${src##svn+}
+			dest=${src##*/}
 			echo "Getting subversion repository '$src'.."
-			svn checkout --username anonsvn --password anonsvn "$src"
+			echo "$src" "$dest"
+			if [ ! -d "$dest" ]; then
+				svn checkout --username anonsvn --password anonsvn "$src"
+			fi
+		;;
+		svnfile+*)
+			src=${src##svnfile+}
+			dest=${src##*/}
+			echo "Getting subversion file '$src'.."
+			if [ ! -f "$dest" ]; then
+				svn export --force --username anonsvn --password anonsvn "$src"
+			fi
 		;;
 		http://*|https://*)
 			echo "Getting remote source '$src'.."
