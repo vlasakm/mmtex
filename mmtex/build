@@ -45,7 +45,7 @@ if ! [ -f "$pkgdir/usr/bin/luatex" ]; then
 	  -D              b_pie=true \
 	  builddir
 
-	meson compile -C builddir
+	ninja -C builddir
 
 	DESTDIR=$pkgdir meson install -C builddir
 

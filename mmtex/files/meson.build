@@ -59,9 +59,9 @@ kpathsea_src = files([
 kpathsea_lib = static_library(
   'kpathsea',
   sources : kpathsea_src,
-  include_directories : [
+  include_directories : include_directories([
     'include',
-  ],
+  ]),
   c_args: '-DMAKE_KPSE_DLL',
 )
 
@@ -109,18 +109,18 @@ mplib_src = [
 mplib_lib = static_library(
   'mplib',
   sources : mplib_src,
-  include_directories : [
+  include_directories : include_directories([
     'include',
     'mplibdir',
-  ],
+  ]),
 )
 
 mplib_dep = declare_dependency(
   link_with : mplib_lib,
   sources : mplib_src, # TODO: get rid of this
-  include_directories : [
+  include_directories : include_directories([
     'mplibdir',
-  ],
+  ]),
 )
 
 src = files([
