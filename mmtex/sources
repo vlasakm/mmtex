@@ -18,11 +18,13 @@ kpathsea.patch # patch for "extending" kpathsea
 
 # "Generic"
 http://mirrors.ctan.org/language/hyph-utf8.zip # hyph-utf8
+https://unicode.org/Public/UNIDATA/UnicodeData.txt
 https://unicode.org/Public/UNIDATA/CaseFolding.txt
 https://unicode.org/Public/UNIDATA/PropList.txt
 https://unicode.org/Public/UNIDATA/ScriptExtensions.txt
 https://unicode.org/Public/UNIDATA/Scripts.txt
-https://unicode.org/Public/UNIDATA/UnicodeData.txt
+https://unicode.org/Public/UNIDATA/SpecialCasing.txt
+https://unicode.org/Public/UNIDATA/auxiliary/WordBreakProperty.txt
 http://mirrors.ctan.org/macros/luatex/generic/lualibs.zip # lualibs
 http://mirrors.ctan.org/macros/latex/base/docstrip.dtx # docstrip (also l3docstrip)
 http://mirrors.ctan.org/macros/luatex/generic/luaotfload.zip # luaotfload
