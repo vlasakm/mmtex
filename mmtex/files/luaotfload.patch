@@ -38,3 +38,14 @@
          logreport ("log", 5, "db",
                     "New fontconfig path at %s.",
                     path)
+--- a/luaotfload/luaotfload-resolvers.lua
++++ b/luaotfload/luaotfload-resolvers.lua
+@@ -141,7 +141,7 @@
+
+ --doc]]--
+
+-local tex_formats = { "tfm", "ofm" }
++local tex_formats = { "tfm", "ofm", "afm" }
+
+ local resolvers_findfile = luaotfload.fontloader.resolvers.findfile
+ local function resolve_tex_format (specification)
