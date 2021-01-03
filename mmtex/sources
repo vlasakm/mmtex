@@ -36,7 +36,7 @@ luaotfload.patch # patch bug in luaotfload
 http://mirrors.ctan.org/macros/luatex/optex.zip # optex
 http://mirrors.ctan.org/systems/knuth/dist/lib/hyphen.tex # Knuth's hyphen.tex
 http://mirrors.ctan.org/macros/latex/contrib/lipsum.zip # optex needs lipsum.ltd.tex
-custom-optex.tex
+custom-optex.ini
 
 # Fonts
 http://mirrors.ctan.org/fonts/rsfs.zip # rsfs .pfb files

@@ -89,7 +89,7 @@ install optex/*/*.opm optex/*/*.lua -t "$TEXMF/tex/optex"
 install lipsum.sty *.ltd.tex -t "$TEXMF/tex/lipsum"
 
 # run iniluatex to create formats
-TEXMFDOTDIR=".:lib:optex/base" luatex -ini -jobname optex "\input custom-optex.tex \input optex.ini"
+TEXMFDOTDIR=".:lib:optex/base" luatex -ini -jobname optex custom-optex.ini
 
 # install format files
 install *.fmt -t "$TEXMF/web2c"
