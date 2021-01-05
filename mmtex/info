@@ -1,4 +1,4 @@
-pkgver=20210102
+pkgver=20210105
 pkgdesc='A minimal modern (Lua)TeX distribution'
 pkgurl='https://github.com/vlasakm/mmtex'
 arch_arch=x86_64

@@ -32,7 +32,7 @@ patch -i luaotfload.patch
 ln -sf ctangle.cxx ctangle.c
 ln -sf common.cxx common.c
 
-if ! [ -f "$pkgdir/usr/bin/luatex" ]; then
+if ! [ -f "$pkgdir/usr/bin/mmluatex" ]; then
 
 	meson setup \
 	  --prefix        /usr \
@@ -49,7 +49,7 @@ if ! [ -f "$pkgdir/usr/bin/luatex" ]; then
 
 	DESTDIR=$pkgdir meson install -C builddir
 
-	strip --strip-all "$pkgdir/usr/bin/luatex"
+	strip --strip-all "$pkgdir/usr/bin/mmluatex"
 fi
 
 
@@ -64,13 +64,13 @@ ln -sf docstrip.dtx docstrip.tex
 ln -sf docstrip.dtx l3docstrip.tex
 
 # generate lipsum.ltd.tex
-TEXMFDOTDIR=.:lipsum luatex -ini '\let\obeyspaces=\relax \input lipsum.ins'
+TEXMFDOTDIR=.:lipsum mmluatex -ini '\let\obeyspaces=\relax \input lipsum.ins'
 
 # generate luamplib.{sty.lua}
-TEXMFDOTDIR=.:luamplib luatex -ini '\catcode`\{=1 \catcode`\}=2 \let\obeyspaces\relax \input luamplib.dtx'
+TEXMFDOTDIR=.:luamplib mmluatex -ini '\catcode`\{=1 \catcode`\}=2 \let\obeyspaces\relax \input luamplib.dtx'
 
 # generate some lualibs files
-TEXMFDOTDIR=.:lualibs luatex -ini '\catcode`\{=1 \catcode`\}=2 \let\obeyspaces\relax \input lualibs.dtx'
+TEXMFDOTDIR=.:lualibs mmluatex -ini '\catcode`\{=1 \catcode`\}=2 \let\obeyspaces\relax \input lualibs.dtx'
 
 # install luatex packages
 install hyph-utf8/tex/generic/hyph-utf8/patterns/tex/* -t "$TEXMF/tex/hyph-utf8"
@@ -89,13 +89,13 @@ install optex/*/*.opm optex/*/*.lua -t "$TEXMF/tex/optex"
 install lipsum.sty *.ltd.tex -t "$TEXMF/tex/lipsum"
 
 # run iniluatex to create formats
-TEXMFDOTDIR=".:lib:optex/base" luatex -ini -jobname optex custom-optex.ini
+TEXMFDOTDIR=".:lib:optex/base" mmluatex -ini mmoptex.ini
 
 # install format files
 install *.fmt -t "$TEXMF/web2c"
 
 # create optex -> luatex symlink
-ln -sf luatex "$pkgdir/usr/bin/optex"
+ln -sf mmluatex "$pkgdir/usr/bin/mmoptex"
 
 # create ls-R database
 (cd "$TEXMF" && ls -LAR ./ > ls-R)

@@ -440,7 +440,7 @@ c_args = [
 ]
 
 executable(
-  'luatex',
+  'mmluatex',
   sources : src,
   include_directories : incdirs,
   dependencies : [dependencies, mplib_dep],
