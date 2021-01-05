@@ -5,7 +5,9 @@ git_tag = run_command([git, 'describe', '--tag'])
 mmtex_version = git_tag.stdout().strip()
 add_project_arguments('-DMMTEX_VERSION="@0@"'.format(mmtex_version), language: 'c')
 
-kpathsea_src = files([
+mmtex_inc = include_directories('include')
+
+kpathsea_src = files(
   'kpathsea/absolute.c',
   'kpathsea/atou.c',
   'kpathsea/cnf.c',
@@ -59,20 +61,25 @@ kpathsea_src = files([
   'kpathsea/xrealloc.c',
   'kpathsea/xstat.c',
   'kpathsea/xstrdup.c',
-])
+)
 
 kpathsea_lib = static_library(
   'kpathsea',
-  sources : kpathsea_src,
-  include_directories : include_directories([
-    'include',
-  ]),
+  sources: kpathsea_src,
+  include_directories: mmtex_inc,
   c_args: '-DMAKE_KPSE_DLL',
+)
+
+kpathsea_dep = declare_dependency(
+  link_with: kpathsea_lib,
+  include_directories: include_directories([
+    'kpathsea',
+  ]),
 )
 
 ctangle = executable(
   'ctangle',
-  sources : files(
+  sources: files(
     'ctangle.c',
     'common.c',
   ),
@@ -80,9 +87,28 @@ ctangle = executable(
 
 tangle = generator(
   ctangle,
-  output : '@BASENAME@.c',
-  arguments : ['@INPUT@', '-', '@OUTPUT@'],
+  output: '@BASENAME@.c',
+  arguments: ['@INPUT@', '-', '@OUTPUT@'],
 )
+
+mplib_png_h = custom_target(
+  'mplibpng.h',
+  input: 'mplibdir/pngout.w',
+  output: 'mplibpng.h',
+  command: [ctangle, '-q', '@INPUT@'],
+)
+
+mplib_svg_h = custom_target(
+  'mplibsvg.h',
+  input: 'mplibdir/svgout.w',
+  output: 'mplibsvg.h',
+  command: [ctangle, '-q', '@INPUT@'],
+)
+
+mplib_h = [
+  mplib_png_h,
+  mplib_svg_h,
+]
 
 mplib_src = [
   tangle.process(
@@ -97,38 +123,173 @@ mplib_src = [
   'mplibdir/avl.c',
   'mplibdir/decNumber.c',
   'mplibdir/decContext.c',
-  custom_target(
-    'mplibpng.h',
-    input : 'mplibdir/pngout.w',
-    output : 'mplibpng.h',
-    command : [ctangle, '-q', '@INPUT@'],
-  ),
-  custom_target(
-    'mplibsvg.h',
-    input : 'mplibdir/svgout.w',
-    output : 'mplibsvg.h',
-    command : [ctangle, '-q', '@INPUT@'],
-  )
+  mplib_svg_h,
+  mplib_png_h,
 ]
+
+mplib_inc = include_directories(
+  'mplibdir',
+)
 
 mplib_lib = static_library(
   'mplib',
-  sources : mplib_src,
-  include_directories : include_directories([
-    'include',
-    'mplibdir',
-  ]),
+  sources: mplib_src,
+  include_directories: [mplib_inc, mmtex_inc],
 )
 
 mplib_dep = declare_dependency(
-  link_with : mplib_lib,
-  sources : mplib_src, # TODO: get rid of this
-  include_directories : include_directories([
-    'mplibdir',
-  ]),
+  link_with: mplib_lib,
+  sources: [mplib_h],
+  include_directories: mplib_inc,
 )
 
-src = files([
+lua_src = files(
+  # core
+  'src/lapi.c',
+  'src/lcode.c',
+  'src/lctype.c',
+  'src/ldebug.c',
+  'src/ldo.c',
+  'src/ldump.c',
+  'src/lfunc.c',
+  'src/lgc.c',
+  'src/llex.c',
+  'src/lmem.c',
+  'src/lobject.c',
+  'src/lopcodes.c',
+  'src/lparser.c',
+  'src/lstate.c',
+  'src/lstring.c',
+  'src/ltable.c',
+  'src/ltm.c',
+  'src/lundump.c',
+  'src/lvm.c',
+  'src/lzio.c',
+  # lib
+  'src/lauxlib.c',
+  'src/lbaselib.c',
+  'src/lbitlib.c',
+  'src/lcorolib.c',
+  'src/ldblib.c',
+  'src/liolib.c',
+  'src/lmathlib.c',
+  'src/loslib.c',
+  'src/lstrlib.c',
+  'src/ltablib.c',
+  'src/lutf8lib.c',
+  'src/loadlib.c',
+  'src/linit.c',
+)
+
+lua_c_args = [
+  '-DLUA_COMPAT_MODULE',
+  '-DLUA_COMPAT_5_2',
+  '-DLUAI_HASHLIMIT=6',
+  '-DLUA_USE_POSIX',
+  '-DLUA_USE_DLOPEN',
+]
+
+lua_inc = include_directories(
+  'src',
+)
+
+lua_lib = static_library(
+  'lua',
+  sources: lua_src,
+  include_directories: lua_inc,
+  c_args: lua_c_args,
+)
+
+lua_dep = declare_dependency(
+  link_with: lua_lib,
+  include_directories: lua_inc,
+  compile_args: lua_c_args,
+)
+
+
+w2c_inc = include_directories(
+  'lib',
+)
+
+w2c_c_args = [
+  '-DHAVE_CONFIG_H',
+]
+
+w2c_src = files(
+  'lib/basechsuffix.c',
+  'lib/chartostring.c',
+  'lib/coredump.c',
+  'lib/eofeoln.c',
+  'lib/fprintreal.c',
+  'lib/inputint.c',
+  'lib/input2int.c',
+  'lib/lib.h',
+  'lib/openclose.c',
+  'lib/printversion.c',
+  'lib/setupvar.c',
+  'lib/uexit.c',
+  'lib/usage.c',
+  'lib/version.c',
+  'lib/zround.c',
+)
+
+w2c_lib = static_library(
+  'w2c',
+  sources: w2c_src,
+  include_directories: [w2c_inc, mmtex_inc],
+  c_args: w2c_c_args,
+  dependencies: [kpathsea_dep],
+)
+
+w2c_dep = declare_dependency(
+  link_with: w2c_lib,
+  include_directories: w2c_inc,
+  compile_args: w2c_c_args,
+  dependencies: [kpathsea_dep],
+)
+
+
+pplib_src = files(
+  'luatexdir/luapplib/src/pparray.c',
+  'luatexdir/luapplib/src/ppcrypt.c',
+  'luatexdir/luapplib/src/ppdict.c',
+  'luatexdir/luapplib/src/ppheap.c',
+  'luatexdir/luapplib/src/ppload.c',
+  'luatexdir/luapplib/src/ppstream.c',
+  'luatexdir/luapplib/src/ppxref.c',
+  'luatexdir/luapplib/src/util/utilbasexx.c',
+  'luatexdir/luapplib/src/util/utilcrypt.c',
+  'luatexdir/luapplib/src/util/utilflate.c',
+  'luatexdir/luapplib/src/util/utilfpred.c',
+  'luatexdir/luapplib/src/util/utiliof.c',
+  'luatexdir/luapplib/src/util/utillog.c',
+  'luatexdir/luapplib/src/util/utillzw.c',
+  'luatexdir/luapplib/src/util/utilmd5.c',
+  'luatexdir/luapplib/src/util/utilmem.c',
+  'luatexdir/luapplib/src/util/utilmemheap.c',
+  'luatexdir/luapplib/src/util/utilmemheapiof.c',
+  'luatexdir/luapplib/src/util/utilmeminfo.c',
+  'luatexdir/luapplib/src/util/utilnumber.c',
+  'luatexdir/luapplib/src/util/utilsha.c',
+)
+
+pplib_inc = include_directories(
+  'luatexdir/luapplib/src',
+  'luatexdir/luapplib/src/util',
+)
+
+pplib_lib = static_library(
+  'pplib',
+  sources: pplib_src,
+  include_directories: pplib_inc,
+)
+
+pplib_dep = declare_dependency(
+  link_with: pplib_lib,
+  include_directories: pplib_inc,
+)
+
+src = files(
   'luatexdir/luafilesystem/src/lfs.c',
   'luatexdir/luamd5/md5.c',
   'luatexdir/luamd5/md5lib.c',
@@ -330,113 +491,36 @@ src = files([
   'luatexdir/luaffi/parser.c',
   'luatexdir/luatex.c',
   'mplibdir/lmplib.c',
-  'src/lapi.c',
-  'src/lauxlib.c',
-  'src/lbaselib.c',
-  'src/lbitlib.c',
-  'src/lcode.c',
-  'src/lcorolib.c',
-  'src/lctype.c',
-  'src/ldblib.c',
-  'src/ldebug.c',
-  'src/ldo.c',
-  'src/ldump.c',
-  'src/lfunc.c',
-  'src/lgc.c',
-  'src/linit.c',
-  'src/liolib.c',
-  'src/llex.c',
-  'src/lmathlib.c',
-  'src/lmem.c',
-  'src/loadlib.c',
-  'src/lobject.c',
-  'src/lopcodes.c',
-  'src/loslib.c',
-  'src/lparser.c',
-  'src/lstate.c',
-  'src/lstring.c',
-  'src/lstrlib.c',
-  'src/ltable.c',
-  'src/ltablib.c',
-  'src/ltm.c',
-  'src/lundump.c',
-  'src/lutf8lib.c',
-  'src/lvm.c',
-  'src/lzio.c',
-  'lib/basechsuffix.c',
-  'lib/chartostring.c',
-  'lib/coredump.c',
-  'lib/eofeoln.c',
-  'lib/fprintreal.c',
-  'lib/inputint.c',
-  'lib/input2int.c',
-  'lib/lib.h',
-  'lib/openclose.c',
-  'lib/printversion.c',
-  'lib/setupvar.c',
-  'lib/uexit.c',
-  'lib/usage.c',
-  'lib/version.c',
-  'lib/zround.c',
-  'luatexdir/luapplib/src/pparray.c',
-  'luatexdir/luapplib/src/ppcrypt.c',
-  'luatexdir/luapplib/src/ppdict.c',
-  'luatexdir/luapplib/src/ppheap.c',
-  'luatexdir/luapplib/src/ppload.c',
-  'luatexdir/luapplib/src/ppstream.c',
-  'luatexdir/luapplib/src/ppxref.c',
-  'luatexdir/luapplib/src/util/utilbasexx.c',
-  'luatexdir/luapplib/src/util/utilcrypt.c',
-  'luatexdir/luapplib/src/util/utilflate.c',
-  'luatexdir/luapplib/src/util/utilfpred.c',
-  'luatexdir/luapplib/src/util/utiliof.c',
-  'luatexdir/luapplib/src/util/utillog.c',
-  'luatexdir/luapplib/src/util/utillzw.c',
-  'luatexdir/luapplib/src/util/utilmd5.c',
-  'luatexdir/luapplib/src/util/utilmem.c',
-  'luatexdir/luapplib/src/util/utilmemheap.c',
-  'luatexdir/luapplib/src/util/utilmemheapiof.c',
-  'luatexdir/luapplib/src/util/utilmeminfo.c',
-  'luatexdir/luapplib/src/util/utilnumber.c',
-  'luatexdir/luapplib/src/util/utilsha.c',
   'libmd5/md5.c',
-])
+)
 
-incdirs = include_directories([
+luatex_inc = include_directories(
   'src',
-  'luatexdir/luapplib/src/util',
-  'luatexdir/luapplib/src',
   'luatexdir/unilib',
   'luatexdir',
-  'w2c',
-  'kpathsea',
   'luatexdir/luafontloader/fontforge/inc',
   'luatexdir/luafontloader/fontforge/fontforge',
   'libmd5',
   'synctexdir',
-  'include',
-  'include/w2c',
-])
+)
 
 cc = meson.get_compiler('c')
 
-dependencies = [
+luatex_dependencies = [
+  cc.find_library('m', required: false),
+  cc.find_library('dl', required: false),
   dependency('libpng'),
   dependency('zlib'),
   dependency('zziplib'),
-  cc.find_library('m', required : false),
-  cc.find_library('dl', required : false),
+  lua_dep,
+  mplib_dep,
+  pplib_dep,
+  kpathsea_dep,
+  w2c_dep,
 ]
 
 c_args = [
-  '-DMAKE_KPSE_DLL',
-  '-DHAVE_CONFIG_H',
   '-DLUASOCKET_DEBUG',
-  '-DLUA_COMPAT_MODULE',
-  '-DLUA_COMPAT_5_2',
-  '-DLUAI_HASHLIMIT=6',
-  '-DLUA_USE_POSIX',
-  '-DLUA_USE_DLOPEN',
   '-DLUA_FF_LIB',
   '-D_NO_PYTHON',
   '-DX_DISPLAY_MISSING',
@@ -446,10 +530,9 @@ c_args = [
 
 executable(
   'mmluatex',
-  sources : src,
-  include_directories : incdirs,
-  dependencies : [dependencies, mplib_dep],
-  c_args : c_args,
-  link_with : [kpathsea_lib],
-  install : true,
+  sources: src,
+  include_directories: [luatex_inc, mmtex_inc],
+  dependencies: luatex_dependencies,
+  c_args: c_args,
+  install: true,
 )

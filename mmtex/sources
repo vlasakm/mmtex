@@ -11,6 +11,7 @@ svn+https://serveur-svn.lri.fr/svn/modhel/luatex/tags/1.12.0/source/texk/kpathse
 svn+https://serveur-svn.lri.fr/svn/modhel/luatex/tags/1.12.0/source/libs/lua53/lua53-src/src # lua (for luatex)
 https://raw.githubusercontent.com/ascherer/cwebbin/master/ctangle.cxx # ctangle for mplib
 https://raw.githubusercontent.com/ascherer/cwebbin/master/common.cxx # ctangle for mplib
+luatex.patch # patch for luatex includes
 
 include # headers for kpathsea and web2c
 meson.build # meson build file

@@ -25,6 +25,8 @@ install() {
 patch -i kpathsea.patch
 # patch luaotfload
 patch -i luaotfload.patch
+# patch luatex
+patch -i luatex.patch
 
 ## BUILD LUATEX BINARY
 

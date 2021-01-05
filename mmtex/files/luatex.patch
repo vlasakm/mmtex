@@ -1,0 +1,19 @@
+--- a/luatexdir/image/epdf.h
++++ b/luatexdir/image/epdf.h
+@@ -53,16 +53,6 @@
+
+ /*typedef const char *const_string;*/   /* including kpathsea/types.h doesn't work on some systems */
+
+-#  define KPATHSEA_CONFIG_H     /* avoid including other kpathsea header files */
+-
+-/* from web2c/config.h */
+-
+-#  ifdef CONFIG_H               /* CONFIG_H has been defined by some xpdf */
+-#    undef CONFIG_H             /* header file */
+-#  endif
+-
+-#  include <c-auto.h>           /* define SIZEOF_LONG */
+-
+ #  include "image.h"
+ #  include "utils/avlstuff.h"
+ #  include "pdf/pdftypes.h"
