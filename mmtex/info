@@ -1,4 +1,4 @@
-pkgver=20210105
+pkgver=$(git describe --tag | sed 's/^v//;s/-/./g')
 pkgdesc='A minimal modern (Lua)TeX distribution'
 pkgurl='https://github.com/vlasakm/mmtex'
 arch_arch=x86_64
