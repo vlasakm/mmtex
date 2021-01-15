@@ -87,11 +87,16 @@ install rsfs/type1/afm/* -t "$TEXMF/fonts/afm"
 install rsfs/type1/*.pfb -t "$TEXMF/fonts/type1"
 
 # install optex files
-install optex/*/*.opm optex/*/*.lua -t "$TEXMF/tex/optex"
+install optex/base/* -t "$TEXMF/tex/optex/base"
+install optex/pkg/* -t "$TEXMF/tex/optex/pkg"
 install lipsum.sty *.ltd.tex -t "$TEXMF/tex/lipsum"
+install hyphen.tex -t "$TEXMF/tex/knuth-lib"
+
+# install our files
+install mmoptex.ini -t "$TEXMF/tex/mmoptex"
 
 # run iniluatex to create formats
-TEXMFDOTDIR=".:lib:optex/base" mmluatex -ini mmoptex.ini
+mmluatex -ini mmoptex.ini
 
 # install format files
 install *.fmt -t "$TEXMF/web2c"
