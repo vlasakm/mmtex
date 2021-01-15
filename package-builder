@@ -93,7 +93,7 @@ build_package() {
 	: "${MAKEFLAGS:="-j$(nproc)"}"
 
 	# ensure clean pkgdir
-	rm -rf "$pkgdir"
+	#rm -rf "$pkgdir"
 	mkdir -p "$pkgdir"
 
 	echo "Running build script.."

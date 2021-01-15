@@ -52,6 +52,8 @@ if ! [ -f "$pkgdir/usr/bin/mmluatex" ]; then
 	DESTDIR=$pkgdir meson install -C builddir
 
 	strip --strip-all "$pkgdir/usr/bin/mmluatex"
+else
+	rm -rf "$pkgdir/usr/share"
 fi
 
 
