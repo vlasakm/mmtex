@@ -209,6 +209,9 @@ lua_dep = declare_dependency(
 
 w2c_inc = include_directories(
   'lib',
+  # ideally 'include' would be only in mmtex_inc, but this seems
+  # like lesser evil, compared to patching luatex source
+  'include/w2c',
 )
 
 w2c_c_args = [
