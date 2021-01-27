@@ -74,7 +74,7 @@ TEXMFDOTDIR=.:luamplib mmluatex -ini '\catcode`\{=1 \catcode`\}=2 \let\obeyspace
 # generate some lualibs files
 TEXMFDOTDIR=.:lualibs mmluatex -ini '\catcode`\{=1 \catcode`\}=2 \let\obeyspaces\relax \input lualibs.dtx'
 
-# install luatex packages
+# install luatex generic packages
 install hyph-utf8/tex/generic/hyph-utf8/patterns/tex/* -t "$TEXMF/tex/hyph-utf8"
 install UnicodeData.txt CaseFolding.txt PropList.txt ScriptExtensions.txt Scripts.txt SpecialCasing.txt WordBreakProperty.txt -t "$TEXMF/tex/unicode-data"
 install lualibs*.lua lualibs/lualibs*-merged.lua lualibs/*-compat.lua -t "$TEXMF/tex/lualibs"
@@ -83,14 +83,20 @@ rm -f "$TEXMF/tex/luaotfload/luaotfload-characters.lua"
 install luamplib.lua luamplib.sty -t "$TEXMF/tex/luamplib"
 install base/*.mp -t "$TEXMF/metapost"
 
+# install external files needed by optex
+install lipsum.sty *.ltd.tex -t "$TEXMF/tex/lipsum"
+install hyphen.tex -t "$TEXMF/tex/knuth-lib"
+install emoji-table.def -t "$TEXMF/tex/emoji"
+install librarian.tex -t "$TEXMF/tex/librarian"
+(cd luavlna; install luavlna.lua luavlna-presi.lua luavlna-si.lua luavlna-predegrees.lua luavlna-sufdegrees.lua -t "$TEXMF/tex/luavlna")
+
+# install fonts
 install rsfs/type1/afm/* -t "$TEXMF/fonts/afm"
 install rsfs/type1/*.pfb -t "$TEXMF/fonts/type1"
 
-# install optex files
+# install optex
 install optex/base/* -t "$TEXMF/tex/optex/base"
 install optex/pkg/* -t "$TEXMF/tex/optex/pkg"
-install lipsum.sty *.ltd.tex -t "$TEXMF/tex/lipsum"
-install hyphen.tex -t "$TEXMF/tex/knuth-lib"
 
 # install our files
 install mmoptex.ini -t "$TEXMF/tex/mmoptex"

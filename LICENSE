@@ -11,36 +11,49 @@ also included in the distribution:
  - Lua (PUC-Rio, under MIT license),
  - Kpathsea (Karl Berry, Olaf Weber and others, under LGPLv2.1 license)
 
+File "emoji-table.def" comes from "emoji" package (https://ctan.org/pkg/emoji,
+Xiangdong Zeng, under LPPLv1.3).
+
 Hyphenation patterns come from "hyph-ut8" package
-(https://github.com/hyphenation/tex-hyphen, Mojca Miklavec, Arthur Rosendahl,
-MIT license), but the individual pattern files (hyph-*.tex) are by different
+(https://www.ctan.org/pkg/hyph-utf8, Mojca Miklavec, Arthur Rosendahl, MIT
+license), but the individual pattern files (hyph-*.tex) are by different
 authors and available under different licenses. See them for more information.
 
-"lipsum.sty", "cicero.ltd.tex" and "lipsum.ltd.tex" originate from "lipsum"
-package (https://github.com/patta42/lipsum, Patrick Happel, under LPPLv1.3).
+File "hyphen.tex" comes from "knuth-lib" package
+(https://www.ctan.org/pkg/knuth-lib, Donald E. Knuth). See the file itself for
+licensing information.
+
+File "librarian.tex" comes from "librarian" package
+(https://ctan.org/pkg/librarian, Paul Isambert, under LPPL).
+
+Files in the "lipsum" directory originate from "lipsum" package
+(https://www.ctan.org/pkg/lipsum, Patrick Happel, under LPPLv1.3).
 
 Files in the "lualibs" directory come from "lualibs"
-(https://github.com/latex3/lualibs, LaTeX3 Project, PRAGMA ADE, ConTeXt
+(https://www.ctan.org/pkg/lualibs, LaTeX3 Project, PRAGMA ADE, ConTeXt
 developers, under GPLv2).
 
 Files in the "luamplib" directory come from "luamplib"
-(https://github.com/lualatex/luamplib, LuaLaTeX team, Hans Hagen, Taco
-Hoekwater, Elie Roux, Manuel Pégourié-Gonnard, Philipp Gesang and Kim Dohyun,
-under GPLv2).
+(https://www.ctan.org/pkg/luamplib, LuaLaTeX team, Hans Hagen, Taco Hoekwater,
+Elie Roux, Manuel Pégourié-Gonnard, Philipp Gesang and Kim Dohyun, under
+GPLv2).
 
 Files in the "luaotfload" directory come from "luaotfload"
-(https://github.com/latex3/luaotfload, Luaotfload Development Team, ConTeXt
+(https://www.ctan.org/pkg/luaotfload, Luaotfload Development Team, ConTeXt
 developers, under GPLv2).
 
-Files in the "optex" directory come from "OpTeX", (http://petr.olsak.net/optex/,
-Petr Olšák).
+Files in the "luavlna" directory come from "luavlna"
+(https://ctan.org/pkg/luavlna, Michal Hoftich, Miro Hrončok, under LPPLv1.3).
+
+Files in the "optex" directory come from "OpTeX",
+(http://petr.olsak.net/optex/, Petr Olšák).
 
 Files in the "unicode-data" directory come from Unicode, Inc
 (https://www.unicode.org/Public/UNIDATA/, Unicode, Inc., see LICENSE.unicode).
 
 Files in the "metapost" directory come from "Metapost"
-(https://tug.org/metapost.html, https://serveur-svn.lri.fr/svn/modhel/metapost/,
-John Hobby, Public Domain).
+(https://tug.org/metapost.html,
+https://serveur-svn.lri.fr/svn/modhel/metapost/, John Hobby, Public Domain).
 
 Files:
  - rsfs5.pfb

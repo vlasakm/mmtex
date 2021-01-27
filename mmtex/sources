@@ -36,6 +36,9 @@ luaotfload.patch # patch bug in luaotfload
 http://mirrors.ctan.org/macros/luatex/optex.zip # optex
 http://mirrors.ctan.org/systems/knuth/dist/lib/hyphen.tex # Knuth's hyphen.tex
 http://mirrors.ctan.org/macros/latex/contrib/lipsum.zip # optex needs lipsum.ltd.tex
+http://mirrors.ctan.org/macros/generic/librarian/tex/generic/librarian/librarian.tex # for optex bibliography
+http://mirrors.ctan.org/macros/luatex/latex/emoji/emoji-table.def # for optex emoji pkg
+http://mirrors.ctan.org/macros/luatex/generic/luavlna.zip # for optex vlna pkg
 mmoptex.ini
 
 # Fonts
