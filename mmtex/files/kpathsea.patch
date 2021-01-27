@@ -1,6 +1,6 @@
 --- a/kpathsea/cnf.c
 +++ b/kpathsea/cnf.c
-@@ -289,14 +289,25 @@
+@@ -289,14 +289,41 @@
        free (*cnf);
      }
      free (cnf_files);
@@ -30,10 +30,26 @@
 +
 +  SET_VAR("TEXMFDOTDIR", ".");
 +  SET_VAR("TEXMF", "/none");
++
++  /* set memory/computation constraints, defaults are commented */
++  SET_VAR("max_strings", "500000");
++  /*SET_VAR("strings_free", "100");*/
++  SET_VAR("buf_size", "200000");
++  SET_VAR("nest_size", "500");
++  /*SET_VAR("max_in_open", "15");*/
++  SET_VAR("param_size", "10000");
++  SET_VAR("save_size", "100000");
++  SET_VAR("stack_size", "5000");
++  /*SET_VAR("dvi_buf_size", "16384");*/
++  /*SET_VAR("error_line", "79");*/
++  /*SET_VAR("half_error_line", "50");*/
++  /*SET_VAR("max_print_line", "79");*/
++  SET_VAR("hash_extra", "600000");
++  /*SET_VAR("expand_depth", "10000");*/
  }
  
  /* Read the cnf files on the first call.  Return the first value in the
-@@ -308,11 +321,19 @@
+@@ -308,11 +335,19 @@
    string ctry;
    const_string ret, *ret_list;
 
