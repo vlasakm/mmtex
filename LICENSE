@@ -55,14 +55,8 @@ Files in the "metapost" directory come from "Metapost"
 (https://tug.org/metapost.html,
 https://serveur-svn.lri.fr/svn/modhel/metapost/, John Hobby, Public Domain).
 
-Files:
- - rsfs5.pfb
- - rsfs5.afm
- - rsfs7.pfb
- - rsfs7.afm
- - rsfs10.pfb
- - rsfs10.afm
-come from "rsfs" package (https://www.ctan.org/pkg/rsfs, Ralph Smith, Taco
-Hoekwater, provided under following conditions: "You are welcome to use and
-distribute these files; if you modify them, please change the name but give
-credit to the original author!").
+Files in the "rsfs" directory come from "rsfs" package
+(https://www.ctan.org/pkg/rsfs, Ralph Smith, Taco Hoekwater, provided under
+following conditions: "You are welcome to use and distribute these files; if
+you modify them, please change the name but give credit to the original
+author!").

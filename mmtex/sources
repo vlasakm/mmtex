@@ -15,22 +15,18 @@ https://raw.githubusercontent.com/ascherer/cwebbin/master/common.cxx # ctangle f
 include # headers for kpathsea and web2c
 meson.build # meson build file
 kpathsea.patch # patch for "extending" kpathsea
+luaotfload.patch # patch luaotfload font resolution
+
+# Build dependencies
+http://mirrors.ctan.org/macros/latex/base/docstrip.dtx # docstrip (also l3docstrip)
 
 # "Generic"
 http://mirrors.ctan.org/language/hyph-utf8.zip # hyph-utf8
-https://unicode.org/Public/UNIDATA/UnicodeData.txt
-https://unicode.org/Public/UNIDATA/CaseFolding.txt
-https://unicode.org/Public/UNIDATA/PropList.txt
-https://unicode.org/Public/UNIDATA/ScriptExtensions.txt
-https://unicode.org/Public/UNIDATA/Scripts.txt
-https://unicode.org/Public/UNIDATA/SpecialCasing.txt
-https://unicode.org/Public/UNIDATA/auxiliary/WordBreakProperty.txt
+https://unicode.org/Public/zipped/latest/UCD.zip # unicode-data
 http://mirrors.ctan.org/macros/luatex/generic/lualibs.zip # lualibs
-http://mirrors.ctan.org/macros/latex/base/docstrip.dtx # docstrip (also l3docstrip)
 http://mirrors.ctan.org/macros/luatex/generic/luaotfload.zip # luaotfload
 http://mirrors.ctan.org/macros/luatex/generic/luamplib.zip # luamplib
 svn+https://serveur-svn.lri.fr/svn/modhel/metapost/trunk/texmf/metapost/base # metapost base
-luaotfload.patch # patch bug in luaotfload
 
 # For OpTeX
 http://mirrors.ctan.org/macros/luatex/optex.zip # optex
@@ -42,7 +38,7 @@ http://mirrors.ctan.org/macros/luatex/generic/luavlna.zip # for optex vlna pkg
 mmoptex.ini
 
 # Fonts
-http://mirrors.ctan.org/fonts/rsfs.zip # rsfs .pfb files
+http://mirrors.ctan.org/fonts/rsfs.zip # rsfs font
 
 # Licenses
 https://www.gnu.org/licenses/old-licenses/gpl-2.0.txt
