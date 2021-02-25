@@ -9,8 +9,8 @@ svnfile+https://serveur-svn.lri.fr/svn/modhel/luatex/tags/1.12.0/source/texk/web
 svnfile+https://serveur-svn.lri.fr/svn/modhel/luatex/tags/1.12.0/source/texk/web2c/help.h # web2c header
 svn+https://serveur-svn.lri.fr/svn/modhel/luatex/tags/1.12.0/source/texk/kpathsea # kpathsea (for luatex and ctangle)
 svn+https://serveur-svn.lri.fr/svn/modhel/luatex/tags/1.12.0/source/libs/lua53/lua53-src/src # lua (for luatex)
-https://raw.githubusercontent.com/ascherer/cwebbin/master/ctangle.cxx # ctangle for mplib
-https://raw.githubusercontent.com/ascherer/cwebbin/master/common.cxx # ctangle for mplib
+https://raw.githubusercontent.com/ascherer/cweb/master/ctangle.c # ctangle for mplib
+https://raw.githubusercontent.com/ascherer/cweb/master/common.c # ctangle for mplib
 
 include # headers for kpathsea and web2c
 meson.build # meson build file

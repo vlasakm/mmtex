@@ -28,10 +28,6 @@ patch -i luaotfload.patch
 
 ## BUILD LUATEX BINARY
 
-# let meson recognize cxx as C file
-ln -sf ctangle.cxx ctangle.c
-ln -sf common.cxx common.c
-
 if ! [ -f "$pkgdir/usr/bin/mmluatex" ]; then
 
 	meson setup \
