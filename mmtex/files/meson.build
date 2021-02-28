@@ -145,40 +145,40 @@ mplib_dep = declare_dependency(
 
 lua_src = files(
   # core
-  'src/lapi.c',
-  'src/lcode.c',
-  'src/lctype.c',
-  'src/ldebug.c',
-  'src/ldo.c',
-  'src/ldump.c',
-  'src/lfunc.c',
-  'src/lgc.c',
-  'src/llex.c',
-  'src/lmem.c',
-  'src/lobject.c',
-  'src/lopcodes.c',
-  'src/lparser.c',
-  'src/lstate.c',
-  'src/lstring.c',
-  'src/ltable.c',
-  'src/ltm.c',
-  'src/lundump.c',
-  'src/lvm.c',
-  'src/lzio.c',
+  'lua/src/lapi.c',
+  'lua/src/lcode.c',
+  'lua/src/lctype.c',
+  'lua/src/ldebug.c',
+  'lua/src/ldo.c',
+  'lua/src/ldump.c',
+  'lua/src/lfunc.c',
+  'lua/src/lgc.c',
+  'lua/src/llex.c',
+  'lua/src/lmem.c',
+  'lua/src/lobject.c',
+  'lua/src/lopcodes.c',
+  'lua/src/lparser.c',
+  'lua/src/lstate.c',
+  'lua/src/lstring.c',
+  'lua/src/ltable.c',
+  'lua/src/ltm.c',
+  'lua/src/lundump.c',
+  'lua/src/lvm.c',
+  'lua/src/lzio.c',
   # lib
-  'src/lauxlib.c',
-  'src/lbaselib.c',
-  'src/lbitlib.c',
-  'src/lcorolib.c',
-  'src/ldblib.c',
-  'src/liolib.c',
-  'src/lmathlib.c',
-  'src/loslib.c',
-  'src/lstrlib.c',
-  'src/ltablib.c',
-  'src/lutf8lib.c',
-  'src/loadlib.c',
-  'src/linit.c',
+  'lua/src/lauxlib.c',
+  'lua/src/lbaselib.c',
+  'lua/src/lbitlib.c',
+  'lua/src/lcorolib.c',
+  'lua/src/ldblib.c',
+  'lua/src/liolib.c',
+  'lua/src/lmathlib.c',
+  'lua/src/loslib.c',
+  'lua/src/lstrlib.c',
+  'lua/src/ltablib.c',
+  'lua/src/lutf8lib.c',
+  'lua/src/loadlib.c',
+  'lua/src/linit.c',
 )
 
 lua_c_args = [
@@ -190,7 +190,7 @@ lua_c_args = [
 ]
 
 lua_inc = include_directories(
-  'src',
+  'lua/src',
 )
 
 lua_lib = static_library(
@@ -253,32 +253,32 @@ w2c_dep = declare_dependency(
 
 
 pplib_src = files(
-  'luatexdir/luapplib/src/pparray.c',
-  'luatexdir/luapplib/src/ppcrypt.c',
-  'luatexdir/luapplib/src/ppdict.c',
-  'luatexdir/luapplib/src/ppheap.c',
-  'luatexdir/luapplib/src/ppload.c',
-  'luatexdir/luapplib/src/ppstream.c',
-  'luatexdir/luapplib/src/ppxref.c',
-  'luatexdir/luapplib/src/util/utilbasexx.c',
-  'luatexdir/luapplib/src/util/utilcrypt.c',
-  'luatexdir/luapplib/src/util/utilflate.c',
-  'luatexdir/luapplib/src/util/utilfpred.c',
-  'luatexdir/luapplib/src/util/utiliof.c',
-  'luatexdir/luapplib/src/util/utillog.c',
-  'luatexdir/luapplib/src/util/utillzw.c',
-  'luatexdir/luapplib/src/util/utilmd5.c',
-  'luatexdir/luapplib/src/util/utilmem.c',
-  'luatexdir/luapplib/src/util/utilmemheap.c',
-  'luatexdir/luapplib/src/util/utilmemheapiof.c',
-  'luatexdir/luapplib/src/util/utilmeminfo.c',
-  'luatexdir/luapplib/src/util/utilnumber.c',
-  'luatexdir/luapplib/src/util/utilsha.c',
+  'pplib/src/pparray.c',
+  'pplib/src/ppcrypt.c',
+  'pplib/src/ppdict.c',
+  'pplib/src/ppheap.c',
+  'pplib/src/ppload.c',
+  'pplib/src/ppstream.c',
+  'pplib/src/ppxref.c',
+  'pplib/src/util/utilbasexx.c',
+  'pplib/src/util/utilcrypt.c',
+  'pplib/src/util/utilflate.c',
+  'pplib/src/util/utilfpred.c',
+  'pplib/src/util/utiliof.c',
+  'pplib/src/util/utillog.c',
+  'pplib/src/util/utillzw.c',
+  'pplib/src/util/utilmd5.c',
+  'pplib/src/util/utilmem.c',
+  'pplib/src/util/utilmemheap.c',
+  'pplib/src/util/utilmemheapiof.c',
+  'pplib/src/util/utilmeminfo.c',
+  'pplib/src/util/utilnumber.c',
+  'pplib/src/util/utilsha.c',
 )
 
 pplib_inc = include_directories(
-  'luatexdir/luapplib/src',
-  'luatexdir/luapplib/src/util',
+  'pplib/src',
+  'pplib/src/util',
 )
 
 pplib_lib = static_library(
@@ -498,7 +498,6 @@ src = files(
 )
 
 luatex_inc = include_directories(
-  'src',
   'luatexdir/unilib',
   'luatexdir',
   'luatexdir/luafontloader/fontforge/inc',
