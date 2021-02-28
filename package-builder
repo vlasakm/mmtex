@@ -7,50 +7,50 @@ set -e
 # Dependencies for making .deb package: dpkg-deb
 # Dependencies for making .tar package: fakeroot
 
-: ${packager:="Michal Vlasák <lahcim8@gmail.com>"}
+: "${packager:="Michal Vlasák <lahcim8@gmail.com>"}"
 
 get_package_sources() (
 	echo "Getting sources.."
 	mkdir -p "$srcdir"
 	cd "$srcdir"
-	while read -r src _; do
+	sed -e 's/#.*//' -e 's/\s\+$//' -e '/^$/ d' "$basedir/sources" | while read -r src dest; do
 		case "$src" in
-		\#*|'')
-			# comment or empty line
-		;;
 		git+*)
-			echo "Getting git repository '$src'.."
 			url=${src##git+}
-			ref=${url##*=}
-			url=${url%[#@]*}
-			dir=${url##*/}
+			ref=${url##*@}
+			url=${url%@*}
+			: "${dest:="${url##*/}"}"
 
-			if [ ! -d "$dir" ]; then
-				git clone --depth=1 --branch="$ref" -c advice.detachedHead=false "$url" "$dir"
+			echo "Getting git repository '$url'.."
+			if [ ! -d "$dest" ]; then
+				git clone --depth=1 --branch="$ref" -c advice.detachedHead=false "$url" "$dest"
 			fi
 		;;
 		svn+*)
-			src=${src##svn+}
-			dest=${src##*/}
-			echo "Getting subversion repository '$src'.."
-			echo "$src" "$dest"
+			url=${src##svn+}
+			: "${dest:="${url##*/}"}"
+
+			echo "Getting subversion repository '$url'.."
 			if [ ! -d "$dest" ]; then
-				svn checkout --username anonsvn --password anonsvn "$src"
+				svn checkout --username anonsvn --password anonsvn "$url" "$dest"
 			fi
 		;;
 		svnfile+*)
-			src=${src##svnfile+}
-			dest=${src##*/}
-			echo "Getting subversion file '$src'.."
+			url=${src##svnfile+}
+			: "${dest:="${url##*/}"}"
+
+			echo "Getting subversion file '$url'.."
 			if [ ! -f "$dest" ]; then
-				svn export --force --username anonsvn --password anonsvn "$src"
+				svn export --force --username anonsvn --password anonsvn "$url" "$dest"
 			fi
 		;;
 		http://*|https://*)
-			echo "Getting remote source '$src'.."
-			dest=${src##*/}
+			url=$src
+			: "${dest:="${url##*/}"}"
+
+			echo "Getting remote source '$url'.."
 			if [ ! -f "$dest" ]; then
-				curl -fLo "$dest" "$src"
+				curl -fLo "$dest" "$url"
 			fi
 
 			case "$dest" in
@@ -64,7 +64,7 @@ get_package_sources() (
 			echo "Getting local source '$src'.."
 			cp -rf "$basedir/files/$src" .
 		esac
-	done < "$basedir/sources"
+	done
 )
 
 build_package() {
@@ -75,7 +75,7 @@ build_package() {
 
 	basedir=$(readlink -f "$pkgname")
 	pkgdir=$(readlink -fm "pkg/$pkgname")
-	srcdir=$(readlink -fm src/$pkgname)
+	srcdir=$(readlink -fm "src/$pkgname")
 
 	. "$basedir/info"
 
@@ -141,7 +141,7 @@ arch_package() {
 	pkgver="$pkgver"
 	pkgdesc="$pkgdesc"
 	depends=($arch_depends)
-	PACKAGER="$packger"
+	PACKAGER="$packager"
 	PKGDEST="$(readlink -f .)"
 	PACMAN_PATH=\$(type -P pacman)
 	BUILDFILE=/dev/null
