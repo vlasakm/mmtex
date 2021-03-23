@@ -292,7 +292,8 @@ pplib_dep = declare_dependency(
   include_directories: pplib_inc,
 )
 
-src = files(
+
+luatex_src = files(
   'luatexdir/luafilesystem/src/lfs.c',
   'luatexdir/luamd5/md5.c',
   'luatexdir/luamd5/md5lib.c',
@@ -521,7 +522,7 @@ luatex_dependencies = [
   w2c_dep,
 ]
 
-c_args = [
+luatex_c_args = [
   '-DLUASOCKET_DEBUG',
   '-DLUA_FF_LIB',
   '-D_NO_PYTHON',
@@ -530,11 +531,46 @@ c_args = [
   '-DSYNCTEX_ENGINE_H=<synctex-luatex.h>',
 ]
 
+if get_option('luahbtex')
+  luaharfbuzz_src = files(
+    'luatexdir/luaharfbuzz/src/luaharfbuzz/blob.c',
+    'luatexdir/luaharfbuzz/src/luaharfbuzz/buffer.c',
+    'luatexdir/luaharfbuzz/src/luaharfbuzz/class_utils.c',
+    'luatexdir/luaharfbuzz/src/luaharfbuzz/direction.c',
+    'luatexdir/luaharfbuzz/src/luaharfbuzz/face.c',
+    'luatexdir/luaharfbuzz/src/luaharfbuzz/feature.c',
+    'luatexdir/luaharfbuzz/src/luaharfbuzz/font.c',
+    'luatexdir/luaharfbuzz/src/luaharfbuzz/language.c',
+    'luatexdir/luaharfbuzz/src/luaharfbuzz/luaharfbuzz.c',
+    'luatexdir/luaharfbuzz/src/luaharfbuzz/luaharfbuzz.h',
+    'luatexdir/luaharfbuzz/src/luaharfbuzz/ot.c',
+    'luatexdir/luaharfbuzz/src/luaharfbuzz/script.c',
+    'luatexdir/luaharfbuzz/src/luaharfbuzz/tag.c',
+    'luatexdir/luaharfbuzz/src/luaharfbuzz/unicode.c',
+  )
+
+  harfbuzz_dep = dependency('harfbuzz')
+
+  luaharfbuzz_lib = static_library(
+    'luaharfbuzz',
+    sources: luaharfbuzz_src,
+    dependencies: [harfbuzz_dep, lua_dep],
+  )
+
+  luaharfbuzz_dep = declare_dependency(
+    link_with: luaharfbuzz_lib,
+    dependencies: [harfbuzz_dep, lua_dep],
+  )
+
+  luatex_dependencies += [luaharfbuzz_dep]
+  luatex_c_args +=  ['-DLUATEX_HARFBUZZ_ENABLED']
+endif
+
 executable(
   'mmluatex',
-  sources: src,
+  sources: luatex_src,
   include_directories: [luatex_inc, mmtex_inc],
   dependencies: luatex_dependencies,
-  c_args: c_args,
+  c_args: luatex_c_args,
   install: true,
 )

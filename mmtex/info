@@ -3,5 +3,5 @@ pkgdesc='A minimal modern (Lua)TeX distribution'
 pkgurl='https://github.com/vlasakm/mmtex'
 arch_arch=x86_64
 debian_arch=amd64
-arch_depends="zziplib libpng zlib otf-latin-modern otf-latinmodern-math"
-debian_depends="libzzip-0-13, libpng16-16, zlib1g, fonts-lmodern"
+arch_depends="zziplib libpng zlib otf-latin-modern otf-latinmodern-math harfbuzz"
+debian_depends="libzzip-0-13, libpng16-16, zlib1g, fonts-lmodern, libharfbuzz-bin"

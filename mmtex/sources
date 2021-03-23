@@ -15,6 +15,7 @@ https://raw.githubusercontent.com/ascherer/cweb/master/common.c # ctangle for mp
 
 include # headers for kpathsea and web2c
 meson.build # meson build file
+meson_options.txt # meson option file
 kpathsea.patch # patch for "extending" kpathsea
 luaotfload.patch # patch luaotfload font resolution
 
