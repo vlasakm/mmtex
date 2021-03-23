@@ -82,15 +82,9 @@ build_package() {
 	get_package_sources
 
 	# export compilation variables, fallback to some defaults
-	export CC CXX LD CPPFLAGS CFLAGS CXXFLAGS LDFLAGS MAKEFLAGS
-	: "${CC:="gcc"}"
-	: "${CXX:="$CC"}"
-	: "${LD:="$CC"}"
-	: "${CPPFLAGS:="-D_FORTIFY_SOURCE=2"}"
-	: "${CFLAGS:="-march=x86-64 -mtune=generic -O2 -pipe -fno-plt"}"
-	: "${CXXFLAGS:="${CFLAGS}"}"
-	: "${LDFLAGS:="-Wl,-O1,--sort-common,--as-needed,-z,relro,-z,now"}"
-	: "${MAKEFLAGS:="-j$(nproc)"}"
+	export MESON_SETUP MESON_OPTIONS
+	: "${MESON_SETUP:="--prefix /usr --buildtype release -D b_lto=true -D b_pie=true"}"
+	: "${MESON_OPTIONS:=""}"
 
 	# ensure clean pkgdir
 	#rm -rf "$pkgdir"

@@ -30,16 +30,7 @@ patch -i luaotfload.patch
 
 if ! [ -f "$pkgdir/usr/bin/mmluatex" ]; then
 
-	meson setup \
-	  --prefix        /usr \
-	  --libexecdir    lib \
-	  --sbindir       bin \
-	  --buildtype     plain \
-	  --auto-features enabled \
-	  --wrap-mode     nodownload \
-	  -D              b_lto=true \
-	  -D              b_pie=true \
-	  builddir
+	meson setup $MESON_SETUP $MESON_OPTIONS builddir
 
 	ninja -C builddir
 

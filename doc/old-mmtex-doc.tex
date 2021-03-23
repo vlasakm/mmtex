@@ -2,7 +2,7 @@
 \fontfam[Latin Modern]
 \report
 \let\_firstnoindent=\relax
-\activettchar`
+\verbchar`
 
 %\font\mm=logo10 scaled 1139
 %\def\MMTeX{{\mm MM}\-\TeX}
@@ -340,10 +340,11 @@ For using \OpTeX\ you should check its documentation at
 
 You should set your language with `\uselanguage{<LANGUAGE_NAME>}`. This is
 neccessary for languages other than American English to ensure that hyphenation
-works correctly. For list of available languages see the file `language.dat.lua`, which is located at
-`$PREFIX/share/mmtex/tex/mmtex`, where `$PREFIX` is the prefix
-for package installation (probably `/usr` if you installed \MMTeX\ with your package
-manager, or maybe `/usr/local` if you installed the `.tar.gz` package).
+works correctly. For list of available languages see the file
+`language.dat.lua`, which is located at `$PREFIX/share/mmtex/tex/mmtex`, where
+`$PREFIX` is the prefix for package installation (probably `/usr` if you
+installed \MMTeX\ with your package manager, or maybe `/usr/local` if you
+installed the `.tar.gz` package).
 
 You should use `luaotfload` for loading OpenType fonts. First you need to
 `\input` it, and then you can define your fonts. For example:
@@ -358,7 +359,7 @@ Hello there
 \bye
 \endtt
 
-Note that plain \TeX's preloaded fonts (like `\tenrm`) will be still used for a lot of things,
-if you don't want that, you need to redefine them manually.
+Note that plain \TeX's preloaded fonts (like `\tenrm`) will be still used for a
+lot of things, if you don't want that, you need to redefine them manually.
 
 \bye
