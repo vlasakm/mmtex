@@ -5,11 +5,11 @@
 #define WEB2C_PACKAGE "web2c"
 #define WEB2C_PACKAGE_BUGREPORT "tex-k@tug.org"
 #define WEB2C_PACKAGE_NAME "Web2C"
-#define WEB2C_PACKAGE_STRING "Web2C 2020"
+#define WEB2C_PACKAGE_STRING "Web2C 2021"
 #define WEB2C_PACKAGE_TARNAME "web2c"
 #define WEB2C_PACKAGE_URL ""
-#define WEB2C_PACKAGE_VERSION "2020"
-#define WEB2C_VERSION "2020"
+#define WEB2C_PACKAGE_VERSION "2021"
+#define WEB2C_VERSION "2021"
 
 #define EDITOR "vi +%d '%s'"
 

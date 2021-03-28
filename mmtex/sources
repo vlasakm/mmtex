@@ -1,15 +1,15 @@
 # LuaTeX
-svn+https://serveur-svn.lri.fr/svn/modhel/luatex/branches/experimental/source/texk/web2c/luatexdir # luatex
-svn+https://serveur-svn.lri.fr/svn/modhel/luatex/branches/experimental/source/texk/web2c/mplibdir # mplib
-svn+https://serveur-svn.lri.fr/svn/modhel/luatex/branches/experimental/source/texk/web2c/synctexdir # synctex
-svn+https://serveur-svn.lri.fr/svn/modhel/luatex/branches/experimental/source/texk/web2c/w2c # web2c
-svn+https://serveur-svn.lri.fr/svn/modhel/luatex/branches/experimental/source/texk/web2c/lib # web2c
-svn+https://serveur-svn.lri.fr/svn/modhel/luatex/branches/experimental/source/texk/web2c/libmd5  # libmd5
-svnfile+https://serveur-svn.lri.fr/svn/modhel/luatex/branches/experimental/source/texk/web2c/cpascal.h # web2c header
-svnfile+https://serveur-svn.lri.fr/svn/modhel/luatex/branches/experimental/source/texk/web2c/help.h # web2c header
-svn+https://serveur-svn.lri.fr/svn/modhel/luatex/branches/experimental/source/texk/kpathsea # kpathsea (for luatex and ctangle)
-svn+https://serveur-svn.lri.fr/svn/modhel/luatex/branches/experimental/source/libs/lua53/lua53-src lua # lua (for luatex)
-svn+https://serveur-svn.lri.fr/svn/modhel/luatex/branches/experimental/source/libs/pplib/pplib-src pplib # lua (for luatex)
+svn+https://serveur-svn.lri.fr/svn/modhel/luatex/tags/1.13.0/source/texk/web2c/luatexdir # luatex
+svn+https://serveur-svn.lri.fr/svn/modhel/luatex/tags/1.13.0/source/texk/web2c/mplibdir # mplib
+svn+https://serveur-svn.lri.fr/svn/modhel/luatex/tags/1.13.0/source/texk/web2c/synctexdir # synctex
+svn+https://serveur-svn.lri.fr/svn/modhel/luatex/tags/1.13.0/source/texk/web2c/w2c # web2c
+svn+https://serveur-svn.lri.fr/svn/modhel/luatex/tags/1.13.0/source/texk/web2c/lib # web2c
+svn+https://serveur-svn.lri.fr/svn/modhel/luatex/tags/1.13.0/source/texk/web2c/libmd5  # libmd5
+svnfile+https://serveur-svn.lri.fr/svn/modhel/luatex/tags/1.13.0/source/texk/web2c/cpascal.h # web2c header
+svnfile+https://serveur-svn.lri.fr/svn/modhel/luatex/tags/1.13.0/source/texk/web2c/help.h # web2c header
+svn+https://serveur-svn.lri.fr/svn/modhel/luatex/tags/1.13.0/source/texk/kpathsea # kpathsea (for luatex and ctangle)
+svn+https://serveur-svn.lri.fr/svn/modhel/luatex/tags/1.13.0/source/libs/lua53/lua53-src lua # lua (for luatex)
+svn+https://serveur-svn.lri.fr/svn/modhel/luatex/tags/1.13.0/source/libs/pplib/pplib-src pplib # lua (for luatex)
 https://raw.githubusercontent.com/ascherer/cweb/master/ctangle.c # ctangle for mplib
 https://raw.githubusercontent.com/ascherer/cweb/master/common.c # ctangle for mplib
 
