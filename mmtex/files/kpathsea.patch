@@ -1,6 +1,23 @@
 --- a/kpathsea/cnf.c
 +++ b/kpathsea/cnf.c
-@@ -289,14 +289,41 @@
+@@ -241,6 +241,16 @@
+   string *cnf;
+   const_string cnf_path = kpathsea_init_format (kpse, kpse_cnf_format);
+ 
++#define SET_VAR(var, value) \
++  do { \
++    char *tmp1 = xmalloc(sizeof(var)   / sizeof(var[0])   + 1); strcpy(tmp1, var);   \
++    char *tmp2 = xmalloc(sizeof(value) / sizeof(value[0]) + 1); strcpy(tmp2, value); \
++    hash_insert(&(kpse->cnf_hash), tmp1, tmp2); \
++  } while (0)
++
++  /* We don't allow enabling of shell escape through config files. */
++  SET_VAR("shell_escape", "f");
++
+   cnf_files = kpathsea_all_path_search (kpse, cnf_path, CNF_NAME);
+   if (cnf_files && *cnf_files) {
+     for (cnf = cnf_files; *cnf; cnf++) {
+@@ -289,14 +299,34 @@
        free (*cnf);
      }
      free (cnf_files);
@@ -12,13 +29,6 @@
 -        cnf_path);
 -    }
    }
-+
-+#define SET_VAR(var, value) \
-+  do { \
-+    char *tmp1 = xmalloc(sizeof(var)   / sizeof(var[0])   + 1); strcpy(tmp1, var);   \
-+    char *tmp2 = xmalloc(sizeof(value) / sizeof(value[0]) + 1); strcpy(tmp2, value); \
-+    hash_insert(&(kpse->cnf_hash), tmp1, tmp2); \
-+  } while (0)
 +
 +  SET_VAR("_TEXMFMMTEX", "!!$SELFAUTODIR/share/mmtex");
 +
@@ -49,10 +59,10 @@
  }
  
  /* Read the cnf files on the first call.  Return the first value in the
-@@ -308,11 +335,19 @@
+@@ -308,11 +338,19 @@
    string ctry;
    const_string ret, *ret_list;
-
+ 
 -  /* When we expand the compile-time value for DEFAULT_TEXMFCNF,
 -     we end up needing the value for assorted variables,
 -     so kpse_var_expand ends up calling us again.  Just return.  */
@@ -70,6 +80,6 @@
 +
      return NULL;
 +  }
-
+ 
    /* If no cnf hash yet, initialize.  */
    if (kpse->cnf_hash.size == 0) {
