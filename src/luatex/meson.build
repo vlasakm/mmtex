@@ -199,7 +199,7 @@ luatex_src = files(
   'src/luaffi/ffi.c',
   'src/luaffi/parser.c',
   'src/luatex.c',
-  '../mplibdir/src/lmplib.c',
+  '../mplib/src/lmplib.c',
   '../libmd5/src/md5.c',
 )
 
@@ -208,8 +208,9 @@ luatex_inc = include_directories(
   'src',
   'src/luafontloader/fontforge/inc',
   'src/luafontloader/fontforge/fontforge',
-  '../libmd5',
-  '../synctex',
+  '../libmd5/src',
+  '../synctex/src',
+  '..',
 )
 
 

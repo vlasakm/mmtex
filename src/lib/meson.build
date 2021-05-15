@@ -1,8 +1,9 @@
 w2c_inc = include_directories(
   'lib',
+  '.',
   # ideally 'include' would be only in mmtex_inc, but this seems
   # like lesser evil, compared to patching luatex source
-  'include/w2c',
+  '../../include/w2c',
 )
 
 w2c_c_args = [
@@ -10,21 +11,21 @@ w2c_c_args = [
 ]
 
 w2c_src = files(
-  'src/basechsuffix.c',
-  'src/chartostring.c',
-  'src/coredump.c',
-  'src/eofeoln.c',
-  'src/fprintreal.c',
-  'src/inputint.c',
-  'src/input2int.c',
-  'src/lib.h',
-  'src/openclose.c',
-  'src/printversion.c',
-  'src/setupvar.c',
-  'src/uexit.c',
-  'src/usage.c',
-  'src/version.c',
-  'src/zround.c',
+  'lib/basechsuffix.c',
+  'lib/chartostring.c',
+  'lib/coredump.c',
+  'lib/eofeoln.c',
+  'lib/fprintreal.c',
+  'lib/inputint.c',
+  'lib/input2int.c',
+  'lib/lib.h',
+  'lib/openclose.c',
+  'lib/printversion.c',
+  'lib/setupvar.c',
+  'lib/uexit.c',
+  'lib/usage.c',
+  'lib/version.c',
+  'lib/zround.c',
 )
 
 w2c_lib = static_library(

@@ -1,51 +1,30 @@
-mplib_png_h = custom_target(
-  'mplibpng.h',
-  input: 'mplibdir/pngout.w',
-  output: 'mplibpng.h',
-  command: [ctangle, '-q', '@INPUT@'],
-)
-
-mplib_svg_h = custom_target(
-  'mplibsvg.h',
-  input: 'mplibdir/svgout.w',
-  output: 'mplibsvg.h',
-  command: [ctangle, '-q', '@INPUT@'],
-)
-
-mplib_h = [
-  mplib_png_h,
-  mplib_svg_h,
-]
-
 mplib_src = [
-  tangle.process(
-    'src/mpmathdecimal.w',
-    'src/mpmathdouble.w',
-    'src/mpmath.w',
-    'src/mpstrings.w',
-    'src/mp.w',
-    'src/psout.w',
-    'src/tfmin.w',
-  ),
+  'src/mpmathdecimal.c',
+  'src/mpmathdouble.c',
+  'src/mpmath.c',
+  'src/mpstrings.c',
+  'src/mp.c',
+  'src/psout.c',
+  'src/tfmin.c',
   'src/avl.c',
   'src/decNumber.c',
   'src/decContext.c',
-  mplib_svg_h,
-  mplib_png_h,
+  #'src/mplibpng.h',
+  #'src/mplibsvg.h',
 ]
 
 mplib_inc = include_directories(
-  'mplibdir',
+  'src',
 )
 
 mplib_lib = static_library(
   'mplib',
   sources: mplib_src,
   include_directories: [mplib_inc, mmtex_inc],
+  dependencies: kpathsea_dep,
 )
 
 mplib_dep = declare_dependency(
   link_with: mplib_lib,
-  sources: [mplib_h],
   include_directories: mplib_inc,
 )
