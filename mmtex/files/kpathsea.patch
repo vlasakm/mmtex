@@ -1,0 +1,85 @@
+--- a/kpathsea/cnf.c
++++ b/kpathsea/cnf.c
+@@ -241,6 +241,16 @@
+   string *cnf;
+   const_string cnf_path = kpathsea_init_format (kpse, kpse_cnf_format);
+ 
++#define SET_VAR(var, value) \
++  do { \
++    char *tmp1 = xmalloc(sizeof(var)   / sizeof(var[0])   + 1); strcpy(tmp1, var);   \
++    char *tmp2 = xmalloc(sizeof(value) / sizeof(value[0]) + 1); strcpy(tmp2, value); \
++    hash_insert(&(kpse->cnf_hash), tmp1, tmp2); \
++  } while (0)
++
++  /* it shouldn't be possible to enable shell escape config files */
++  SET_VAR("shell_escape", "f");
++
+   cnf_files = kpathsea_all_path_search (kpse, cnf_path, CNF_NAME);
+   if (cnf_files && *cnf_files) {
+     for (cnf = cnf_files; *cnf; cnf++) {
+@@ -289,14 +299,34 @@
+       free (*cnf);
+     }
+     free (cnf_files);
+-  } else {
+-    string warn = getenv ("KPATHSEA_WARNING");
+-    if (!(warn && STREQ (warn, "0"))) {
+-      WARNING1
+-  ("kpathsea: configuration file texmf.cnf not found in these directories: %s",
+-        cnf_path);
+-    }
+   }
++
++  SET_VAR("_TEXMFMMTEX", "!!$SELFAUTODIR/share/mmtex");
++
++  SET_VAR("XDG_CONFIG_HOME", "~/.config");
++  SET_VAR("XDG_CACHE_HOME", "~/.cache");
++  SET_VAR("XDG_DATA_HOME", "~/.local/share");
++  SET_VAR("TEXMFVAR", "$XDG_CACHE_HOME/mmtex");
++  SET_VAR("TEXMFDBS", "$_TEXMFMMTEX");
++
++  SET_VAR("TEXMFDOTDIR", ".");
++  SET_VAR("TEXMF", "/none");
++
++  /* set memory/computation constraints, defaults are commented */
++  SET_VAR("max_strings", "500000");
++  /*SET_VAR("strings_free", "100");*/
++  SET_VAR("buf_size", "200000");
++  SET_VAR("nest_size", "500");
++  /*SET_VAR("max_in_open", "15");*/
++  SET_VAR("param_size", "10000");
++  SET_VAR("save_size", "100000");
++  SET_VAR("stack_size", "5000");
++  /*SET_VAR("dvi_buf_size", "16384");*/
++  /*SET_VAR("error_line", "79");*/
++  /*SET_VAR("half_error_line", "50");*/
++  /*SET_VAR("max_print_line", "79");*/
++  SET_VAR("hash_extra", "600000");
++  /*SET_VAR("expand_depth", "10000");*/
+ }
+ 
+ /* Read the cnf files on the first call.  Return the first value in the
+@@ -308,11 +338,19 @@
+   string ctry;
+   const_string ret, *ret_list;
+ 
+-  /* When we expand the compile-time value for DEFAULT_TEXMFCNF,
+-     we end up needing the value for assorted variables,
+-     so kpse_var_expand ends up calling us again.  Just return.  */
+-  if (kpse->doing_cnf_init)
++  /* These variables have default values even for TEXMFCNF. */
++  if (kpse->doing_cnf_init) {
++#define INITIAL_VAR(var, value) \
++    if (strcmp(name, var) == 0) { \
++      char *tmp = xmalloc(sizeof(value) / sizeof(value[0]) + 1); \
++      return strcpy(tmp, value); \
++    }
++
++    INITIAL_VAR("TEXMFDOTDIR", ".")
++    INITIAL_VAR("XDG_CONFIG_HOME", "~/.config")
++
+     return NULL;
++  }
+ 
+   /* If no cnf hash yet, initialize.  */
+   if (kpse->cnf_hash.size == 0) {

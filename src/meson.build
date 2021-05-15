@@ -1,0 +1,7 @@
+subdir('kpathsea')
+subdir('ctangle')
+subdir('mplib')
+subdir('lua')
+subdir('w2c')
+subdir('pplib')
+subdir('luatex')
