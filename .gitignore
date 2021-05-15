@@ -5,3 +5,4 @@ pkg
 mmtex*.deb
 mmtex*.pkg.*
 mmtex*.tar.gz
+build
