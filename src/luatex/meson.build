@@ -238,7 +238,7 @@ luatex_c_args = [
   '-DSYNCTEX_ENGINE_H=<synctex-luatex.h>',
 ]
 
-executable(
+mmluatex = executable(
   'mmluatex',
   sources: luatex_src,
   include_directories: [luatex_inc, mmtex_inc],
