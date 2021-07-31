@@ -1,0 +1,10 @@
+*** a/docstrip.dtx
+--- b/docstrip.dtx
+***************
+*** 4540,4543 ****
+--- 4540,4544 ----
+  %    \end{macrocode}
+  %
+  % \Finale
++ \catcode`~=13
+  \endinput
