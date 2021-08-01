@@ -1,16 +1,13 @@
 # MMTeX
 
-This repository contains build instructions for MMTeX, a minimal modern
-(Lua)TeX distribution.
-
-MMTeX provides only one format - OpTeX. TeXlive's plain LuaTeX used to be
-provided as well, but diverged enough to be left out.
+This is MMTeX, a minimal modern TeX distribution, which consists of the [LuaTeX
+engine](http://luatex.org/) and the [OpTeX format](http://petr.olsak.net/optex/).
 
 The repository of MMTeX is at https://github.com/vlasakm/mmtex.
 
 # Installation instructions
 
-You should [download](https://github.com/vlasakm/mmtex/releases)) or build (see
+You should [download](https://github.com/vlasakm/mmtex/releases) or build (see
 below) a package for your distribution:
 
  - `.pkg.tar.zst` for Arch Linux
@@ -40,16 +37,35 @@ tar -C /usr/local -xf mmtex-<VERSION>.tar.gz
 
 # Usage
 
-You now have OpTeX available via `mmoptex` command. Note that no implicit fonts
+You now have OpTeX available via the `mmoptex` command. Note that no implicit fonts
 are set. You will get errors if you don't set a font family (e.g.
 `\fontfam[lm]` for Latin Modern) as early as possible. (This also applies to
-OpTeX demo documents you can find.)
+the various OpTeX demo documents you can find.)
 
-`mmluatex` command is also available and is the `luatex`/`luahbtex` binary
-adjusted to use MMTeX paths. But there is no format file (`mmluatex.fmt`) so
-you can only use it in `-ini` mode. (Note that because `mmoptex` is just
-symlink to `mmluatex` (which means it loads `mmoptex.fmt`) you can also use
-`mmoptex -ini` for LuaTeX in `-ini` mode.
+For a quick start, you can try printing the catalog of fonts your OpTeX has
+available:
+
+```
+% font-catalog.tex
+\fontfam[catalog]
+
+\bye
+```
+
+Compile with `mmoptex font-catalog.tex`.
+
+
+## Advanced usage
+
+If you don't understand this, you don't need it.
+
+LuaTeX in "ini" mode is also available, with either `mmoptex -ini` or `mmluatex
+-ini`. If you know what you are doing, you can use it, for example to
+regenerate the format file:
+
+```
+mmoptex -ini mmoptex.ini
+```
 
 # Build instructions
 
@@ -78,7 +94,7 @@ For customizing the build you can pass two environment variables:
    want to choose different `prefix` or `buildtype` (like `plain` to use your
    own `CFLAGS`)
  - `MESON_OPTIONS` - should be used to enable/disable package specific options
-   (it is empty by default). With `mmtex` it is possible to _not_ build
+   (it is empty by default). Currently it is possible to _not_ build
    `luahbtex` variant by setting `MESON_OPTIONS="-D luahbtex=false"`
 
 # Dependencies
@@ -109,10 +125,6 @@ dependencies of built packages):
 
 See `doc/old-mmtex-doc.tex`, an older document, for motivation and some design
 decisions.
-
-Instructions (build, install, user guide) are not up to date.
-Currently the focus and design is shifting towards having only one format using
-only modern font mechanisms. There are also planned build system changes.
 
 # License
 
