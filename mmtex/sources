@@ -18,7 +18,6 @@ meson.build # meson build file
 meson_options.txt # meson option file
 kpathsea.patch # patch for "extending" kpathsea
 luaotfload.patch # patch luaotfload font resolution
-docstrip.patch
 
 # Build dependencies
 http://mirrors.ctan.org/macros/latex/base/docstrip.dtx # docstrip (also l3docstrip)

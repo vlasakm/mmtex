@@ -25,8 +25,6 @@ install() {
 patch -i kpathsea.patch
 # patch luaotfload
 patch -i luaotfload.patch
-# patch docstrip for lipsum
-patch -i docstrip.patch
 
 ## BUILD LUATEX BINARY
 
@@ -50,12 +48,11 @@ PATH="$pkgdir/usr/bin:$PATH"
 export TEXMF="$pkgdir/usr/share/$pkgname"
 export TEXMFDOTDIR
 
-# use docstrip.dtx as docstrip.tex and l3docstrip.tex
+# use docstrip.dtx as docstrip.tex
 ln -sf docstrip.dtx docstrip.tex
-ln -sf docstrip.dtx l3docstrip.tex
 
 # generate lipsum.ltd.tex
-TEXMFDOTDIR=.:lipsum mmluatex -ini '\let\obeyspaces=\relax \input lipsum.ins'
+TEXMFDOTDIR=.:lipsum mmluatex -ini 'lipsum.ins'
 
 # generate luamplib.{sty.lua}
 TEXMFDOTDIR=.:luamplib mmluatex -ini '\catcode`\{=1 \catcode`\}=2 \let\obeyspaces\relax \input luamplib.dtx'
