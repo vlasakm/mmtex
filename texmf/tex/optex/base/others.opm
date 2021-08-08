@@ -1,0 +1,106 @@
+%% This is part of the OpTeX project, see http://petr.olsak.net/optex
+
+\_codedecl \uv {Miscenaleous <2020-05-22>} % preloaded in format
+
+    \_doc ----------------------------
+    \`\useOpTeX` and \`\useoptex` are declared as `\relax`.
+    \_cod ----------------------------
+
+\_let \useOpTeX = \_relax   \_let \useoptex = \_relax
+
+    \_doc ----------------------------
+    The \`\lastpage` and \`\totalpages` get the information from the
+    \^`\_currpage`. The \^`\_Xpage` from `.ref` file sets the \^`\_currpage`.
+    \_cod ----------------------------
+
+\_def\_totalpages {\_openref\_ea\_ignoresecond\_currpage}
+\_def\_lastpage   {\_openref\_ea\_usesecond\_currpage}
+\_def\_currpage {{0}{?}}
+\_public \lastpage \totalpages ;
+
+    \_doc ----------------------------
+    We need \`\uv`, \`\clqq`, \`\crqq`, \`\flqq`, \`\frqq`, \`\uslang`, \`\ehyph`
+    \`\chyph`, \`\shyph`, for backward compatibility with \csplain.
+    Codes are set according to Unicode because we are using Czech only in Unicode
+    when \LuaTeX/ is used.
+    \_cod ----------------------------
+
+
+% for compatibility with csplain:
+
+\_chardef\clqq=8222  \_chardef\crqq=8220
+\_chardef\flqq=171   \_chardef\frqq=187
+\_chardef\promile=8240
+
+\_def\uv#1{\clqq#1\crqq}
+
+\_let\uslang=\enlang  \_let\ehyph=\enlang
+\_let\chyph=\cslang   \_let\shyph=\sklang
+\_let\csUnicode=\csPatt \_let\czUnicode=\csPatt \_let\skUnicode=\skPatt
+
+    \_doc ----------------------------
+    The \`\letfont` was used in \csplain/ instead of `\fontlet`.
+    \_cod ----------------------------
+
+\_let \letfont = \_fontlet
+
+    \_doc ----------------------------
+    Non-breaking space in Unicode.
+    \_cod ----------------------------
+
+\let ^^a0=~
+
+    \_doc ----------------------------
+    TikZ needs these funny control sequences.
+    \_cod ----------------------------
+
+\_ea\_toksdef \_csname toks@\_endcsname=0
+\_ea\_let     \_csname voidb@x\_endcsname=\_voidbox
+
+    \_doc ----------------------------
+    We don't want to read `opmac.tex` unless `\input opmac` is specified.
+    \_cod ----------------------------
+
+\_def\OPmacversion{OpTeX}
+
+    \_doc ----------------------------
+    We allow empty lines in math formulae. It is more comfortable.
+    \_cod ----------------------------
+
+\_suppressmathparerror = 1
+
+    \_doc ----------------------------
+    Lorem ipsum can be printed by \`\lipsum``[<range>]` or \`\lorem``[<range>]`,
+    for example `\lipsum[3]` or `\lipsum[112-121]`, max=150.
+
+    First usage of `\lipsum` reads the \LaTeX/ file `lipsum.ltd.tex`
+    by \`\_lipsumload`
+    and prints the selected paragraph(s). Next usages of `\lipsum`
+    prints the selected paragraph(s) from memory. This second and more
+    usages of `\lipsum` are fully expandable. If you want to have all
+    printings of `\lipsum` expandable, use dummy `\lipsum[0]` first.
+
+    `\lipsum` adds `\par` after each printed paragraph. If you don't need
+    such `\par` here, use \`\lipsumtext``[<number>]`.
+    This macro prints only one selected paragraph <number> and does not add `\par`.
+    \_cod ----------------------------
+
+\_def\_lipsumtext[#1]{\_lipsumload\_cs{_lip:#1}}
+\_def\_lipsum[#1]{\_lipsumA #1\_empty-\_empty\_end}
+\_def\_lipsumA #1-#2\_empty#3\_end{%
+   \_fornum #1..\_ifx^#2^#1\_else#2\_fi \_do {\_lipsumtext[##1]\par}}
+\_def\_lipsumload{{%
+   \_setbox0=\_vbox{\_tmpnum=0 % vertical mode during \input lipsum.ltd.tex
+      \_def\ProvidesFile##1[##2]{}%
+      \_def\NewLipsumPar{\_incr\_tmpnum \_sxdef{_lip:\_the\_tmpnum}}%
+      \_opinput {lipsum.ltd.tex}%
+      \_global\_let\_lipsumload=\_empty
+   }}}
+\_public \lipsum \lipsumtext ;
+\_let \lorem=\lipsum
+
+\_endcode
+
+2021-01-04 \lipsumtext introduced
+2020-05-22 \lipsum uses \fornum (expandable after first usage)
+2020-04-02 released

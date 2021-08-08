@@ -1,0 +1,78 @@
+%% This is part of the OpTeX project, see http://petr.olsak.net/optex
+
+\_codedecl \report {Basic styles of OpTeX <2021-03-10>} % preloaded in format
+
+   \_doc -----------------------------
+   We define auxiliary macro first (used by the \^`\address` macro)
+   \nl
+   The `{`\`\boxlines` `<line-1><eol><line-2><eol>...<line-n><eol>}`
+   returns to the outer vertical mode a box with `<line-1>`, next box with
+   `<line-2>` etc. Each box has its natural width. This is reason why we cannot
+   use paragraph mode where each resulting box has the width `\hsize`.
+   The `<eol>` is set active and `\everypar` starts `\hbox{` and acive <eol>
+   closes this `\hbox` by `}`.
+   \_cod -----------------------------
+
+\_def\_boxlines{%
+   \_def\_boxlinesE{\_ifhmode\_egroup\_empty\_fi}%
+   \_def\_nl{\_boxlinesE}%
+   \_bgroup \_lccode`\~=`\^^M\_lowercase{\_egroup\_let~}\_boxlinesE
+   \_everypar{\_setbox0=\_lastbox\_endgraf
+      \_hbox\_bgroup \_catcode`\^^M=13 \_let\par=\_nl \_aftergroup\_boxlinesC}%
+}
+\_def\_boxlinesC{\_futurelet\_next\_boxlinesD}
+\_def\_boxlinesD{\_ifx\_next\_empty\_else\_ea\_egroup\_fi}
+
+\_public \boxlines ;
+
+   \_doc -----------------------------
+   The \`\report` style initialization macro is defined here.
+   \_cod -----------------------------
+
+\_def\_report{
+   \_typosize[11/13.2]
+   \_vsize=\_dimexpr \_topskip + 52\_baselineskip \_relax % added 2020-03-28
+   \_let\_titfont=\_chapfont
+   \_titskip=3ex
+   \_eoldef\_author##1{\_removelastskip\_bigskip
+      {\_leftskip=0pt plus1fill \_rightskip=\_leftskip \_it \_noindent ##1\_par}\_nobreak\_bigskip
+   }
+   \_public \author ;
+   \_parindent=1.2em \_iindent=\_parindent \_ttindent=\_parindent
+   \_footline={\_global\_footline={\_hss\_rmfixed\_folio\_hss}}
+}
+
+   \_doc -----------------------------
+   The \`\letter` style initialization macro is defined here.
+
+   The `\letter` defines \`\address` and \`\subject` macros.
+
+   See the files `demo/op-letter-*.tex` for usage examples.
+   \_cod -----------------------------
+
+\_def\_letter{
+   \_def\_address{\_vtop\_bgroup\_boxlines \_parskip=0pt \_let\par=\_egroup}
+   \_def\_subject{{\_bf \_mtext{subj}: }}
+   \_public \address \subject ;
+   \_typosize[11/14]
+   \_vsize=\_dimexpr \_topskip + 49\_baselineskip \_relax % added 2020-03-28
+   \_parindent=0pt
+   \_parskip=\_medskipamount
+   \_nopagenumbers
+}
+\_public \letter \report ;
+
+   \_doc -----------------------------
+   The \`\slides` macro reads macro file `slides.opm`, see the section~\ref[slides].
+   \_cod -----------------------------
+
+\_def\_slides{\_par
+  \_opinput{slides.opm}
+  \_adef*{\_relax\_ifmmode*\_else\_ea\_startitem\_fi}
+}
+\_public \slides ;
+
+\_endcode % -------------------------------------
+
+2021-03-10 \ifmmode* added to \adef*
+2020-03-28 released
