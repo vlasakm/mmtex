@@ -1,0 +1,37 @@
+%% This is part of the OpTeX project, see http://petr.olsak.net/optex
+
+\_famdecl [EB Garamond] \EBGaramond {Based on Garamond}
+        {\medium \semibold \caps \swash} {\rm \bf \it \bi \initials} {Garamond-Math}
+        {[EBGaramond-Regular]}
+        {\_def\_fontnamegen {[EBGaramond-\_currV]:\_capsV\_swaV\_fontfeatures}}
+
+\_wlog{\_detokenize{%
+Modifiers:^^J
+ \caps ...... caps & small caps^^J
+ \swash ..... alternative capitals for \it, \bi, only non-accented letters^^J
+ \medium .... medium weight^^J
+ \semibold .. semibold weight (only \bf, \bi are changed)^^J
+Variant:^^J
+ \initials .. Initials, only letters ADFGLNOQT^^J
+}}
+
+\_moddef \resetmod {\_fsetV caps={},swa={} \_fvars Regular Bold Italic BoldItalic }
+\_moddef \medium   {\_fvars Medium ExtraBold MediumItalic ExtraBoldItalic }
+\_moddef \semibold {\_fvars Regular SemiBold Italic SemiBoldItalic }
+\_moddef \caps     {\_fsetV caps=+smcp;\_ffonum; }
+\_moddef \nocaps   {\_fsetV caps={} }
+\_moddef \swash    {\_fsetV swa=+swsh; }
+\_moddef \noswash  {\_fsetV swa={} }
+
+\_famvardef \initials {\_fvars Initials . . . \rm}
+
+
+\_initfontfamily % new font family must be initialized
+
+\_loadmath {[Garamond-Math]}
+
+\_endcode
+
+See the file `f-heros.opm` for information about principles of such
+font-macro-files.
+

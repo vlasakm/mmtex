@@ -1,0 +1,212 @@
+%% This is part of the OpTeX project, see http://petr.olsak.net/optex
+
+\_codedecl \ulink {Hyperlinks <2021-05-14>} % preloaded in format
+
+   \_doc ----------------------------
+   \`\dest``[<type>:<spec>]` creates a destination of internal links. The
+   destination is declared in the format `<type>:<spec>`. If the \^`\hyperlinks`
+   command in not used, then `\dest` does nothing else it is set to `\_destactive`.
+   The \`\_destactive` is implemented by `\_pdfdest` primitive. It creates a box
+   in which the destination is shifted by \`\_destheight`. The reason is that
+   the destination is exactly at the top border of the PDF viewer but we want to see
+   the line where the destination is. The destination box is positioned by a
+   different way dependent on the current vertical or horizontal mode.
+   \_cod ----------------------------
+
+\_def\_destheight{1.4em}
+\_def\_destactive[#1:#2]{\_if$#2$\_else\_ifvmode
+      \_tmpdim=\_prevdepth \_prevdepth=-1000pt
+      \_destbox[#1:#2]\_prevdepth=\_tmpdim
+   \_else \_destbox[#1:#2]%
+   \_fi\_fi
+}
+\_def\_destbox[#1]{\_vbox to\_zo{\_kern-\_destheight \_pdfdest name{#1} xyz\_vss}}
+\_def\_dest[#1]{}
+\_public \dest ;
+
+   \_doc ----------------------------
+   Each hyperlink is created internally by \`\_xlink``{<type>}{<spec>}{<color>}{<text>}`.
+   This macro expands to `\_quitvmode{<text>}` by default, i.e.\ no active
+   hyperlink is created, only <text> is printed in horizontal mode.
+   If \^`\hyperlinks` is used, then `\_xlink` gets meaning of
+   \`\_xlinkactive` and hyperlinks are created using `\pdfstartlink`,
+   `\pdfendlink` primitives. The <text> has given <color> only when
+   hyperlink is created. But if `\_<type>linkcolor` is defined, it has
+   precedence.
+   \nl
+   The \`\_linkdimens` macro declares the dimensions of link area.
+   \nl
+   A specific action can be defined for each link <type> by the macro
+   `\_<type>action{<spec>}`. \OpTeX/ defines only \`\_urlaction``{<url>}`.
+   The default link action (when `\_<type>action` is not defined) is
+   `goto mame{<type>:<spec>}` (creates an internal link). It is declared in the
+   \`\_linkactions``{<type>}{<spec>}` macro.
+   \nl
+   The `\_pdfstartlink` primitive uses `attr{\_pdfborder{<type>}}`. The
+   \`\_pdfborder``{<type>}` macro expands to `/C[? ? ?] /Border[0 0 .6]` if the
+   `\_<type>border` macro (i.e.\ \`\_refborder`, \`\_citeborder`, \`\_tocborder`,
+   \`\_pgborder`, \`\_urlborder`, \`\_fntborder` or \`\_fnfborder`)
+   is defined.
+   \_cod
+
+\_protected\_def\_xlinkactive#1#2#3#4{\_quitvmode
+   \_pdfstartlink \_linkdimens attr{\_pdfborder{#1}}\_linkactions{#1}{#2}\_relax
+   {\_localcolor\_trycs{_#1linkcolor}{#3}#4}\_pdfendlink
+}
+\_protected\_def\_xlink#1#2#3#4{\_quitvmode{#4}}
+
+\_def\_linkdimens{height.9em depth.3em}
+
+\_def\_linkactions#1#2{\_ifcsname _#1action\_endcsname
+   \_lastnamedcs{#2}\_else goto name{#1:#2}\_fi}
+\_def\_urlaction #1{user{/Subtype/Link/A <</Type/Action/S/URI/URI(#1)>>}}
+
+\_def\_pdfborder#1{\_ifcsname _#1border\_endcsname
+     /C [\_csname _#1border\_endcsname] /Border [0 0 .6]\_else  /Border [0 0 0]\_fi
+}
+
+   \_doc ------------------------------
+   \`\link``[<type>:<spec>]{<color>}{<text>}` creates a link. It is
+   kept here for backward compatibility and it is
+   equivalent to \^`\_xlink{<type>}{<spec>}{<color>}{<text>}`.
+   If `\_<type>action` is not defined then
+   `\link` creates internal link do the \^`\dest[<type>:<spec>]`.
+   You can have more links with the same `<type>:<spec>` but only one \^`\dest`
+   in the document.
+   \nl
+   \`\ilink``[<type>:<spec>]{<text>}` is equivalent to \^`\link` but
+   the `<color>` is used from \^`\hyperlinks` declaration
+   (or it is overwriten by `\def\_<type>linkcolor`).
+   \nl
+   \`\ulink``[<url>]{<text>}` creates external link.
+   The `<url>` is detokenized with `\escapechar=-1` before it is used, so
+   `\%`, `\#` etc. can be used in the `<url>`.
+   \_cod ----------------------------
+
+\_def\_link[#1:#2]{\_xlink{#1}{#2}}
+\_def\_ilink[#1:#2]#3{\_xlink{#1}{#2}\_ilinkcolor{#3}}
+\_def\_ulink[#1]#2{{\_escapechar=-1 \_ea}\_expanded
+   {\_noexpand\_xlink{url}{\_detokenize{#1}}}\_elinkcolor{#2}}
+
+\_public \ilink \ulink \link ;
+
+   \_doc ----------------------------
+   \`\hyperlinks``{<ilink_color>}{<ulink_color>}` activates `\dest`, `\xlink`,
+   in order they create links.
+   \_cod ----------------------------
+
+\_def\_hyperlinks#1#2{%
+   \_let\_dest=\_destactive \_let\_xlink=\_xlinkactive
+   \_let\_ilinkcolor=#1%
+   \_let\_elinkcolor=#2%
+   \_public \dest \xlink ;%
+}
+\_public \hyperlinks ;
+
+   \_doc ----------------------------
+   \`\url``{<url>}` does approximately the same as \^`\ulink``[<url>]{<url>}`, but
+   more work is done before the `\ulink` is processed. The link-version of <url>
+   is saved to `\_tmpa` and the printed version in `\_tmpb`. The printed
+   version is processed in four steps: 1.~the `\|` are replaced by `[||]` (we
+   suppose that such string does not exist in any URL). 2.~it is detokenized with
+   `\escapechar=-1`. 3.~muti-strings and spaces are replaced by strings in
+   braces `{...}`. 4.~internal penalties and skips are put between characters
+   using \`\_urlA`, \`\_urlB` and \`\_urlC`. The step~4 do following:
+   The \`\_urlxskip` is inserted between each pair of \"normal characters",
+   i.e.\ characters not declared by `\sdef{_ur:<character>}`.
+   The special characters declared by `\sdef{_ur:<character>}` are replaced
+   by the body of their corresponding macro.
+   The \`\_urlskip`, \`\_urlbskip`, \`\_urlgskip`
+   are typical skips used for special characters, their meaning is
+   documented in the code below. You can change them.
+   Default values: penalty 9990 is inserted between each pair of normal
+   chararacters, penalty 100 is inserted after special charcters, nobreak before special
+   characters. The URL can be broken at any place using these default
+   values. If you want to disable breaking between normal characters, say
+   `\let\_urlxskip=\nobreak`.
+   \nl
+   The text version of the `<url>` is printed in \`\_urlfont`.
+   \_cod ----------------------------
+
+\_def\_url#1{{%
+   \_def\_tmpa{#1}\_replstring\_tmpa {\|}{}%
+   \_def\_tmpb{#1}\_replstring\_tmpb {\|}{[||]}%
+   {\_escapechar=-1 \_ea}\_ea\_edef\_ea\_tmpb\_ea{\_detokenize\_ea{\_tmpb}}%
+   \_replstring\_tmpb{[||]}{{gb|}}%
+   \_replstring\_tmpb{ }{{ }}%
+   \_replstring\_tmpb{://}{{://}}%
+   \_ea\_ulink \_ea[\_ea{\_tmpa}] {\_urlfont \_ea\_urlA\_tmpb\_end}%
+}}
+\_def\_urlA#1{\_ifx\_end#1\_else \_urlC{}{#1}\_fi}
+\_def\_urlB#1{\_ifx\_end#1\_else \_urlC{\_urlxskip}{#1}\_fi}
+\_def\_urlC#1#2{%
+   \_ifcsname _ur:#2\_endcsname \_lastnamedcs \_ea\_ea\_ea \_urlA
+   \_else #1#2\_ea\_ea\_ea \_urlB \_fi
+}
+\_sdef{_ur:://}{\_urlskip:\_urlskip/\_urlskip/\_urlbskip}
+\_sdef{_ur:/}{\_urlskip/\_urlbskip}
+\_sdef{_ur:.}{\_urlskip.\_urlbskip}
+\_sdef{_ur:?}{\_urlskip?\_urlbskip}
+\_sdef{_ur:=}{\_urlskip=\_urlbskip}
+\_sdef{_ur:-}{\_urlskip-\_urlbskip}
+\_sdef{_ur:&}{\_urlskip\_char`\&\_urlbskip}
+\_sdef{_ur:gb|}{\_urlgskip}
+
+\_def\_urlfont{\_tt}                    % url font
+\_def\_urlxskip{\_penalty9990\_hskip0pt plus0.03em\_relax} % skip between normal characters
+\_def\_urlskip{\_null\_nobreak\_hskip0pt plus0.1em\_relax} % skip before :// / . ? = - &
+\_def\_urlbskip{\_penalty100 \_hskip0pt plus0.1em\_relax}  % skip after  :// / . ? = - &
+\_def\_urlgskip{\_penalty-500\_relax}   % "goodbreak" penalty generated by \|
+
+\_public \url ;
+
+\_endcode % ----------------------------------------
+
+
+There are six types of internal links and one type of external link used
+in \OpTeX/. They are used in the format <type>:<spec>.
+
+\begitems
+* `ref:<label>`     -- the destination is created when `\label[<label>]` is used,
+                       see also the section \ref[references].
+* `toc:<tocrefnum>` -- the destination is created at chap/sec/secc titles,
+                       see also the section \ref[maketoc].
+* `pg:<gpageno>`    -- the destination is created at beginning of each page,
+                       see also the section \ref[output].
+* `cite:<bibpart>/<bibnum>`   -- the destination is created in bibliography reference,
+                       see section \ref[bib].
+* `fnt:<gfnotenum>` -- link form text to footnote, see also section~\ref[fnotes].
+* `fnf:<gfnotenum>` -- link from footnote to text, see also section~\ref[fnotes].
+* `url:<url>`       -- used by `\url` or `\ulink`,
+                       see also the end of this section.
+\enditems
+
+The `<tocrefnum>`, `<gpageno>`, `<bibnum>`, and `<gfnotenum>` are numbers starting
+from one and globally incremented by one in the whole document. The registers \^`\tocrefnum`,
+\^`\gpageno`, \^`\bibnum`, and \^`\_gfnotenum` are used for these numbers.
+
+When a chap/sec/secc title is prefixed by `\label[<label>]`, then both types
+of internal links are created at the same destination place:
+`toc:<tocrefnum>` and `ref:<label>`.
+
+The color for active links can be declared by `\def\_<type>linkcolor`, the
+border around link can be declared by `\def\_<type>border`. These macros are
+not declared by default, so color for active links are given only by
+\^`\hyperlinks` macro and borders are invisible.
+For example `\def\_toclinkcolor{\Red}` means that links from table of
+contents are in red.
+Another example `\def\_tocborder{1 0 0}` causes red frames in TOC
+(not printed, only visible in PDF viewers).
+
+
+\_endinput
+
+2021-05-14 \_xlink introduced, \link, \ilink, \ulink re-implemented.
+2021-05-12 \url: triplet :// instead //, \_urlslashslash removed.
+2021-05-11 \url reimplemented, \_urlxskip added.
+2021-04-30 \url: \detokenize of \tmpb added, bug fix.
+2021-04-17 attr{\_pdfborder{...}} instead expanding \_pdfborder to attr{...}
+2021-04-02 The possibility of \def\_toclinkcolor introduced, \localcolor moved
+2021-01-27 \public \link added to \hyperlinks, bug fixed.
+2020-04-22 \| in \url: bug fixed
+2020-03-15 introduced

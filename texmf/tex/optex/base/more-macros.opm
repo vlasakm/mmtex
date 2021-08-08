@@ -1,0 +1,285 @@
+%% This is part of the OpTeX project, see http://petr.olsak.net/optex
+
+\_codedecl \eoldef {OpTeX useful macros <2021-04-25>} % preloaded in format
+
+   \_doc -----------------------------
+   We define \`\opinput` `{<file name>}` macro which
+   does `\input {<file name>}` but the catcodes are set to normal catcodes
+   (like \OpTeX/ initializes them) and the catcodes setting is returned back to
+   the current values when the file is read. You can use `\opinput`
+   in any situation inside the document and you will be sure that the file
+   is read correctly with correct catcode settings.
+
+   To achieve this, we declare \`\optexcatcodes` catcode table
+   and \`\plaintexcatcodes`. They save the commonly used catcode tables.
+   Note that `\catcodetable` is a part of \LuaTeX/ extension.
+   The catcodetable stack is implemented by \OpTeX/ macros.
+   The \`\setctable` `<catcode table>` pushes 
+   current catcode table to the stack and activates catcodes from
+   the `<catcode table>`. The \`\restorectable` returns to the saved catcodes
+   from the catcode table stack.
+
+   The `\opinput` works inside the catcode table stack. It reads `\optexcatcodes`
+   table and stores it to \`\_tmpcatcodes`  table.
+   This table is actually used during `\input` (maybe catcodes are
+   changed here). Finally, `\_restoretable` pops the stacks and returns
+   to the catcodes used before `\opinput` is run.
+   \_cod -----------------------------
+
+\_def\_opinput #1{\_setctable\_optexcatcodes
+   \_savecatcodetable\_tmpcatcodes \_catcodetable\_tmpcatcodes
+   \_input {#1}\_relax\_restorectable}
+
+\_newcatcodetable \_optexcatcodes
+\_newcatcodetable \_plaintexcatcodes
+\_newcatcodetable \_tmpcatcodes
+
+\_public \optexcatcodes \plaintexcatcodes \opinput ;
+
+\_savecatcodetable\_optexcatcodes
+{\_catcode`_=8 \savecatcodetable\plaintexcatcodes}
+
+   \_doc -----------------------------
+   The implementation of the catcodetable stack follows. 
+
+   The current catcodes are
+   managed in the `\catcodetable0`. If the `\setctable` is used first (or at
+   the outer level of the stack), then the `\catcodetable0` is pushed to the
+   stack and the current table is re-set to the given `<catcode table>`.
+   The numbers of these tables are stacked to the \`\_ctablelist` macro.
+   The `\restorectable` reads the last saved catcode table number from the
+   `\_ctablelist` and uses it.
+   \_cod -----------------------------
+
+\_catcodetable0
+
+\_def\_setctable#1{\_edef\_ctablelist{{\_the\_catcodetable}\_ctablelist}%
+   \_catcodetable#1\_relax
+}
+\_def\_restorectable{\_ea\_restorectableA\_ctablelist\_relax}
+\_def\_restorectableA#1#2\_relax{%
+   \_ifx^#2^\_opwarning
+      {You can't use \_noindent\restorectable without previous \_string\setctable}%
+   \_else \_def\_ctablelist{#2}\_catcodetable#1\_relax \_fi
+}
+\_def\_ctablelist{.}
+
+\_public \setctable \restorectable ;
+
+   \_doc -----------------------------
+   When a special macro is defined with different catcodes then
+   \`\normalcatcodes` can be used at the end of such definition. 
+   The normal catcodes are restored.
+   The macro reads
+   catcodes from `\optecatodes` table and sets it to the main catcode table 0.
+   \_cod -----------------------------
+
+\_def\_normalcatcodes {\_catcodetable\_optexcatcodes \_savecatcodetable0 \_catcodetable0 }
+\_public \normalcatcodes ;
+
+   \_doc -----------------------------
+   The \`\load` `[<filename-list>]` loads files specfied in
+   comma separated `<filename-list>`. The first space (after comma)
+   is ignored using the trick `#1#2,`: first parameter is unseparated.
+   The `\load` macro saves information about loaded files by setting
+   `\_load:<filename>` as a defined macro.
+
+   If the \`\_afterload` macro is defined then it is run after `\_opinput`.
+   The catcode setting should be here. Note that catcode setting done in the
+   loaded file is forgotten after the `\opinput`.
+   \_cod -----------------------------
+
+\_def \_load [#1]{\_loadA #1,,,\_end}
+\_def \_loadA #1#2,{\_ifx,#1 \_ea \_loadE \_else \_loadB{#1#2}\_ea\_loadA\_fi}
+\_def \_loadB #1{%
+   \_ifcsname _load:#1\_endcsname \_else
+      \_isfile {#1.opm}\_iftrue \_opinput {#1.opm}\_else \_opinput {#1}\_fi
+      \_sxdef{_load:#1}{}%
+      \_trycs{_afterload}{}\_let\_afterload=\_undefined
+   \_fi
+}
+\_def \_loadE #1\_end{}
+\_public \load ;
+
+   \_doc -----------------------------
+   The declarator \`\optdef``\macro [<opt default>] <params>{<replacement text>}` 
+   defines the `\macro` with the optional parameter followed by normal parameters
+   declared in `<params>`. The optional parameter must be used as the first
+   first parameter in brackets `[...]`. If it isn't used then <opt default>
+   is taken into account. The `<replacement text>` can use `\the\opt`
+   because optional parameter is saved to the \`\opt` tokens register.
+   Note the difference from \LaTeX/ concept where the optional parameter is
+   in `#1`. \OpTeX/ uses `#1` as the first normal parameter (if declared).
+
+   The \`\_nospaceafter` ignores the following optional space at expand
+   processor level using the negative `\romannumeral` trick.
+   \_cod -----------------------------
+
+\_def\_optdef#1[#2]{% 
+   \_def#1{\_opt={#2}\_isnextchar[{\_cs{_oA:\_string#1}}{\_cs{_oB:\_string#1}}}% 
+   \_sdef{_oA:\_string#1}[##1]{\_opt={##1}\_cs{_oB:\_string#1\_nospaceafter}}% 
+   \_sdef{_oB:\_string#1\_nospaceafter}% 
+} 
+\_def\_nospaceafter#1{\_ea#1\_romannumeral-`\.}
+\_newtoks\_opt
+
+\_public \opt \optdef ; 
+
+   \_doc -----------------------------
+   The declarator \`\eoldef``\macro #1{<replacement text>}` defines a `\macro`
+   which scans its parameter to the end of the current line.
+   This is the parameter `#1` which can be used in the `<replacement text>`.
+   The catcode of the `\endlinechar` is reset temporarily when the parameter is scanned. 
+
+   The macro defined by `\eoldef` cannot be used with its parameter inside
+   other macros because the catcode dancing is not possible here. But the
+   \`\bracedparam``\macro{<parameter>}` can be used here. The `\bracedparam`
+   is a prefix that re-sets temporarily the `\macro` to a `\macro` with
+   normal one parameter.
+
+   The \`\skiptoeol` macro reads the text to the end of the current line 
+   and ignores it.
+   \_cod -----------------------------
+
+\_def\_eoldef #1{\_def #1{\_begingroup \_catcode`\^^M=12 \_eoldefA #1}%
+   \_ea\_def\_csname _\_csstring #1:M\_endcsname}
+\_catcode`\^^M=12 %
+\_def\_eoldefA #1#2^^M{\_endgroup\_csname _\_csstring #1:M\_endcsname{#2}}%
+\_normalcatcodes %
+
+\_eoldef\_skiptoeol#1{}
+\_def\_bracedparam#1{\_ifcsname _\_csstring #1:M\_endcsname
+    \_csname _\_csstring #1:M\_ea \_endcsname
+    \_else \_csname __in\_csstring #1:M\_ea \_endcsname \_fi
+} 
+\_public \eoldef \skiptoeol \bracedparam ;
+
+   \_doc -----------------------------
+   \`\scantoeol``\macro <text to end of line>` scans the
+   `<text to end of line>` in verbatim mode and runs the
+   `\macro{<text to end of line>}`. The `\macro`
+   can be defined `\def\macro#1{...\scantextokens{#1}...}`.
+   The new tokenization of the parameter is processed when the parameter is used,
+   no when the parameter is scanned. This principle is used in definition
+   of \^`\chap`, \^`\sec`, \^`\secc` and \^`\_Xtoc` macros.
+   It means that user can write \code{\\sec text `&` text} for example.
+   Inline verbatim works in title sections.
+
+   The verbatim scanner of `\scatoeol` keeps category 7 for `^` in
+   order to be able to use `^^J` as comment character which means that
+   the next line continues.
+   \_cod -----------------------------
+
+\_def\_scantoeol#1{\def\_tmp{#1}\_begingroup \_setscancatcodes \_scantoeolA}
+\_def\_setscancatcodes{\_setverb \_catcode`\^^M=12\_catcode`\^=7\_catcode`\ =10\_catcode`\^^J=14 }
+\_catcode`\^^M=12 %
+\_def\_scantoeolA#1^^M{\_endgroup \_tmp{#1}}%
+\_normalcatcodes %
+
+\_public \scantoeol ;
+
+   \_doc -----------------------------
+   The \`\replstring``\macro{<textA>}{<textB>}`
+   replaces all occurrences of `<textA>` by `<textB>` in the `\macro` body.
+   The `\macro` must be defined without parameters. The occurrences of
+   `<textA>` are not replaced if they are \"hidden" in braces, for example
+   `...{...<textA>...}...`. The category codes in the `<textA>` must exactly
+   match.
+
+   How it works: `\replstring\foo{<textA>}{<textB>}` prepares
+   `\_replacestringsA#1<textA>{...}` and runs
+   `\_replacestringsA<foo-body>?<textA>!<textA>`.
+   So, `#1` includes the first part of <foo-body> before first <textA>.
+   It is saved to \`\_tmptoks` and `\_replacestringsB` is run in a loop.
+   It finishes processing or appends the next part to `\_tmptoks` separated by
+   <textB> and continues loop. The final part of the macro removes the last `?`
+   from resulting `\_tmptoks` and defines a new version of the `\foo`.
+   \_cod -----------------------------
+
+\_newtoks\_tmptoks
+\_catcode`!=3 \_catcode`?=3
+\_def\_replstring #1#2#3{%  \replstring #1{stringA}{stringB}
+   \_long\_def\_replacestringsA##1#2{\_tmptoks{##1}\_replacestringsB}%
+   \_long\_def\_replacestringsB##1#2{\_ifx!##1\_relax \_else \_toksapp\_tmptoks{#3##1}%
+                                     \_ea\_replacestringsB\_fi}%
+   \_ea\_replacestringsA #1?#2!#2%
+   \_long\_def\_replacestringsA##1?{\_tmptoks{##1}\_edef#1{\_the\_tmptoks}}%
+   \_ea\_replacestringsA \_the\_tmptoks}
+\_normalcatcodes
+
+\_public \replstring ;
+
+   \_doc -----------------------------
+   The \`\catcode` primitive is redefined here. Why?
+   There is very common cases like \code{\\catcode`}`<something>`
+   or `\catcode"<number>` but these characters
+   \code{\`} or \code{"} can be set as active (typically by `\verbchar` macro).
+   Nothing problematic happens if re-defined `\catcode` is used in this case.
+
+   If you really need primitive `\catcode` then you can use `\_catcode`.
+   \_cod -----------------------------
+
+\_def\catcode#1{\_catcode \_if`\_noexpand#1\_ea`\_else\_if"\_noexpand#1"\_else
+   \_if'\_noexpand#1'\_else \_ea\_ea\_ea\_ea\_ea\_ea\_ea#1\_fi\_fi\_fi}
+
+   \_doc -----------------------------
+   The \`\removespaces` `<text with spaces >{}` expands to <textwithoutspaces>.
+   \nl
+   The 	`\_ea`\`\ignorept``\the<dimen>` expands to a decimal
+   number `\the<dimen>` but without `pt` unit.
+   \_cod -----------------------------
+
+\_def\_removespaces #1 {\_isempty{#1}\_iffalse #1\_ea\_removespaces\_fi}
+\_ea\_def \_ea\_ignorept \_ea#\_ea1\_detokenize{pt}{#1}
+
+\public \removespaces \ignorept ;
+
+   \_doc -----------------------------
+   You can use expandable \`\bp``{<dimen>}` convertor from
+   \TeX/ `<dimen>` (or from an expression accepted by
+   `\dimexpr` primitive) to a decimal value in big points
+   (used as natural unit in the PDF format). So, you can write, for example:
+   \begtt
+   \pdfliteral{q \_bp{.3\hsize-2mm} \_bp{2mm} m 0 \_bp{-4mm} l S Q}
+   \endtt
+   You can use expandable \`\expr``{<expression>}` for analogical purposes.
+   It expands to the value of the `<expression>` at expand processor level
+   with \`\_decdigits` digits after the decimal point.
+   The `<expression>` can include `+-*/()` and decimal numbers in common syntax.
+
+   The usage of prefixed versions \`\_expr` or \`\_bp` is more recommended
+   because a user can re-define the control sequences `\expr` or `\bp`.
+   \_cod -----------------------------
+
+\_def\_decdigits{3} % digits after decimal point in \_bp and \_expr outputs.
+\_def\_pttopb{%
+   \_directlua{tex.print(string.format('\_pcent.\_decdigits f',
+               token.scan_dimen()/65781.76))}%  pt to bp conversion
+}
+\def\_bp#1{\_ea\_pttopb\_dimexpr#1\_relax}
+\def\_expr#1{\_directlua{tex.print(string.format('\_pcent.\_decdigits f',#1))}}
+
+\_public \expr \bp ;
+
+   \_doc ------------------
+   The pair {\`\_doc` ... \`\_cod`} is used for documenting macros and to
+   printing the technical documentation of the \OpTeX/. The syntax is:
+   {\begtt \catcode`\<=13
+   \_doc <ignored text>
+   <documentation>
+   \_cod <ignored text>
+   \endtt
+   }
+   The `<documentation>` (and `<ignored text>` too) must be `<balanced text>`. 
+   It means that you cannot document only the `{` but you must document the `}` too.
+   \_cod ------------------
+
+\_long\_def\_doc #1\_cod {\_skiptoeol}
+
+\_endcode % -------------------------------------
+
+2021-04-25 \normalcatcodes: typo fixed
+2021-04-22 \the\_currctable replaced by \the\_catcodetable, bug fixed.
+2020-05-22 robust \catcode newly defined in order \catcode\string.... be possible
+2020-05-03 \load macro introduced
+2020-03-15 released

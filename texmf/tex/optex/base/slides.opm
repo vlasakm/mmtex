@@ -1,0 +1,311 @@
+% This is part of the OpTeX project, see http://petr.olsak.net/optex
+
+\_codedecl \slideshow {Slides style for OpTeX <2021-04-22>} % loaded on demand by \slides
+
+   \_doc -----------------------------
+   Default margins and design is declared here.
+   The `\_ttfont` is scaled by `mag1.15` in order to balance the
+   ex height of Helvetica (Heros) and LM fonts Typewriter.
+   The `\begtt`...`\endtt` verbatim is printed by smaller text.
+   \_cod -----------------------------
+
+\_margins/1 a5l (14,14,10,3)mm  % landscape A5 format
+\_def\_wideformat{\_margins/1 (263,148) (16,16,10,3)mm } % 16:9 format
+
+\_ifx\_fontnamegen\_undefined \_fontfam[Heros]
+   \_let\_ttfont=\_undefined \_famvardef\_ttfont{\_setfontsize{mag1.15}\_tt}
+\_fi
+\_typosize[16/19]
+\_def\_urlfont{}
+\_everytt={\_typosize[13/16] \_advance\_hsize by10mm}
+\_fontdef\_fixbf{\_bf}
+
+\_nopagenumbers
+\_parindent=0pt
+\_ttindent=5mm
+\_parskip=5pt plus 4pt minus2pt
+\_rightskip=0pt plus 1fil
+\_ttindent=10pt
+\_def\_ttskip{\_smallskip}
+
+\_onlyrgb   % RGB color space is better for presentations
+
+   \_doc -----------------------------
+   The bottom margin is set to 3\,mm. If we use 1\,mm, then the baseline of
+   `\footline` is 2\,mm from the bottom page. This is the depth of the `\Grey`
+   rectangle used for page numbers. It is r-lapped to `\hoffset` width because left
+   margin = `\hoffset` = right margin. It is 14\,mm for narrow pages or
+   16\,mm for wide pages.
+   \_cod -----------------------------
+
+\_footlinedist=1mm
+\_footline={\_hss \_rlap{%
+   \_rlap{\Grey\_kern.2\_hoffset\_vrule height6mm depth2mm width.8\_hoffset}%
+                      \_hbox to\_hoffset{\White\_hss\_folio\_kern3mm}}}
+
+   \_doc -----------------------------
+   The \`\subtit` is defined analogically like `\tit`.
+   \_cod -----------------------------
+
+\_eoldef\_subtit#1{\_vskip20pt {\_leftskip=0pt plus1fill \_rightskip=\_leftskip
+   \_subtitfont #1\_nbpar}}
+
+   \_doc -----------------------------
+   The \`\pshow``<num>` prints the text in invisible
+   (transparent) font when \^`\layernum`\code{<}`<num>`.
+   The transparency is set by `\pdfpageresoyrces` primitive.
+   \_cod -----------------------------
+
+\pdfpageresources{/ExtGState << /Invisible << /Type /ExtGState /ca 0 /CA 0 >>
+                                /Visible   << /Type /ExtGState /ca 1 /CA 1 >> >>}
+\addto\_morepgresources{/Invisible << /Type /ExtGState /ca 0 /CA 0 >>
+                        /Visible   << /Type /ExtGState /ca 1 /CA 1 >>}
+\def\Invisible {\_pdfliteral{/Invisible gs}}
+\def\Visible   {\_pdfliteral{/Visible gs}}
+\def\Transparent {\Invisible \_aftergroup \Visible}
+
+\_def\_use#1#2{\_ifnum\_layernum#1\_relax#2\_fi}
+\_def\_pshow#1{\_use{=#1}\Red \_use{<#1}\Transparent \_ignorespaces}
+
+   \_doc -----------------------------
+   The main level list of items is activated here. The `\_item:X` and
+   `\_item:x` are used and are re-defined here.
+   If we are in a nested level of items and `\pg+` is used then
+   `\egroups` macro expands to the right number of `\egroup`s
+   to close the page correctly. The level of nested item lists
+   is saved to the `\_ilevel` register and used when we start again
+   the next text after `\pg+`.
+   \_cod -----------------------------
+
+\_newcount\_gilevel
+\_def\*{*}
+\_adef*{\_relax\_ifmmode*\_else\_ea\_startitem\_fi} % defined also in styles.opm
+\_sdef{_item:X}{\Blue\_raise.2ex\_fullrectangle{.8ex}\_kern.5em}
+\_sdef{_item:x}{\Blue\_raise.3ex\_fullrectangle{.6ex}\_kern.4em}
+\_style X
+\_def\_egroups{\_par\_global\_gilevel=\_ilevel \_egroup}
+\_everylist={\_novspaces \_ifcase\_ilevel \_or \_style x \_else \_style - \_fi
+   \_addto\_egroups{\_egroup}}
+
+   \_doc -----------------------------
+   The default values of \`\pg`, i.\,e.\ `\pg;`, `\pg+` and `\pg.` are very simple.
+   They are used when `\showslides` is not specified.
+   \_cod -----------------------------
+
+\_def\_pg#1{\_cs{_spg:#1}}
+\_sdef{_spg:;}{\_vfil\_break \_lfnotenumreset}
+\_sdef{_spg:.}{\_endslides}
+\_sdef{_spg:+}{\_par}
+
+   \_doc -----------------------------
+   The \`\_endslides` is defined as `\_end` primitive (preceeded by `\_byehook`), but
+   slide-designer can redefine it. For example,
+   \ulink[http://petr.olsak.net/optex/optex-tricks.html\#slider]{OpTeX trick 0029}
+   shows how to define clickable navigation to the pages and how to check
+   the data integrity at the end of the document using `\_endslides`.
+
+   The `\bye` macro is redefined here as an alternative to `\pg.`.
+   \_cod -----------------------------
+
+\_def\_endslides{\_byehook \_end}
+\_def\bye{\_pg.}
+
+   \_doc -----------------------------
+   We need no numbers and no table of contents when using slides.
+   The \^`\_printsec` macro is redefined in order the title is centered
+   and typeset in `\Blue`.
+   \_cod -----------------------------
+
+\_def\_titfont{\_typosize[42/60]\_bf \Blue}
+\_def\_subtitfont{\_typosize[20/30]\_bf}
+\_def\_secfont{\_typosize[25/30]\_bf \Blue}
+
+\_nonum \_notoc \_let\_resetnonumnotoc=\_relax
+\_def\_printsec#1{\_par
+   \_abovetitle{\_penalty-400}\_bigskip
+   {\_secfont \_noindent \_leftskip=0pt plus1fill \_rightskip=\_leftskip
+     \_printrefnum[@\_quad]#1\_nbpar}\_insertmark{#1}%
+   \_nobreak \_belowtitle{\_medskip}%
+}
+
+   \_doc -----------------------------
+   When \`\slideshow` is active then each page is opened
+   by `\setbox\_slidepage=\vbox\bgroup` (roughly speaking)
+   and closed by `\egroup`. The material is
+   `\unvbox`ed and saved for the usage in the next usage if `\pg+` is in process.
+   The \`\_slidelayer` is incremented instead `\pageno` if `\pg+`.
+   This counter is equal to `\count1`, so it is printed to the terminal and
+   log file next to `\pageno`.
+
+   The code is somewhat more complicated when \^`\layers` is used. Then
+   `<layered-text>` is saved to the \`\_layertext` macro, the material before
+   it is in \`\_slidepage` box and the material after it is in \`\_slidepageB`
+   box. The pages are completed in the `\loop` which increments the
+   \`\layernum` register and prints page by the \`\_printlayers`
+   \_cod -----------------------------
+
+\_newbox\_slidepage  \_newbox\_slidepageB
+\_countdef\_slidelayer=1
+
+\_def\_slideshow{\_slidelayer=1 \_slideshowactive
+   \_let\slideopen=\_relax  % first wins
+   \_setbox\_slidepage=\_vbox\_bgroup\_bgroup}
+
+\_def\_slideshowactive{%
+   \_sdef{_spg:;}{\_closepage \_global\_slidelayer=1 \_resetpage \_openslide}
+   \_sdef{_spg:.}{\_closepage \_endslides}
+   \_sdef{_spg:+}{\_closepage \_incr\_slidelayer \_decr\_pageno \_openslide}
+   \_let\_layers=\_layersactive
+   \_slidelinks % to prevent hyperlink-dests duplication
+}
+\_def\_openslide{\_setbox\_slidepage=\_vbox\_bgroup\_bgroup \_setilevel
+   \_ifvoid\_slidepage \_else \_unvbox\_slidepage \_nointerlineskip\_lastbox \_fi}
+\_def\_setilevel{\_loop \_decr\_gilevel \_ifnum\_gilevel<0 \_else \_begitems \_repeat}
+
+\_def\_closepage{\_egroups \_egroup
+   \_ifnum \_maxlayers=0 \_unvcopy\_slidepage \_vfil\_break
+   \_else \_begingroup \_setwarnslides \_layernum=0
+      \_loop
+         \_ifnum\_layernum<\_maxlayers \_advance\_layernum by1
+            \_printlayers \_vfil\_break
+            \_ifnum\_layernum<\_maxlayers \_incr\_slidelayer \_decr\_pageno \_fi
+      \_repeat
+      \_global\_maxlayers=0
+      \_incr\_layernum \_global\_setbox\_slidepage=\_vbox{\_printlayers}%
+      \_endgroup
+   \_fi}
+\_def\_resetpage{%
+   \_global\_setbox\_slidepage=\_box\_voidbox \_global\_setbox\_slidepageB=\_box\_voidbox
+   \_lfnotenumreset
+}
+\_def\_setwarnslides{%
+   \_def\pg##1{\_opwarning{\_string\pg##1 \_layersenv}\_def\pg####1{}}%
+   \_def\layers##1 {\_opwarning{\_string\layers\_space \_layersenv}\_def\layers####1{}}%
+}
+\_def\_layersenv{cannot be inside \_string\layers...\_string\endlayers, ignored}
+
+\_def\_printlayers{\_unvcopy\_slidepage \_prevdepth=\_dp\_slidepage
+   {\_layertext \_endgraf}%
+   \_vskip\_parskip
+   \_unvcopy\_slidepageB
+}
+\_let\_destboxori=\_destbox
+
+\_newcount\_layernum \_newcount\_maxlayers
+\_maxlayers=0
+
+\_long\_def\_layersactive #1 #2\endlayers{%
+   \_par\_penalty0\_egroup\_egroup
+   \_gdef\_layertext{\_settinglayer#2}%
+   \_global\_maxlayers=#1
+   \_setbox\_slidepageB=\_vbox\_bgroup\_bgroup
+      \_setbox0=\_vbox{{\_layernum=1 \_globaldefs=-1 \_layertext\_endgraf}}\_prevdepth=\_dp0
+}
+\_public \subtit \slideshow \pg \wideformat \use \pshow \layernum ;
+
+   \_doc -----------------------------
+   \`\slideopen` should be used instead \^`\slideshow` to deactivate it
+   but keep the borders of groups.
+   \_cod -----------------------------
+
+\_def\_slideopen{\_let\slideshow=\_relax % first wins
+   \_sdef{_spg:;}{\_egroups\_vfil\_break \_lfnotenumreset\_bgroup \_setilevel}
+   \_sdef{_spg:.}{\_egroups\_endslides}
+   \_sdef{_spg:+}{\_egroups\_bgroup \_setilevel}
+   \_let\_layersopen=\_egroup \_let\_layersclose\_bgroup
+   \_bgroup
+}
+\_public \slideopen ;
+
+   \_doc -----------------------------
+   When \^`\slideshow` is active then the destinations of internal hyperlinks
+   cannot be duplicated to more \"virtual" pages because
+   hyperlink destinations have to be unique in the whole document.
+
+   The \^`\slideshow` creates boxes of typesetting material and copies them to
+   more pages. So, we have to suppress creating destinations in these boxes.
+   This is done in the \`\_slidelinks` macro. We
+   can move creating these destinations to the output routine. \`\_sdestbox` is
+   saved value of the original `\_destbox` which is redefined to do only
+   `\addto\_destboxes{\_sdestbox[<label>]}`. All destinations saved to
+   \`\_destboxes` are created at the start of the next output routine in the
+   \^`\_pagedest` macro. The output routine removes `\_destboxes`, so each
+   destination is created only once.
+
+   Limitations of this solution: destinations are only at the start of the
+   page, no at the real place where \^`\wlabel` was used. The first \"virtual"
+   page where \^`\wlabel` is used includes its destination. If you want to
+   go to the final page of the partially uncovering ideas then
+   use \^`\label``[<label>]`\^`\wlabel``{text}` in the last part of
+   the page (before `\pg;`) o use \^`\pgref` instead \^`\ref`.
+   \_cod -----------------------------
+
+\_def\_slidelinks{%
+   \_def \_destbox[##1]{\_edef\_tmp{\_noexpand\_sdestbox[##1]}%
+      \_global\_ea\_addto\_ea\_destboxes\_ea{\_tmp}}%
+   \_def \_pagedest {%
+      \_hbox{\_def\_destheight{25pt}\_sdestbox[pg:\_the\_gpageno]\_destboxes}%
+      \_nointerlineskip \_gdef\_destboxes{}%
+   }%
+   \_ifx \_dest\_destactive \_else \_let\_pagedest=\_relax \_fi
+}
+\_let\_sdestbox = \_destbox
+\_def\_destboxes{}    % initial value of \_destboxes
+\_let\_bibgl=\_global % \advance\bibnum must be global if they are at more pages
+
+   \_doc -----------------------------
+   The \`\_settinglayer` is used in the \^`\_layertext` macro to prevent
+   printing \"Duplicate label" warning when it is expanded. It is done
+   by special value of \`\_slideshook` (used by the \^`\label` macro).
+   Moreower, the warning about illegal use of `\bib`, `\usebib` in `\layers`
+   environment is activated.
+   \_cod -----------------------------
+
+\_def\_settinglayer{%
+   \_def\_slideshook ##1##2{}%
+   \_def\_bibB[##1]{\_nousebib}\_def\_usebib/##1 (##2) ##3 {\_nousebib}%
+}
+\_def\_nousebib{\_opwarning{Don't use \noexpand\bib nor \noexpand\usebib in \string\layers}}
+
+   \_doc -----------------------------
+   Default \`\layers` `<num>` macro (when \^`\slideshow` is not activated) is simple.
+   It prints the `<layered-text>` with `\layernum=<num>+1` because we need the
+   result after last layer is processed.
+   \_cod -----------------------------
+
+\_long\_def\_layers #1 #2\endlayers{\_par
+   \_layersopen {\_layernum=\_numexpr#1+1\_relax #2\_endgraf}\_layersclose}
+\_let\_layersopen=\_relax
+\_let\_layersclose=\_relax
+
+\_def\layers{\_layers}
+
+   \_doc -----------------------------
+   We must to redefine \`\fnotenumpages` because the data from `.ref` file
+   are less usable for implementing such a feature: the
+   footnote should be in more layers repeatedly. But we can suppose that
+   each page starts by `\pg;` macro, so we can reset the footnote counter by
+   this macro.
+   \_cod -----------------------------
+
+\_def \_fnotenumpages {\_def\_fnotenum{\_the\_lfnotenum}\_pgfnotefalse
+   \_def\_lfnotenumreset{\_global\_lfnotenum=0 }}
+\_let \_lfnotenumreset=\_relax
+\_public \fnotenumpages ;
+
+\_endcode % ----------------------------------------------
+
+The user manual of \OpTeX/ slides are in `op-slides.tex` file.
+
+2021-04-22 \adef* moved back, bug fixed in more-macros.opm
+2021-04-21 \adef* removed from slides.opm, bug fixed
+2021-04-19 \_byehook added to \_endslides.
+2021-04-13 hyperlinks destinations are moved to the output routine when \slideshow
+2021-04-10 \layers: \prevdepth calculation added, {\_layertext} group added
+2021-04-10 \layers: bug with \setbox\_slidepageB fixed
+2021-04-10 \layers: \vskip\parskip added after \unvcopy\_slidepage
+2021-03-10 \slideopen introduced, bug with colors in \setbox fixed
+2021-03-10 \ifmmode* added to \adef*
+2021-02-15 \_def\_decr removed
+2021-01-16 \layers at empty page raises error: problem fixed
+2020-03-19 slides introduced
