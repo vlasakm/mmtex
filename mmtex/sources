@@ -27,8 +27,6 @@ http://mirrors.ctan.org/language/hyph-utf8.zip # hyph-utf8
 https://unicode.org/Public/zipped/latest/UCD.zip # unicode-data
 http://mirrors.ctan.org/macros/luatex/generic/lualibs.zip # lualibs
 http://mirrors.ctan.org/macros/luatex/generic/luaotfload.zip # luaotfload
-http://mirrors.ctan.org/macros/luatex/generic/luamplib.zip # luamplib
-svn+https://serveur-svn.lri.fr/svn/modhel/metapost/trunk/texmf/metapost/base # metapost base
 
 # For OpTeX
 http://mirrors.ctan.org/macros/optex.zip # optex

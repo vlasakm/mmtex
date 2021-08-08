@@ -54,9 +54,6 @@ ln -sf docstrip.dtx docstrip.tex
 # generate lipsum.ltd.tex
 TEXMFDOTDIR=.:lipsum mmluatex -ini 'lipsum.ins'
 
-# generate luamplib.{sty.lua}
-TEXMFDOTDIR=.:luamplib mmluatex -ini '\catcode`\{=1 \catcode`\}=2 \let\obeyspaces\relax \input luamplib.dtx'
-
 # generate some lualibs files
 TEXMFDOTDIR=.:lualibs mmluatex -ini '\catcode`\{=1 \catcode`\}=2 \let\obeyspaces\relax \input lualibs.dtx'
 
@@ -66,8 +63,6 @@ install UnicodeData.txt CaseFolding.txt PropList.txt ScriptExtensions.txt Script
 install lualibs*.lua lualibs/lualibs*-merged.lua lualibs/*-compat.lua -t "$TEXMF/tex/lualibs"
 install luaotfload/luaotfload*.lua luaotfload/fontloader-????-??-??.lua luaotfload/fontloader-basics-gen.lua -t "$TEXMF/tex/luaotfload"
 rm -f "$TEXMF/tex/luaotfload/luaotfload-characters.lua"
-install luamplib.lua luamplib.sty -t "$TEXMF/tex/luamplib"
-install base/*.mp -t "$TEXMF/metapost"
 
 # install external files needed by optex
 install lipsum.sty *.ltd.tex -t "$TEXMF/tex/lipsum"
