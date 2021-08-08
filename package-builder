@@ -127,7 +127,6 @@ arch_package() {
 	fakeroot -- bash <<- EOF
 	pkgname="$pkgname"
 	url="$pkgurl"
-	pkdir="$pkgdir"
 	arch=("$arch_arch")
 	pkgdir="$pkgdir"
 	pkgrel=1
