@@ -572,5 +572,6 @@ executable(
   include_directories: [luatex_inc, mmtex_inc],
   dependencies: luatex_dependencies,
   c_args: luatex_c_args,
+  export_dynamic: true,
   install: true,
 )
