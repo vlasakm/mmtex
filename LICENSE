@@ -33,11 +33,6 @@ Files in the "lualibs" directory come from "lualibs"
 (https://www.ctan.org/pkg/lualibs, LaTeX3 Project, PRAGMA ADE, ConTeXt
 developers, under GPLv2).
 
-Files in the "luamplib" directory come from "luamplib"
-(https://www.ctan.org/pkg/luamplib, LuaLaTeX team, Hans Hagen, Taco Hoekwater,
-Elie Roux, Manuel Pégourié-Gonnard, Philipp Gesang and Kim Dohyun, under
-GPLv2).
-
 Files in the "luaotfload" directory come from "luaotfload"
 (https://www.ctan.org/pkg/luaotfload, Luaotfload Development Team, ConTeXt
 developers, under GPLv2).
@@ -50,10 +45,6 @@ Files in the "optex" directory come from "OpTeX",
 
 Files in the "unicode-data" directory come from Unicode, Inc
 (https://www.unicode.org/Public/UNIDATA/, Unicode, Inc., see LICENSE.unicode).
-
-Files in the "metapost" directory come from "Metapost"
-(https://tug.org/metapost.html,
-https://serveur-svn.lri.fr/svn/modhel/metapost/, John Hobby, Public Domain).
 
 Files in the "rsfs" directory come from "rsfs" package
 (https://www.ctan.org/pkg/rsfs, Ralph Smith, Taco Hoekwater, provided under
