@@ -120,12 +120,6 @@ dependencies of built packages):
  - `zziplib`
  - `harfbuzz` (if compiling with `luaharfbuzz`, therefore making `luahbtex` variant)
 
-
-# Documentation
-
-See `doc/old-mmtex-doc.tex`, an older document, for motivation and some design
-decisions.
-
 # License
 
 The license for files found in this repository is in file `LICENSE.mmtex`. For
