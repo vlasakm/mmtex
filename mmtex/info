@@ -1,7 +1,7 @@
 pkgver=$(git describe --tag | sed 's/^v//;s/-/./g')
 pkgdesc='A minimal modern (Lua)TeX distribution'
 pkgurl='https://github.com/vlasakm/mmtex'
-arch_arch=x86_64
-debian_arch=`dpkg --print-architecture`
+arch_arch=$(uname -m)
+debian_arch=$(dpkg --print-architecture)
 arch_depends="zziplib libpng zlib otf-latin-modern otf-latinmodern-math harfbuzz"
 debian_depends="libzzip-0-13, libpng16-16, zlib1g, fonts-lmodern, libharfbuzz-bin"
