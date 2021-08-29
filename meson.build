@@ -17,7 +17,14 @@ mmoptex_fmt = custom_target(
   'mmoptex.fmt',
   input: files('texmf/tex/mmoptex/mmoptex.ini'),
   output: 'mmoptex.fmt',
-  command: ['env', 'TEXMF=' + meson.current_source_dir() + '/texmf', mmluatex, '-ini', '@INPUT@'],
+  command: [
+    'env',
+    'TEXMF=' + meson.current_source_dir() + '/texmf',
+    'TEXMFCNF=/none', # no config files
+    mmluatex,
+    '-ini',
+    '@INPUT@'
+  ],
   install_dir: mmtex_datadir + '/web2c',
   install: true,
 )
