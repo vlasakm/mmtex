@@ -129,6 +129,7 @@ librarian.tex
 
 ./tex/lipsum:
 cicero.ltd.tex
+lipsum-cs.ltd.tex
 lipsum.ltd.tex
 lipsum.sty
 
