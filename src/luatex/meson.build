@@ -238,6 +238,41 @@ luatex_c_args = [
   '-DSYNCTEX_ENGINE_H=<synctex-luatex.h>',
 ]
 
+if get_option('luahbtex')
+  luaharfbuzz_src = files(
+    'src/luaharfbuzz/src/luaharfbuzz/blob.c',
+    'src/luaharfbuzz/src/luaharfbuzz/buffer.c',
+    'src/luaharfbuzz/src/luaharfbuzz/class_utils.c',
+    'src/luaharfbuzz/src/luaharfbuzz/direction.c',
+    'src/luaharfbuzz/src/luaharfbuzz/face.c',
+    'src/luaharfbuzz/src/luaharfbuzz/feature.c',
+    'src/luaharfbuzz/src/luaharfbuzz/font.c',
+    'src/luaharfbuzz/src/luaharfbuzz/language.c',
+    'src/luaharfbuzz/src/luaharfbuzz/luaharfbuzz.c',
+    'src/luaharfbuzz/src/luaharfbuzz/luaharfbuzz.h',
+    'src/luaharfbuzz/src/luaharfbuzz/ot.c',
+    'src/luaharfbuzz/src/luaharfbuzz/script.c',
+    'src/luaharfbuzz/src/luaharfbuzz/tag.c',
+    'src/luaharfbuzz/src/luaharfbuzz/unicode.c',
+  )
+
+  harfbuzz_dep = dependency('harfbuzz')
+
+  luaharfbuzz_lib = static_library(
+    'luaharfbuzz',
+    sources: luaharfbuzz_src,
+    dependencies: [harfbuzz_dep, lua_dep],
+  )
+
+  luaharfbuzz_dep = declare_dependency(
+    link_with: luaharfbuzz_lib,
+    dependencies: [harfbuzz_dep, lua_dep],
+  )
+
+  luatex_dependencies += [luaharfbuzz_dep]
+  luatex_c_args +=  ['-DLUATEX_HARFBUZZ_ENABLED']
+endif
+
 mmluatex = executable(
   'mmluatex',
   sources: luatex_src,
