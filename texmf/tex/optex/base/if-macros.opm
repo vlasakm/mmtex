@@ -1,6 +1,6 @@
 %% This is part of the OpTeX project, see http://petr.olsak.net/optex
 
-\_codedecl \newif {Special if-macros, is-macros and loops <2021-02-03>} % preloaded in format
+\_codedecl \newif {Special if-macros, is-macros and loops <2021-08-02>} % preloaded in format
 
    \_doc ----------------------------
    \secc Classical \code{\\newif}
@@ -118,9 +118,9 @@
    \_ea\_fornumB\_ea{\_the\_numexpr#3\_ea}\_ea{\_the\_numexpr#1}%
 }
 \_def\_fornumB #1#2{\_ifnum#1\_ifnum#2>0<\_else>\_fi \_frnum \_getforstack
-   \_else \_ea\_fbody\_ea{\_the\_frnum}%
+   \_else \_afterfi{\_ea\_fbody\_ea{\_the\_frnum}%
       \_immediateassignment\_global\_advance\_frnum by#2
-      \_afterfi{\_fornumB{#1}{#2}}\_fi
+      \_fornumB{#1}{#2}}\_fi
 }
 \_def\fornum#1..#2\do{\_fornumstep 1:#1..#2\_do}
 \_def\fornumstep#1:#2..#3\do{\_fornumstep #1:#2..#3\_do}
@@ -304,6 +304,7 @@
 
 \_endcode
 
+2021-08-02 more robust \fornum: \fi moved by \afterfi
 2021-02-03 public version of \loop and \foreach are \long
 2020-05-22 \foreach, \fornum: all settings are global, independent on TeX group
 2020-05-06 \isnextchar: \let\tmp=#1 -> \let\tmp= #1 (bug fix, #1 should be space)
