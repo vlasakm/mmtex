@@ -1,8 +1,14 @@
-project('mmtex', 'c')
+project(
+  'mmtex',
+  'c',
+  version: '20210829',
+)
 
 #git = find_program('git', native: true)
 #git_tag = run_command([git, 'describe', '--tag'])
-mmtex_version = '20210515'#git_tag.stdout().strip()
+#mmtex_version = git_tag.stdout().strip()
+mmtex_version = meson.project_version()
+
 add_project_arguments('-DMMTEX_VERSION="@0@"'.format(mmtex_version), language: 'c')
 
 mmtex_inc = include_directories('include')
