@@ -1,6 +1,6 @@
 %% This is part of the OpTeX project, see http://petr.olsak.net/optex
 
-\_codedecl \inspic {Graphics <2021-03-19>} % preloaded in format
+\_codedecl \inspic {Graphics <2021-07-16>} % preloaded in format
 
    \_doc -----------------------------
    \`\inspic` accepts old syntax `\inspic <filename><space>`
@@ -231,8 +231,8 @@
    are parameters, they can be set by user in optional brackets `[...]`.
    For example `\fcolor=\Red` does `\_let\_fcolorvalue=\Red` and it means
    filling color.\nl
-   The \`\_setflcolor` uses the \^`\_fillstroke` macro to separate filling
-   color and drawing color.
+   The \`\_setflcolors` uses the \^`\_setcolor` macro to separate filling (non-stroking)
+   color and stroking color.
    \_cod -----------------------------
 
 \_newdimen \_lwidth
@@ -245,10 +245,9 @@
 \_def\_touppervalue#1{\_ifx#1n\_let#1=N\_fi}
 
 \_def\_setflcolors#1{% use only in a group
-   \_def\_setcolor##1{##1}%
-   \_def\_fillstroke##1##2{##1}%
+   \_def\_setcolor##1##2##3{##1 ##2}%
    \_edef#1{\_fcolorvalue}%
-   \_def\_fillstroke##1##2{##2}%
+   \_def\_setcolor##1##2##3{##1 ##3}%
    \_edef#1{#1\_space\_lcolorvalue\_space}%
 }
 \_optdef\_inoval[]{\_vbox\_bgroup
@@ -260,9 +259,7 @@
       \_advance\_hsize by-2\_hhkern \_advance\_hsize by-2\_roundness \_fi
    \_setbox0=\_hbox\_bgroup\_bgroup \_aftergroup\_inovalA \_kern\_hhkern \_let\_next=%
 }
-\_def\_inovalA{\_isnextchar\_colorstackpop\_inovalB\_inovalC}
-\_def\_inovalB#1{#1\_isnextchar\_colorstackpop\_inovalB\_inovalC}
-\_def\_inovalC{\_egroup % of \setbox0=\hbox\bgroup
+\_def\_inovalA{\_egroup % of \setbox0=\hbox\bgroup
    \_ifdim\_vvkern=\_zo \_else \_ht0=\_dimexpr\_ht0+\_vvkern \_relax
                                \_dp0=\_dimexpr\_dp0+\_vvkern \_relax \_fi
    \_ifdim\_hhkern=\_zo \_else \_wd0=\_dimexpr\_wd0+\_hhkern \_relax \_fi
@@ -290,9 +287,7 @@
    \_touppervalue\_overlapmarginsvalue \_touppervalue\_shadowvalue
    \_setbox0=\_hbox\_bgroup\_bgroup \_aftergroup\_incircleA \_kern\_hhkern \_let\_next=%
 }
-\_def\_incircleA {\_isnextchar\_colorstackpop\_incircleB\_incircleC}
-\_def\_incircleB #1{#1\_isnextchar\_colorstackpop\_incircleB\_incircleC}
-\_def\_incircleC {\_egroup % of \setbox0=\hbox\bgroup
+\_def\_incircleA {\_egroup % of \setbox0=\hbox\bgroup
    \_wd0=\_dimexpr \_wd0+\_hhkern \_relax
    \_ht0=\_dimexpr \_ht0+\_vvkern \_relax \_dp0=\_dimexpr \_dp0+\_vvkern \_relax
    \_ifdim \_ratiovalue\_dimexpr \_ht0+\_dp0 > \_wd0
@@ -319,6 +314,39 @@
 \_public \inoval \incircle \ratio \lwidth \fcolor \lcolor \shadow \overlapmargins ;
 
    \_doc -----------------------------
+   Just before defining shadows, which require special graphics states, we
+   define means for managing these graphics states. This is important, because
+   otherwise our use of `\pdfpageresources` register might clash with other
+   packages (TikZ) or even with our other usage (slides).
+
+   The macro \`\addextgstate``<PDF name> <PDF dictionary>` shall be used for
+   adding more graphics states. It must be used {\em after} `\dump`. First use
+   of it detects PGF/TikZ and either uses its mechanism or defines our own. Our
+   mechanism is very similar though -- use single `/ExtGState` dictionary for all
+   pages (`\pdfpageresources` just points to it).
+   \_cod -----------------------------
+
+\_def\_initpageresources{%
+   \_glet\_initpageresources=\_relax
+   \_ifcsname pgf@sys@addpdfresource@extgs@plain\_endcsname
+      % TikZ loaded
+      \_global\_slet{_addextgstate}{pgf@sys@addpdfresource@extgs@plain}%
+   \_else
+      % TikZ not loaded
+      \_pdfobj reserveobjnum% not to be used in iniTeX
+      \_xdef\_extgstatesobj{\_the\_pdflastobj}%
+      \_expanded{\_global\_pdfpageresources={/ExtGState \_extgstatesobj\_space 0 R}}%
+      \_global\_addto\_byehook{\_immediate\_pdfobj useobjnum\_extgstatesobj {<<\_extgstates>>}}%
+      \_gdef\_extgstates{}%
+      \_gdef\_addextgstate##1{\_xdef\_extgstates{\_extgstates\_space##1}}%
+   \_fi
+}
+% first initialize page resources, then execute new meaning of itself
+\_def\_addextgstate#1{\_initpageresources \_addextgstate{#1}}
+
+\_public \addextgstate ;
+
+   \_doc -----------------------------
    A shadow effect is implemented here. The shadow is equal to the
    silhouette of the given path in a gray-transparent color shifted by
    \`\_shadowmoveto` vector and with blurred boundary.
@@ -333,27 +361,11 @@
 \_def\_shadowmoveto{1.8 -2.5}  % vector defines shifting layer (in bp)
 \_def\_shadowb{1}              % 2*shadowb = blurring area thickness
 
-   \_doc -----------------------------
-   The `\_pdfpageresources` primitive is used to define transparency.
-   It does not work when used in a box. So, we use it at the beginning of
-   the output routine. The modification of the output routine is done
-   using \`\_insertshadowresources` only once when the shadow effect is used first.
-   \_cod -----------------------------
-
 \_def\_insertshadowresources{%
-   \_global\_addto\_begoutput{\_setshadowresources}%
-   \_xdef\_setshadowresources{%
-      \_pdfpageresources{/ExtGState
-      <<
-      /op1  <</Type /ExtGState /ca \_shadowdarknessA>>
-      /op2  <</Type /ExtGState /ca \_shadowdarknessB>>
-      \_morepgresources
-      >>
-      }%
-   }%
-   \_global\_let\_insertshadowresources=\_relax
+   \_addextgstate{/op1 <</ca \_shadowdarknessA>>}%
+   \_addextgstate{/op2 <</ca \_shadowdarknessB>>}%
+   \_glet\_insertshadowresources=\_relax
 }
-\_def\_morepgresources{}
 
    \_doc -----------------------------
    The \`\_doshadow``{<curve>}` does the shadow effect.
@@ -441,6 +453,7 @@ the \^`\transformbox{<transformation>}{\copy\mypic}`.
 
 \_endinput
 
+2021-07-16: \inoval, \incircle are more simple, using attribitecolor features
 2021-03-19: \inkinspic: pictures in subdirectories, bug fixed
 2020-12-21: \puttext: \box0 in goup, bugfix
 2020-04-12: \_public \clipinoval \clipincircle ; added, bug fixed

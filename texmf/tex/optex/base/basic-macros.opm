@@ -1,9 +1,9 @@
 %% This is part of the OpTeX project, see http://petr.olsak.net/optex
 
-\_codedecl \sdef {Basic macros for OpTeX <2021-05-16>} % preloaded in format
+\_codedecl \sdef {Basic macros for OpTeX <2021-07-20>} % preloaded in format
 
    \_doc ------------------------------
-   \`\bgroup`, \`\egroup`, \`\empty`, \`\space`, \`\null` and \`\wlog`
+   \`\bgroup`, \`\egroup`, \`\empty`, \`\space`, and \`\null`
    are classical macros from plain \TeX/.
    \_cod ------------------------------
 
@@ -11,8 +11,7 @@
 \_def \_empty {}
 \_def \_space { }
 \_def \_null {\_hbox{}}
-\_def \_wlog {\_immediate\_write-1 } % write on log file (only)
-\_public \bgroup \egroup \empty \space \null \wlog ;
+\_public \bgroup \egroup \empty \space \null ;
 
    \_doc ------------------------------
    \`\ignoreit` ignores next token or `{<text>}`,
@@ -107,25 +106,32 @@
    \_cod ------------------------------
 
 \_def\_loggingall{\_tracingcommands=3 \_tracingstats=2 \_tracingpages=1
-  \_tracingoutput=1 \_tracinglostchars=1 \_tracingmacros=2
+  \_tracingoutput=1 \_tracinglostchars=1 \_tracingmacros=3
   \_tracingparagraphs=1 \_tracingrestores=1 \_tracingscantokens=1
   \_tracingifs=1 \_tracinggroups=1 \_tracingassigns=1 }
 \_def\_tracingall{\_tracingonline=1 \_loggingall}
 \_public \loggingall \tracingall ;
 
    \_doc ------------------------------
-   Write a warning if the user did not load a Unicode Font {\em or}
-   if there were unresolved references. \`\_byehook` is used in the \^`\bye` macro.
+   \`\_byehook` is used in the \^`\bye` macro.
+   Write a warning if the user did not load a Unicode Font.
+   Write a \"rerun" warning if the `.ref` file was newly created or it was
+   changed (compared to the previous TeX run).
    \_cod ------------------------------
 
 \_def\_byehook{%
    \_ifx\_initunifonts\_relax \_relax\_else \_opwarning{Unicode font was not loaded}\_fi
-   \_ifnum\_unresolvedrefs>0 \_opwarning{Try to rerun to get references right}\_fi
+   \_immediate\_closeout\_reffile
+   \_edef\_tmp{\_mdfive{\_jobname.ref}}%
+   \_ifx\_tmp\_prevrefhash\_else \_opwarning{Try to rerun,
+      \_jobname.ref file was \_ifx\_prevrefhash\_empty created\_else changed\_fi}\_fi
 }
 
 \_endcode % -------------------------------------
 
-2021-05-16: \slet reimplemnted (to allow \slet{foo}{undefined}).
+2021-07-20: \_unresovedrefs removed from \_byehook
+2021-07-18: \_byehook: checking `ref` file consistency added.
+2021-05-16: \slet reimplemented (to allow \slet{foo}{undefined}).
 2021-02-03: \useit defined.
 2021-01-22: \trycs: \ea added in order to be able to use cs with parameters
 2021-01-08: \opwarning format changed (secondly, hope that conclusively)

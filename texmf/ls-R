@@ -285,6 +285,7 @@ emoji.opm
 mte.opm
 plain-at.opm
 qrcode.opm
+tikz.opm
 vlna.opm
 
 ./tex/unicode-data:
