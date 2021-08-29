@@ -1,7 +1,6 @@
 ./:
 fonts
 ls-R
-metapost
 tex
 web2c
 
@@ -19,21 +18,6 @@ rsfs10.pfb
 rsfs5.pfb
 rsfs7.pfb
 
-./metapost:
-boxes.mp
-format.mp
-graph.mp
-marith.mp
-mfplain.mp
-mpost.mp
-plain.mp
-rboxes.mp
-sarith.mp
-string.mp
-TEX.mp
-texnum.mp
-troffnum.mp
-
 ./tex:
 emoji
 hyph-utf8
@@ -41,7 +25,6 @@ knuth-lib
 librarian
 lipsum
 lualibs
-luamplib
 luaotfload
 luavlna
 mmoptex
@@ -156,10 +139,6 @@ lualibs-compat.lua
 lualibs-extended.lua
 lualibs-extended-merged.lua
 lualibs.lua
-
-./tex/luamplib:
-luamplib.lua
-luamplib.sty
 
 ./tex/luaotfload:
 fontloader-2021-05-20.lua
