@@ -1,1 +1,0 @@
-option('luahbtex', type: 'boolean', value: true)
