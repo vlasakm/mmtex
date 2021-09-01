@@ -42,6 +42,7 @@ lua_c_args = [
   '-DLUAI_HASHLIMIT=6',
   '-DLUA_USE_POSIX',
   '-DLUA_USE_DLOPEN',
+  '-DLUA_ROOT="@0@/"'.format(get_option('prefix')),
 ]
 
 lua_inc = include_directories(

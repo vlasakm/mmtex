@@ -1,0 +1,13 @@
+diff --git a/src/lua/src/luaconf.h b/src/lua/src/luaconf.h
+index 9eeeea6..7f70fa3 100644
+--- a/src/lua/src/luaconf.h
++++ b/src/lua/src/luaconf.h
+@@ -200,7 +200,7 @@
+ 
+ #else			/* }{ */
+ 
+-#define LUA_ROOT	"/usr/local/"
++//#define LUA_ROOT	"/usr/local/"
+ #define LUA_LDIR	LUA_ROOT "share/lua/" LUA_VDIR "/"
+ #define LUA_CDIR	LUA_ROOT "lib/lua/" LUA_VDIR "/"
+ #define LUA_PATH_DEFAULT  \
