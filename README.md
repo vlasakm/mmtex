@@ -7,33 +7,20 @@ The repository of MMTeX is at https://github.com/vlasakm/mmtex.
 
 # Installation instructions
 
-You should [download](https://github.com/vlasakm/mmtex/releases) or build (see
-below) a package for your distribution:
+For Debian, Ubuntu, Fedora, openSUSE you can install MMTeX from the [Open Build
+Service](https://software.opensuse.org/download.html?project=home%3Alahcim8&package=mmtex).
+Just choose your distribution and version and follow the instructions there.
 
- - `.pkg.tar.zst` for Arch Linux
- - `.deb` for Debian based systems
- - `tar.gz` other Linux distributions (dependencies have to be installed
-   manually, see "Dependencies" section)
+If you choose to "Grab binary packages directly" you need to install and keep
+the package up to date manually. If you instead "Add repository and install
+manually" you add a repository to your package manager, and can install `mmtex`
+like any other package from your distribution.
 
-Then you can install it:
+For Arch Linux see the [AUR](https://aur.archlinux.org/packages/mmtex/) package.
 
-For Arch Linux:
-
-```
-pacman -U mmtex-<VERSION>-x86_64.pkg.tar.zst
-```
-
-For Debian based systems:
-
-```
-dpkg -i mmtex_<VERSION>_amd64.deb
-```
-
-For other Linux systems you can install to `/usr/local` like this:
-
-```
-tar -C /usr/local -xf mmtex-<VERSION>.tar.gz
-```
+You can also
+[build the package from source](#manual-build-and-installation-instructions)
+and install it to some path on your system.
 
 # Usage
 
@@ -67,61 +54,69 @@ regenerate the format file:
 mmoptex -ini mmoptex.ini
 ```
 
-# Build instructions
+# Manual build and installation instructions
 
-To build `mmtex` package of requested types, run:
-
-```
-./package-builder [--all] [--deb] [--arch] [--tar] mmtex..
-```
-
-For example to do a full build of all package types, run:
+To build `mmtex` from source and install it your home directory, you can run:
 
 ```
-./package-builder --all mmtex
+meson setup builddir --prefix ~/.mmtex --buildtype release
+meson compile -C builddir
+meson install -C builddir
 ```
 
-For building `mmtex` the generic `package-builder` finds information in
-`mmtex/` subdirectory. The important files are `info`, `sources` (what gets
-downloaded), `build` (build script that calls `meson` to build `luatex` and
-creates `texmf` tree), and `files` (`mmtex` specific files for building it,
-like `meson.build` and some patches).
+Now you can run it by specifying full path:
 
-For customizing the build you can pass two environment variables:
+```
+~/.mmtex/bin/mmoptex mydocument.tex
+```
 
- - `MESON_SETUP` - generic `meson setup` options, default is
-   `--prefix /usr --buildtype release -D b_lto=true -D b_pie=true`, but you may
-   want to choose different `prefix` or `buildtype` (like `plain` to use your
-   own `CFLAGS`)
- - `MESON_OPTIONS` - should be used to enable/disable package specific options
-   (it is empty by default). Currently it is possible to _not_ build
-   `luahbtex` variant by setting `MESON_OPTIONS="-D luahbtex=false"`
+Or you can add it to your `$PATH` (possibly in your `~/.profile` file):
+
+```
+PATH="$HOME/.mmtex/bin:$PATH"
+export PATH
+```
+
+Then you can use it like this:
+
+```
+mmoptex mydocument.tex
+```
+
+Uninstallation is easy, just delete the installation directory and possible
+also the cache:
+
+```
+rm -rf ~/.mmtex ~/.cache/mmtex
+```
+
+## Advanced builds
+
+The `meson setup` step allows [more
+customization](https://mesonbuild.com/Commands.html#setup) than in the example
+above. Other options are also provided by this package:
+
+ - `-D luahbtex=<true|false>` (default: `false`) decides whether to build
+   `luahbtex` instead of `luatex`. OpTeX currently doesn't take advantage of
+   this in any way.
 
 # Dependencies
 
-The "generic" package builder has the following dependencies:
+Build only dependencies:
 
- - `git`
- - `svn`
- - `curl`
- - `unzip`
- - `tar`
  - `meson` (+ `python`)
  - `ninja`
- - `makepkg` (for creating Arch Linux packages)
- - `dpkg-deb` (for creating Debian packages)
- - `fakeroot` (for creating `tar` packages)
+ - `pkg-config`
 
-For building mmtex specifically following are needed (these are also runtime
-dependencies of built packages):
+Build and run time dependencies:
 
  - `libpng`
  - `zlib`
  - `zziplib`
- - `harfbuzz` (if compiling with `luaharfbuzz`, therefore making `luahbtex` variant)
+ - `harfbuzz` (if compiling with `-D luahbtex=true`)
 
 # License
 
-The license for files found in this repository is in file `LICENSE.mmtex`. For
-license information about files/packages included in the distribution see
-`LICENSE`.
+The license for meson build and packaging files is in file `LICENSE.mmtex`. The
+license information about source files/packages (directories `src` and `texmf`)
+included in the distribution see `LICENSE`.

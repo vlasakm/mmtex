@@ -1,1 +1,2 @@
-option('luahbtex', type: 'boolean', value: false)
+option('luahbtex', type: 'boolean', value: false,
+  description: 'Build luahbtex instead of luatex (compiled in support for the HarfBuzz library)')
