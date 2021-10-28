@@ -150,7 +150,7 @@
 
 #define nodelib_setattr(L, s, n)     reassign_attribute(n,nodelib_getlist(L,s))
 
-#define nodelib_gettoks(L,a)   tokenlist_from_lua(L)
+#define nodelib_gettoks(L,a)   tokenlist_from_lua(L, a)
 
 #define nodelib_getspec        nodelib_getlist
 #define nodelib_getaction      nodelib_getlist
@@ -1566,7 +1566,7 @@ static int lua_nodelib_direct_setleader(lua_State * L)
 #define get_pdf_literal_direct_value(L,n) do {                  \
     if (pdf_literal_type(n) == lua_refid_literal) {             \
         lua_rawgeti(L, LUA_REGISTRYINDEX, pdf_literal_data(n)); \
-    } else if (pdf_literal_type(n) == lua_refid_literal) {      \
+    } else if (pdf_literal_type(n) == normal) {                 \
         tokenlist_to_luastring(L, pdf_literal_data(n));         \
     }                                                           \
 } while (0)
@@ -1584,6 +1584,7 @@ static int lua_nodelib_direct_setleader(lua_State * L)
 
 #define set_pdf_literal_direct_token(L,n,i) do { \
     pdf_literal_data(n) = nodelib_gettoks(L, i); \
+    pdf_literal_type(n) = normal;                \
 } while (0)
 
 #define cleanup_late_lua(n) do {                               \
