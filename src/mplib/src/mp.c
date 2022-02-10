@@ -750,6 +750,8 @@ if(mp->input_ptr> mp->max_in_stack) { \
 mp->max_in_stack= mp->input_ptr; \
 if(mp->input_ptr==mp->stack_size) { \
 int l= (mp->stack_size+(mp->stack_size/4) ) ; \
+ \
+if(l> 1000) {fprintf(stderr,"input stack overflow\n") ;exit(EXIT_FAILURE) ;} \
 XREALLOC(mp->input_stack,l,in_state_record) ; \
 mp->stack_size= l; \
 } \
@@ -1116,10 +1118,8 @@ MP mp_initialize(MP_options*opt);
 
 /*:10*//*50:*/
 
-static char*mp_find_file(MP mp,const char*fname,const char*fmode,
-int ftype);
-static void*mp_open_file(MP mp,const char*fname,const char*fmode,
-int ftype);
+static char*mp_find_file(MP mp,const char*fname,const char*fmode,int ftype);
+static void*mp_open_file(MP mp,const char*fname,const char*fmode,int ftype);
 static char*mp_read_ascii_file(MP mp,void*f,size_t*size);
 static void mp_read_binary_file(MP mp,void*f,void**d,size_t*size);
 static void mp_close_file(MP mp,void*f);
@@ -1127,8 +1127,8 @@ static int mp_eof_file(MP mp,void*f);
 static void mp_flush_file(MP mp,void*f);
 static void mp_write_ascii_file(MP mp,void*f,const char*s);
 static void mp_write_binary_file(MP mp,void*f,void*s,size_t t);
-static char*mp_run_script(MP mp,const char*str);
-static char*mp_make_text(MP mp,const char*str,int mode);
+static char*mp_run_script(MP mp,const char*str,size_t len);
+static char*mp_make_text(MP mp,const char*str,size_t len,int mode);
 
 /*:50*//*75:*/
 
@@ -3495,16 +3495,16 @@ return NULL;
 
 /*:47*//*48:*/
 
-static char*mp_run_script(MP mp,const char*str){
+static char*mp_run_script(MP mp,const char*str,size_t len){
 (void)mp;
-return mp_strdup(str);
+return mp_strldup(str,len);
 }
 
 /*:48*//*49:*/
 
-static char*mp_make_text(MP mp,const char*str,int mode){
+static char*mp_make_text(MP mp,const char*str,size_t len,int mode){
 (void)mp;
-return mp_strdup(str);
+return mp_strldup(str,len);
 }
 
 /*:49*//*51:*/
@@ -16396,7 +16396,7 @@ decr(size);
 }
 
 {
-char*s= mp->make_text(mp,ptr,verb);
+char*s= mp->make_text(mp,ptr,size,verb);
 /*787:*/
 
 if(s!=NULL){
@@ -17186,7 +17186,7 @@ mp_flush_cur_exp(mp,new_expr);
 }else{
 mp_back_input(mp);
 if(cur_exp_str()->len> 0){
-char*s= mp->run_script(mp,(const char*)cur_exp_str()->str);
+char*s= mp->run_script(mp,(const char*)cur_exp_str()->str,cur_exp_str()->len);
 /*787:*/
 
 if(s!=NULL){
@@ -17248,7 +17248,7 @@ mp_flush_cur_exp(mp,new_expr);
 }else{
 mp_back_input(mp);
 if(cur_exp_str()->len> 0){
-char*s= mp->make_text(mp,(const char*)cur_exp_str()->str,0);
+char*s= mp->make_text(mp,(const char*)cur_exp_str()->str,cur_exp_str()->len,0);
 /*787:*/
 
 if(s!=NULL){

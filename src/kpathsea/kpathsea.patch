@@ -48,7 +48,7 @@
 +  SET_VAR("nest_size", "500");
 +  /*SET_VAR("max_in_open", "15");*/
 +  SET_VAR("param_size", "10000");
-+  SET_VAR("save_size", "100000");
++  SET_VAR("save_size", "200000");
 +  SET_VAR("stack_size", "5000");
 +  /*SET_VAR("dvi_buf_size", "16384");*/
 +  /*SET_VAR("error_line", "79");*/

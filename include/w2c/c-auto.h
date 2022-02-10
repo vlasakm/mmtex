@@ -5,11 +5,11 @@
 #define WEB2C_PACKAGE           "web2c"
 #define WEB2C_PACKAGE_BUGREPORT "tex-k@tug.org"
 #define WEB2C_PACKAGE_NAME      "Web2C"
-#define WEB2C_PACKAGE_STRING    "Web2C 2021"
+#define WEB2C_PACKAGE_STRING    "Web2C 2022/dev"
 #define WEB2C_PACKAGE_TARNAME   "web2c"
 #define WEB2C_PACKAGE_URL       ""
-#define WEB2C_PACKAGE_VERSION   "2021"
-#define WEB2C_VERSION           "2021"
+#define WEB2C_PACKAGE_VERSION   "2022/dev"
+#define WEB2C_VERSION           "2022/dev"
 
 #define EDITOR "vi +%d '%s'"
 
@@ -25,20 +25,17 @@
 #define HAVE_FLOAT_H             1
 #define HAVE_FMAX                1
 #define HAVE_FSEEKO              1
-#define HAVE_FTIME               0
 #define HAVE_GETCWD              1
 #define HAVE_GETTIMEOFDAY        1
 #define HAVE_GETWD               1
 #define HAVE_INTTYPES_H          1
 #define HAVE_LABS                1
 #define HAVE_LANGINFO_H          1
-#define HAVE_LIBFONTCONFIG       1
 #define HAVE_LIMITS_H            1
 #define HAVE_LOCALE_H            1
 #define HAVE_LONG_DOUBLE         1
 #define HAVE_MEMCMP              1
 #define HAVE_MEMCPY              1
-#define HAVE_MEMORY_H            1
 #define HAVE_MKDTEMP             1
 #define HAVE_MKSTEMP             1
 #define HAVE_MKTEMP              1
@@ -47,6 +44,7 @@
 #define HAVE_SETLOCALE           1
 #define HAVE_STDBOOL_H           1
 #define HAVE_STDINT_H            1
+#define HAVE_STDIO_H             1
 #define HAVE_STDLIB_H            1
 #define HAVE_STRCHR              1
 #define HAVE_STRERROR            1

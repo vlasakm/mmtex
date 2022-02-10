@@ -1020,6 +1020,8 @@ return true;
 /*:42*//*43:*/
 
 static web_boolean mpx_open_vf_file(MPX mpx){
+if(mpx->vf_file)
+fclose(mpx->vf_file);
 mpx->vf_file= mpx_fsearch(mpx,mpx->cur_name,mpx_vf_format);
 if(mpx->vf_file){
 free(mpx->cur_name);
@@ -3510,7 +3512,7 @@ static void mpx_cleandir(MPX mpx,char*cur_path){
 char*wrk,*p;
 #ifdef _WIN32
 struct _finddata_t c_file;
-long hFile;
+intptr_t hFile;
 #else
 struct dirent*entry;
 DIR*d;

@@ -224,8 +224,8 @@ mp_filetype_encoding,
 mp_filetype_text
 };
 typedef char*(*mp_file_finder)(MP,const char*,const char*,int);
-typedef char*(*mp_script_runner)(MP,const char*);
-typedef char*(*mp_text_maker)(MP,const char*,int mode);
+typedef char*(*mp_script_runner)(MP,const char*,size_t);
+typedef char*(*mp_text_maker)(MP,const char*,size_t,int);
 typedef void*(*mp_file_opener)(MP,const char*,const char*,int);
 typedef char*(*mp_file_reader)(MP,void*,size_t*);
 typedef void(*mp_binfile_reader)(MP,void*,void**,size_t*);

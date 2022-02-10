@@ -70,6 +70,7 @@ command_item command_names[] = {
     { ignore_spaces_cmd,        NULL, 0},
     { after_assignment_cmd,     NULL, 0},
     { after_group_cmd,          NULL, 0},
+    { partoken_name_cmd,        NULL, 0},
     { break_penalty_cmd,        NULL, 0},
     { start_par_cmd,            NULL, 0},
     { ital_corr_cmd,            NULL, 0},
@@ -235,6 +236,7 @@ void l_set_token_data(void)
     init_token_key(command_names, ignore_spaces_cmd,        ignore_spaces);
     init_token_key(command_names, after_assignment_cmd,     after_assignment);
     init_token_key(command_names, after_group_cmd,          after_group);
+    init_token_key(command_names, partoken_name_cmd,        partoken_name);
     init_token_key(command_names, break_penalty_cmd,        break_penalty);
     init_token_key(command_names, start_par_cmd,            start_par);
     init_token_key(command_names, ital_corr_cmd,            ital_corr);
@@ -480,7 +482,7 @@ void tokenlist_to_luastring(lua_State * L, int p)
     free(s);
 }
 
-int tokenlist_from_lua(lua_State * L, int n)
+int tokenlist_from_lua(lua_State * L)
 {
     const char *s;
     int tok, t;
@@ -490,12 +492,12 @@ int tokenlist_from_lua(lua_State * L, int n)
     token_info(r) = 0;
     token_link(r) = null;
     p = r;
-    t = lua_type(L, n);
+    t = lua_type(L, -1);
     if (t == LUA_TTABLE) {
-        j = lua_rawlen(L, n);
+        j = lua_rawlen(L, -1);
         if (j > 0) {
             for (i = 1; i <= j; i++) {
-                lua_rawgeti(L, n, (int) i);
+                lua_rawgeti(L, -1, (int) i);
                 tok = token_from_lua(L);
                 if (tok >= 0) {
                     store_new_token(tok);
@@ -505,7 +507,7 @@ int tokenlist_from_lua(lua_State * L, int n)
         }
         return r;
     } else if (t == LUA_TSTRING) {
-        s = lua_tolstring(L, n, &j);
+        s = lua_tolstring(L, -1, &j);
         for (i = 0; i < j; i++) {
             if (s[i] == 32) {
                 tok = token_val(10, s[i]);
