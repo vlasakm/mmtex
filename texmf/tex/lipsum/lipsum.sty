@@ -21,8 +21,8 @@
 %% Please send error reports and suggestions for improvements to
 %%     https://github.com/PhelypeOleinik/lipsum
 %% 
-\def\lipsumversion{2.5}
-\def\lipsumdate{2021-08-01}
+\def\lipsumversion{2.7}
+\def\lipsumdate{2021-09-20}
 \NeedsTeXFormat{LaTeX2e}
 \RequirePackage{l3keys2e}
 \@ifundefined{NewDocumentCommand}
@@ -260,39 +260,52 @@
       {
         \cs_if_exist:NTF \hyphenrules
           {
-            \cs_if_exist:cTF { l@ \g__lipsum_language_tl }
-              {
-                \exp_args:NV \hyphenrules \g__lipsum_language_tl
-                \cs_set_protected:Npx \__lipsum_restore_hyphens:
-                  { \exp_not:N \hyphenrules { \languagename } }
-              }
-              { \__lipsum_missing_language_warning: }
+            \cs_if_exist:cTF { ver@polyglossia.sty }
+              { \__lipsum_set_hyphens_polyglossia: }
+              { \__lipsum_set_hyphens_babel: }
           }
-          { \__lipsum_set_hyphens_babel_missing: }
+          { \__lipsum_set_hyphens_raw: }
       }
   }
 \cs_new_protected:Npn \__lipsum_restore_hyphens:
   { \prg_do_nothing: }
-\cs_new_protected:Npn \__lipsum_set_hyphens_babel_missing:
+\cs_new_protected:Npn \__lipsum_set_hyphens_babel:
   {
-    \msg_warning:nnn { lipsum } { missing-babel } { preamble }
-    \cs_gset_eq:NN \__lipsum_set_hyphens_babel_missing: \prg_do_nothing:
-  }
-\AtBeginDocument
-  {
-    \cs_gset_protected:Npx \__lipsum_set_hyphens_babel_missing:
+    \cs_if_exist:cTF { l@ \g__lipsum_language_tl }
       {
-        \@ifpackageloaded { babel }
-          { \msg_error:nnn { lipsum } { missing-babel } { impossible } }
-          { \msg_warning:nnn { lipsum } { missing-babel } { document } }
-        \setlipsum { auto-lang = false }
+        \exp_args:NV \hyphenrules \g__lipsum_language_tl
+        \cs_set_protected:Npx \__lipsum_restore_hyphens:
+          { \exp_not:N \hyphenrules { \languagename } }
       }
+      { \__lipsum_lang_not_available: }
   }
-\cs_if_exist:NT \DeclareHookRule
-  { \DeclareHookRule { begindocument } { lipsum } { after } { babel } }
-\cs_new_protected:Npn \__lipsum_missing_language_warning:
+\cs_new_protected:Npn \__lipsum_set_hyphens_polyglossia:
   {
-    \msg_warning:nn { lipsum } { missing-language }
+    \cs_if_exist:cTF { \g__lipsum_language_tl @loaded }
+      {
+        \exp_args:NnV \begin{hyphenrules} \g__lipsum_language_tl
+        \cs_set_protected:Npn \__lipsum_restore_hyphens:
+          { \end{hyphenrules} }
+      }
+      { \__lipsum_set_hyphens_raw: }
+  }
+\cs_new_protected:Npn \__lipsum_set_hyphens_raw:
+  {
+    \cs_if_exist:cTF { l@ \g__lipsum_language_tl }
+      {
+        \use:x
+          {
+            \language \use:c { l@ \g__lipsum_language_tl }
+            \cs_set_protected:Npn \__lipsum_restore_hyphens:
+              { \language \int_eval:n { \language } \scan_stop: }
+          }
+      }
+      { \__lipsum_lang_not_available: }
+  }
+\cs_new_protected:Npn \__lipsum_lang_not_available:
+  {
+    \msg_warning:nnx { lipsum } { missing-language }
+      { \g__lipsum_language_tl }
     \tl_gset_eq:NN \g__lipsum_language_tl \languagename
   }
 \cs_new_protected:Npn \NewLipsumPar #1
@@ -394,32 +407,24 @@
     Command~'\iow_char:N\\#1'~deprecated. \\
     See~the~lipsum~documentation~for~help.
   }
-\msg_new:nnn { lipsum } { missing-babel }
-  {
-    Hyphenation~patterns~for~'\g__lipsum_language_tl'~
-    cannot~be~used~because~babel~is~not~loaded.~
-    \str_case:nn {#1}
-      {
-        { preamble }
-          { Loading~lipsum~after~babel~should~fix~the~issue. }
-        { document }
-          {
-            The~default~document~language~will~be~used~
-            for~hyphenation~instead.
-          }
-        { impossible }
-          {
-            Something~wrong~happened~and~the~command~
-            \iow_char:N\\hyphenrules~is~not~available. \\ \\
-            Please~report!
-          }
-      }
-    \\ \\ This~message~won't~be~shown~again.
-  }
 \msg_new:nnn { lipsum } { missing-language }
   {
-    Unknown~language~'\g__lipsum_language_tl'.~
-    Hyphenation~patterns~for~'\languagename'~will~be~used~instead.
+    Unknown~language~'#1'.~Hyphenation~patterns~for~
+    '\languagename'~will~be~used~instead.
+    \sys_if_engine_luatex:T
+      {
+        \\ \\
+        \cs_if_exist:cTF { ver@polyglossia.sty }
+          {
+            With~polyglossia,~you~have~to~explicitly~load~languages~
+            with~\iow_char:N\\setotherlanguage{#1}~or~similar.
+          }
+          {
+            With~LuaTeX,~lipsum~requires~babel~to~get~proper~
+            hyphenation~(you~can~use~
+            \iow_char:N\\usepackage[base]{babel}).
+          }
+      }
   }
 %% 
 %%
