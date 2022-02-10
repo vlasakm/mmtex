@@ -1,0 +1,1728 @@
+% vim: tw=80
+\_def\_pdfextra_version{0.2}
+\_codedecl \RM {Extra PDF features (v\_pdfextra_version)}
+\_namespace{pdfextra}
+
+   \_doc
+   \sec Package initialization
+
+   We ensure that hyperlinking is active. Our fallback \`\_linkcolor` must
+   exist. We also use it for `\hyperlinks` if the user didn't enable
+   `\hyperlinks` yet (we don't want to override user setting).
+   \_cod
+
+\_ifdefined\_ilinkcolor\_else
+   \_ifdefined\_linkcolor
+      \_ea\_let\_ea\_linkcolor \_ifdefined\Blue\Blue\_else\_empty\_fi
+   \_else
+      \_let\_linkcolor\linkcolor
+   \_fi
+\_fi
+
+\_ifx\_dest\_destactive\_else
+   \_hyperlinks\_linkcolor\_linkcolor
+\_fi
+
+   \_doc
+   We are in the \OpTeX/ package namespace. A couple of shortcuts are defined
+   here: \`\.isdefined`, \`\.trycs`, \`\.cs` \`\.slet`, \`\.slet`, \`\.sdef` and
+   \`\.sxdef`. They all hard code the package name, because we already have too
+   many levels of indirection.
+   \_cod
+
+\_def\.isdefined#1{\_isdefined{_pdfextra_#1}}
+\_def\.trycs#1{\_trycs{_pdfextra_#1}}
+\_def\.cs#1{\_cs{_pdfextra_#1}}
+\_def\.slet#1#2{\_slet{_pdfextra_#1}{_pdfextra_#2}}
+\_def\.sdef#1{\_sdef{_pdfextra_#1}}
+\_def\.sxdef#1{\_sxdef{_pdfextra_#1}}
+
+   \_doc
+   \sec Helper macros
+   The macros here are just helpers for the macros to follow. They are not
+   useful generally, but proved useful in the expandable context of writing to
+   PDF files.
+
+   Already the first one limits the use to \LuaTeX/ (but who needs other engines
+   anyways :). \`\.emptyor`<possibly empty text><text to use when first argument is
+   nonempty> checks whether the first argument is empty, if not it expands the
+   second argument which can use the text from the first argument with
+   \`\.nonempty`. \`\.attrorempty`<attribute name><value> builds upon the first
+   one and is really useful for PDF dictionaries, when we don't want to write an
+   attribute without a value (a default specified by standard will be used instead).
+   \_cod
+
+\_def\.emptyor#1#2{%
+   \_immediateassignment\_edef\.nonempty{#1}%
+   \_ifx\.nonempty\_empty\_else #2\_fi
+}
+\_def\.attrorempty#1#2{\.emptyor{#2}{/#1 \.nonempty}}
+
+   \_doc
+   There is a dillema for handling colors. While typesetting it is possible to
+   use greyscale, CMYK or RGB colors. But there are contexts where it is
+   possible to only use RGB colors. We want to provide the user with two
+   possibilities of specifying colors:
+
+   \begitems
+   * RGB color using PDF triplet (e.g. `1 0 0`),
+   * \OpTeX/ color using control sequence (e.g. `\Blue`)
+   \enditems
+
+   Both are handled by \`\.colortorgbdef`<cs><color specification>, which
+   defines <cs> to the corresponding PDF RGB triplet. The indirection with
+   defining a macro is because we want to use the processed color within
+   expansion only contexts where grouping is not possible.
+   \_cod
+
+\_def\.colortorgbdef#1#2{\_bgroup
+   \_def\_setrgbcolor##1{##1}%
+   \_def\_setcmykcolor##1{\_cmyktorgb ##1 ;}%
+   \_def\_setgreycolor##1{##1 ##1 ##1}%
+   \_xdef#1{#2}%
+   \_egroup
+}
+
+   \_doc
+   \`\.xaddto``\macro`{<text>} is a natural extension of \OpTeX's `\addto` that
+   expands <text> and is global.\nl
+   \`\.tmp` is used throught the package for temporary values.
+   \_cod
+
+\_def\.xaddto#1#2{\_edef\.tmp{#2}%
+   \_global\_ea\_addto\_ea#1\_ea{\.tmp}%
+}
+
+   \_doc
+   This package defines a few commands in the form
+   `\macro[<name>][<optional arguments>]{<text>}`. To make it possible to omit
+   the `[<optional arguments>]` \`\.secondoptdef` is defined.
+
+   `\.secondoptdef\<macro><parameters>{<body>}`
+   defines `\macro` with first mandatory argument in brackets (saved to
+   \`\.name`). Second optional argument in brackets is scanned using helper
+   macro defined with `\optdef` and is saved to `\_opt` token list). Additional
+   <parameters> can be specified as with `\optdef` (numbered from `#1`).
+   \_cod
+
+\_def\.secondoptdef#1{%
+   \_def#1[##1]{\_def\.name{##1}\.cs{sopt:\_string#1}}%
+   \_ea\_optdef\_csname _pdfextra_sopt:\_string#1\_endcsname[]%
+}
+
+   \_doc
+   When processing comma separated lists sometimes it is needed to ignore the
+   remaining text. For this we use \`\.untilend` macro which ignores everything
+   up to dummy \`\.end`. This is analogous to \OpTeX/'s `\_finbody` used for the
+   same purpose. Sometimes `\.end` is used as sentinel and compared in `\ifx`
+   tests, hence we define it to a unique value.
+   \_cod
+
+\_def\.untilend#1\.end{}
+\_def\.end{_pdfextra_end}
+
+   \_doc
+   For various uses it is necessary to know the number of page where something
+   happens. This has to be handled asynchronously with `\write`. Here we use
+   \OpTeX/ specific `.ref` file and associated macros, but this could be
+   replaced as long as the same interface is exposed.
+
+   \`\.setpageof`<name> writes \`\.Xpageof`<name> to the `.ref` file. In the next
+   \TeX/ run `\.Xpageof` finds out the page number (`\gpageno`) from \OpTeX/'s
+   `\_currpage` and saves it so that \`\.pageof`<name> can retrieve it. In the
+   first run we can't be sure of the page where the content will end up. As a
+   rough estimate we take the current page~-- this actually works well for
+   slides where page breaks are manual.
+
+   When `.ref` file is read along with the defintion of `\.Xpageof` this package
+   has not been loaded yet. Hence we can't use namespaced variants of
+   `\.isdefined`, etc.
+   \_cod
+
+\_refdecl{%
+   \_def\.Xpageof#1{\_isdefined{_pdfextra_pageof:#1}\_iffalse
+      \_sxdef{_pdfextra_pageof:#1}{\_ea\_ignoresecond\_currpage}\_fi
+   }%
+}
+
+\_def\.setpageof#1{\_openref \_ewref\.Xpageof{{#1}}}
+
+\_def\.pageof#1{%
+   \.trycs{pageof:#1}{%
+      \_the\_numexpr\_gpageno+1\_relax % best effort = current page num
+   }%
+}
+
+   \_doc
+   \label[files]
+   \sec Handling of files
+
+   Handling of files is a big topic of this package. Files are everywhere~--
+   files containing multimedia, JavaScript script files, attachments, externally
+   referred files\dots Therefore a more sophisticated mechanism for handling
+   files is needed. The mechanism introduced in this section handles all three
+   cases of a {\em file specification}:
+
+   \begitems
+   * files embedded in the PDF (\"e", embedded file),
+   * files determined by path (\"x", external file),
+   * files determined by URL (\"u", url file).
+   \enditems
+
+   Although ideally all three would be interchangible this is not always the
+   case, because e.g. some media files must be embedded and linking to external
+   resources does not work with embedded files.
+
+   In most cases there are two many names and other associated values involved:
+   \begitems
+   * Some kind of a \"friendly" name. This one is sometimes shown by PDF viewers.
+   * The real name of the file. Also shown but in different contexts.
+   * The path or URL used to determine the file.
+   * MIME type of the file.
+   \enditems
+
+   For example when talking about \OpTeX/'s documentation we might have a
+   friendly name of \"opdoc", file name of \"`optex-doc.pdf`", URL of
+   \"\url{http://petr.olsak.net/ftp/olsak/optex/optex-doc.pdf}" and MIME type of
+   \"application/pdf". Different subset of them is required in different
+   contexts, but the user should only have to specify the friendly name (by
+   which they will refer to the file) and the path/URL of the file. The rest
+   will be deduced. The friendly name is used as a handle and {\em is usable}
+   in all places where file specification is required (although it may not
+   produce conforming output, see above).
+
+   In this two step process~-- definition and (re)use~-- we introduce a command
+   for defining files: \`\filedef``/<type> [<friendly name>]{<path or URL>}`. The
+   macro itself does general definitions and dispatches the type dependant work
+   to other macros in the form `_filedef:<type>`.
+   \_cod
+
+\_def\.filedef/#1#2[#3]#4{%
+   \.sxdef{filename:#3}{(\.filename{#4})}%
+   \_edef\.tmp{\.exttomime{\.fileext{#4}}}%
+   \_ifx\.tmp\_empty
+      \_opwarning{MIME type of '#4' unknown, using '\.defaultmimetype'}%
+      \_edef\.tmp{\.defaultmimetype}%
+   \_fi
+   \.sxdef{filemime:#3}{\.tmp}%
+   \.cs{filedef:#1}{#3}{#4}%
+}
+\_nspublic \filedef ;
+
+   \_doc
+   Types \"e", \"x", \"u" are predefined, anything else would essentialy be a
+   variant of these.
+
+   External file (\"x") is determined only by path.
+   \_cod
+
+\.sdef{filedef:x}#1#2{%
+   \.slet{filespec:#1}{filename:#1}%
+}
+
+   \_doc
+   URL file (\"u") is determined by URL. Using all sorts of characters is
+   allowed by using `\_detokenize`. This time it is necessary to create full
+   {\em file specification}~-- a dictionary, where the \"file system" is URL.
+   \_cod
+
+\.sdef{filedef:u}#1#2{%
+   \.sdef{filespec:#1}{<</FS /URL /F (\_detokenize{#2})>>}%
+}
+
+   \_doc
+   Embedded files (\"e") are the most interesting ones. For further use (e.g.
+   for displaying the embedded files as attachments) MIME type is required. It
+   is saved in the stream as a `\Subtype`, encoded as a PDF name (e.g.
+   `/video#2Fmp4`). The embedded file stream must be wrapped in a full {\em file
+   specification}, which has the `/EF` (\"embedded file") entry. Also the
+   friendly name is used for some purpose by PDF viewers, so it set in `/Desc`
+   (description).
+   \_cod
+
+\.sdef{filedef:e}#1#2{%
+   \_edef\.tmp{\.cs{filemime:#1}}%
+   \_isfile{#2}\_iffalse
+      \_opwarning{file '#2' not found}%
+   \_fi
+   \_pdfobj stream
+      attr{/Type /EmbeddedFile /Subtype \_ea\.mimetoname\_ea[\.tmp]}
+      file {#2}%
+   \_pdfrefobj\_pdflastobj
+   \.sxdef{filestream:#1}{\_the\_pdflastobj\_space 0 R}%
+   \_pdfobj {<</Type /Filespec
+      /F \.cs{filename:#1}
+      /Desc (#1)
+      /EF << /F \_the\_pdflastobj \_space 0 R >>%
+   >>}%
+   \_pdfrefobj\_pdflastobj
+   \.sxdef{filespec:#1}{\_the\_pdflastobj\_space 0 R}%
+}
+
+   \_doc
+   Now the less interesting part~-- determining the file names from paths and
+   determining MIME types. The file name is the part after the last \"`/`" (if
+   any). The file extension is the part after last \"`.`" (if any).
+   \_cod
+
+\_def\.filename#1{\_ea\.filenameA#1/\.end}
+\_def\.filenameA#1/#2{\_ifx\.end#2#1\_else\_afterfi{\.filenameA#2}\_fi}
+
+\_def\.fileext#1{\_ea\.fileextA#1.\.end}
+\_def\.fileextA#1.#2{\_ifx\.end#2#1\_else\_afterfi{\.fileextA#2}\_fi}
+
+   \_doc
+   MIME type is determined from file extension (e.g. `mp4` is \"video/mp4"). For
+   mapping of file extensions to MIME types we abuse \TeX/'s hash table which
+   gets populated with \"known MIME types". This necessarily means that the
+   database is incomplete. Users can define their own additional mappings, or
+   they can contribute generally useful ones to this package.
+
+   The default MIME type (used for unknown file extensions) is
+   \"application/octet-stream"~-- binary data.
+
+   The uninteresting MIME type database itself is at the very end (\ref[mime]).
+   \_cod
+
+\_def\.mimetoname[#1/#2]{/#1\_csstring\#2F#2}
+
+\_def\.defaultmimetype{application/octet-stream}
+\_def\.exttomime#1{\.trycs{mimetype:#1}{}}
+
+   \_doc
+   Here we define an \OpTeX/ style \"is-macro" that checks whether the file has
+   already been defined~-- \`\.isfiledefined``{<name>}\iftrue` (or `\iffalse`).
+   The case where the file has not
+   been defined using `\filedef` can be handled in a lot of ways. As a default
+   we interpret <name> as path and try to embed it. Because the path from <name>
+   is used as the \"friendly name" the file will be embedded only once even when
+   requested more times.
+   \_cod
+
+\_def\.isfiledefined#1#2{\.isdefined{filespec:#1}\_iftrue\_else
+   \_afterfi{\.fileundefined{#1}}\_fi#2%
+}
+
+\_def\.fileundefined#1{\_isfile{#1}\_iftrue\.filedef/e[#1]{#1}\_else
+   \_opwarning{file '#1' not found, ignored}\_ea\_unless\_fi
+}
+
+% strict requirement of preceeding `\filedef` can be set like this:
+%\_def\.fileundefined#1{\_opwarning{file '#1' is not defined, ignored}\_unless}
+
+   \_doc
+   \label[actions]
+   \sec PDF actions
+
+   The core of interactivity in PDF are actions. They are all initialy handled
+   by \`\pdfaction``[<action spec>]`. <action spec> is a comma separated list of
+   `<type>:<arguments>`. Leading spaces in the elements of the list are ignored
+   using undelimited-delimited argument pair trick.
+
+   An invocation could look like this:
+
+   \begtt
+   \pdfaction[
+      js:{app.alert("Yay JavaScript, going to page 5");},
+      ilink:pg:5,
+      transition:Wipe,
+   ]
+   \endtt
+
+   This is why we have to be very careful when loading the contents between `[]`
+   to arguments. In particular, we can't split immediatly using `[#1:#2]`,
+   because this would discard the braces guarding the comma in the JavaScript
+   code. However we also need to find out the {\em type} of action which is
+   taken as a type of the first action (`js` in this case).
+   \`\.pdfactiontype``[<action spec>]` does this~-- we don't mind that there the
+   braces are lost.
+
+   `\pdfaction` processes the list, to create a chain of actions using `/Next`
+   field. The handling of each action type is up to macro
+   `\_pdfextra_<type>action`, which receives `[<type>:<arguments>]`. Because of
+   this a single type handler can handle multiple different actions, as is the
+   case with `\.ilinkaction` which is the fallback for unknown action types.
+   \_cod
+
+\_def\.pdfaction[#1#2]{\.pdfactionA#1#2,\.stop\.end}
+\_def\.pdfactionA#1,#2#3\.end{%
+   <<%
+   \.pdfactionB[#1]%
+   % next action
+   \_ifx\.stop#3\_else\_space
+      /Next \_afterfi{\.pdfactionA#2#3\.end} % intentional space
+   \_fi
+   >>
+}
+\_def\.pdfactionB[#1:#2]{\.trycs{#1action}{\_ea\.ilinkaction}[#1:#2]}
+\_nspublic \pdfaction ;
+
+\_def\.pdfactiontype[#1:#2]{#1}
+
+   \_doc
+   \label[actions-additional]
+   \secc Additional actions
+   Some PDF objects, like pages and some annotations, can also have \"additional
+   actions". These are actions which will be executed when an event happens~--
+   like page getting opened for `/O` action in page's additonal actions or `/PO`
+   in annotation's additional actions. For constructing these additional actions
+   we define a helper macro \`\.pdfaactions`. The use is as something follows:
+   \begtt \catcode`<=13 \adef|{\csstring<}
+   /AA || \.pdfaactions{ {O} {<action spec 1>} {C} {<action spec 2>} } >>
+   \endtt
+   To produce something this:
+   \begtt \catcode`<=13 \adef|{\csstring<}
+   /AA || /O ||<action 1>>> /C ||<action 2>>> >>
+   \endtt
+   \_cod
+
+\_def\.pdfaactions#1{<<\.pdfaactionsA #1\.end\.end>>}
+\_def\.pdfaactionsA#1#2{\_ifx\.end#1\_else /#1 \_ea\.pdfaction\_ea[#2]\_ea\.pdfaactionsA\_fi}
+
+   \_doc
+   \label[actions-link]
+   \secc Link annotations
+   The main use of actions~-- annotations of `/Subtype /Link`. Annotation of
+   this type creates an active rectangular area on the page that executes a PDF
+   action (or chain of them in the general case).
+   \`\hlink``[<action spec>]<text>` is macro that typesets <text> and makes area
+   occupied by it active according to <action spec>. All action types are
+   supported, the mechanism is completely generic.
+
+   The `\pdfstartlink`/`\pdfendlink` primitives are used to denote the part of
+   the page where <text> appears as active. \LuaTeX/ will then handle even the
+   situations where <text> gets broken across multiple lines (by creating
+   multiple rectangular annotations to cover all `\hbox`es).
+   \_cod
+
+\_def\.hlink[#1]#2{\_bgroup\_def\#{\_csstring\#}%
+    \_edef\.type{\.pdfactiontype[#1]}%
+    \_quitvmode\_pdfstartlink \.linkdimens
+       attr{\_pdfborder{\.type}}%
+       user{/Subtype /Link /A \.pdfaction[#1]}\_relax
+    \_localcolor\.linkcolor{\.type}#2\_pdfendlink\_egroup
+}
+
+\_nspublic \hlink ;
+
+   \_doc
+   Use `\hlink` as the backing command for OpTeX's \"higher level" linking
+   commands (`\ilink` and `\ulink`).
+
+   The lower level ones (`\xlink` and its predecessor `\link` actually have
+   completely different semantics with regards to color, so we keep them as they
+   are.
+   \_cod
+
+\_protected\_def\_ilink[#1]#2{\.hlink[#1]{#2}}
+\_protected\_def\_ulink[#1]#2{{\_escapechar=-1 \_ea}\_expanded
+   {\_noexpand\.hlink[url:\_detokenize{#1}]}{#2}}
+
+\_public \link \ilink \ulink ;
+
+%\_protected\_def\_link[#1]#2#3{\_hlink[#1]{#3}}
+%\_protected\_def\_xlink#1#2#3#4{\_hlink[#1:#2]{#4}}
+
+   \_doc
+   Two customizations of `\hlinks` are possible:
+   \begitems
+   * Dimensions of rectangular areas created by
+     `\pdfstartlink`/`\pdfendlink`. This is done using \`\.linkdimens`
+     (analogous to \OpTeX's `\linkdimens`). Dimensions that are unset are taken
+     from the respective `\hbox`es. \`\lininglinks` sets the dimensions for
+     running text~-- it covers all space of a line using `\baselineskip`.
+     \`\nolininglinks` sets no dimensions, this is useful for buttons, that may
+     have larger height/depth than a line.
+   * The color is determined from the type of link (that is, the first action in
+     <action spec>) by checking `\_<type>linkcolor` (compatible with \OpTeX/).
+     As a fallback `\_ilinkcolor` is used (set by \OpTeX's `\hyperlinks`) for all links
+     except for URLs, where `\_elinkcolor` is used instead. If even these
+     fallback colors are not defined (`\hyperlinks` isn't used), then the most
+     generic `\_linkcolor` will be taken or no color will be set.
+   \enditems
+   \_cod
+
+\_def\.lininglinks{%
+   \_def\.linkdimens{height.75\_baselineskip depth.25\_baselineskip}%
+}
+\_def\.nolininglinks{\_def\.linkdimens{}}
+\.lininglinks
+
+\_nspublic \lininglinks \nolininglinks ;
+
+\_def\.linkcolor#1{\_trycs{_#1linkcolor}{\_trycs{_ilinkcolor}{\_trycs{_linkcolor}{}}}}
+
+ % \_urllinkcolor = \_elinkcolor with fallbacks
+\_def\_urllinkcolor{\.linkcolor{e}}
+
+   \_doc
+   \secc Open action
+   The document itself has one action defined in the document catalog. It is
+   called `/OpenAction`. We allow the user to set it using the familiar
+   <action spec> syntax with the command \`\openaction``[<action spec>]`.
+
+   Internally we could directly set it by appending to the catalog
+   using the primitive `\pdfcatalog`, but \LuaTeX/ (pdf\TeX/ really) allows
+   setting the action with special syntax. This has the benefit that it is not
+   allowed to set the action more than once.
+   \_cod
+
+\_def\.openaction[#1]{\_pdfcatalog{} openaction user{\.pdfaction[#1]}\_relax}
+\_nspublic \openaction ;
+
+   \_doc
+   \label[actions-jump]
+   \secc Jump actions
+
+   These are the most typical actions. Even \LuaTeX/ itself handles them,
+   although we don't use the possibility for maintaining generality. There are a
+   few types of jump actions:
+   \begitems
+   * `/GoTo` actions are the classic internal links to named destinations in the
+     PDF file (created by `\pdfdest` primitive or \OpTeX/'s `\dest`). The
+     destination names include also the type of internal link (e.g.
+     `ref:section1`). They are handled by \`\.ilinkaction``[<type>:<name>]`.
+   * `/URI` actions which are in most cases used as \"goto URL" actions. These
+     are not that useful directly, because special characters should be handled
+     before this actions is used (like with `\url`). The low level use is
+     \`\.urlaction``[url:<url>]`.
+   * \"Goto remote" actions, which can jump to a destination in another PDF file~--
+      either determined by name, or by page number. The external files are
+      expected to be defined by `\filedef` (but not the embedded variant). The
+      use is either \`\.extrefaction``[extref:<name>:<named destination>]` for
+      links to named destination or \`\.extpgrefaction``[extpgref:<name>:<page number>]`
+      for page destinations. Customization is possible with \`\.extrefextra`, by
+      default opening in a new windows is requested.
+   \enditems
+   \_cod
+
+\_def\.ilinkaction[#1:#2]{/S /GoTo /D (#1:#2)}
+
+\_def\.urlaction[#1:#2]{/S /URI /URI (#2)}
+
+\_def\.extrefaction[#1:#2:#3]{/S /GoToR
+   /F \.cs{filespec:#2}
+   /D (#3)
+   \.extrefextra
+}
+\_def\.extpgrefaction[#1:#2:#3]{/S /GoToR
+   /F \.cs{filespec:#2}
+   /D [\_the\_numexpr#3-1\_relax\_space /Fit]
+   \.extrefextra
+}
+
+\_def\.extrefextra{/NewWindow true}
+
+
+   \_doc
+   Transition action is not really a jump action in of itself, but is only
+   useful when chained after jump actions, so we define it here. Transitions
+   (as page attributes) are handled more thoroughly in section~\ref[transitions].
+
+   The use would look something like:\nl
+   \`\.transitionaction`%
+   `[transition:<animation type>:<duration>:<raw PDF attributes>]`, where all fields
+   omitted from right take the default values.
+   \_cod
+
+\_def\.transitionaction[#1:#2]{/S /Trans \.attrorempty{Trans}{\.maketrans[#2]}}
+
+   \_doc
+   \secc Named actions
+
+   User can request arbitrary \"named" action with
+   \`\.namedaction``[named:<name>]`. See user documentation for details.
+   \_cod
+
+\_def\.namedaction[#1:#2]{/S /Named /N /#2}
+
+   \_doc
+   \secc JavaScript actions
+
+   JavaScript actions have two forms, either \`\.jsaction``[js:<name>]` or
+   `\.jsaction``[js:<script>]`. The first variant uses contents of `\filedef`'d
+   <name>, the second one uses <script> directly. There is no special catcode
+   handling.
+
+   \_cod
+
+\_def\.jsaction[#1:#2]{/S /JavaScript
+   /JS \_ifcsname _pdfextra_filestream:#2\_endcsname \_lastnamedcs \_else
+       (#2)
+   \_fi
+}
+
+   \_doc
+   \sec Page attributes
+
+   PDF represents pages as dictionaries. The dictionaries get generated by \LuaTeX/,
+   which fills in some attributes {\em attributes} (like `/Content` with
+   contents of the page and `/Annots` with array of annotations). We can add
+   more using `\pdfpageattr` primitive token list register. While not that many
+   are generally useful, there are a few interesting ones. For example
+   transitions can be set using page attributes, or we might want to set
+   additional actions (`/AA`) to listen for page events.
+
+   While the so called \"page objects" are in a tree structure (for fast lookup),
+   only the leaves are real \"pages". PDF allows some attributes to be inherited
+   from parent page objects, but not all of them and certainly not those we are
+   interested in.
+
+   The mechanism introduced in this section is optional, because it takes
+   complete control over `\pdfpageattr`. It gets activated when
+   \`\initpageattributes` is first used (which happens automatically for some
+   functionality exposed by this package), but may be activated by the user for
+   any other purpose. Only attributes listed in \`\pageattributes` are
+   processed.
+
+   We set the attributes anew for each page, by hooking into \OpTeX/'s
+   `\_begoutput`. Because `\pdfpageattr` token list doesn't get expanded before
+   written out to PDF, we expand it using the assignment in `\edef` trick. The
+   token list gets expanded, but the assignment is not made until it reaches
+   main processor when the temporary control sequence gets expanded.
+   \_cod
+
+% pdfpagattr managament (default for all pages vs current page override)
+\_def\.pageattributes{{Trans}{Dur}{Rotate}{AA}}
+\_def\.initpageattributes{%
+   % add hook for setting primitive \pdfpageattr
+   \_addto\_begoutput{\_edef\.tmp{\_pdfpageattr={\.pdfpageattributes}}\.tmp}%
+   % no need to do this twice
+   \_let\.initpageattributes=\_relax
+}
+\_nspublic \pageattributes \initpageattributes ;
+
+   \_doc
+   The user interface we want to expose has two parts:
+   \begitems
+   * setting the page attribute for just this one page (\`\.pdfcurrentpageattr`),
+   * setting the default attribute (used when current page value is not set)
+   (\`\.pdfdefaultpageattr`).
+   \enditems
+
+   The first one of course brings in the typical \TeX/ problem of knowing the
+   page where something occurs. As always, the page number contained in
+   `\gpageno` during processing of said content may of course not actually be
+   the number of the page where the content ends up! Hence, we need to note the
+   page number with a delayed write, using `\.setpageof` and later `\.pageof`.
+   The different settings of page attributes should have distinct names, we use
+   the \`\.pageattrcount` counter for this.
+   \_cod
+
+\_newcount\.pageattrcount
+\_def\.pdfcurrentpageattr#1#2{\.initpageattributes
+   \_incr\.pageattrcount
+   \.setpageof{pageattr:\_the\.pageattrcount}%
+   \.sxdef{pdfpgattr:\.pageof{pageattr:\_the\.pageattrcount}:#1}{#2}%
+}
+\_def\.pdfdefaultpageattr#1#2{\.initpageattributes
+   \.sxdef{pdfpgattr:#1}{#2}%
+}
+
+   \_doc
+   Finally, the macro \`\pdfpageattributes` takes care of setting generating the
+   contents of `\pdfpageattr`. For each attribute in `\pageattributes` it first
+   checks its current page value, only then the default value. If neither is
+   set, nothing is added.
+   \_cod
+
+\_def\.pdfpageattributes{\_ea\.pdfpageattributesA\.pageattributes\.end}
+\_def\.pdfpageattributesA#1{\_ifx\.end#1\_else
+   % use current page override or "default"
+   % don't emit anything if the value is empty
+   \.attrorempty{#1}{%
+      \.trycs{pdfpgattr:\_the\_gpageno:#1}{\.trycs{pdfpgattr:#1}{}}%
+   }%
+   \_ea\.pdfpageattributesA\_fi
+}
+
+   \_doc
+   Each attributes then has two switches for the respective default and current
+   values. For defining a few of them a helper is introduced:\nl\indent
+   \`\.pdfpageattributesetters`` <attribute> \<default setter> \<current setter> {<value>}`,
+   \nl
+   where <attribute> is name of the attribute without the slash
+   (e.g. `MediaBox`), the two control sequences name the future user setters,
+   which will take single argument in brackets
+   (e.g. `\mediabox` and `\thismediabox`) and the <value> can use the
+   argument.
+   \_cod
+
+\_def\.pdfpageattributesetters#1 #2#3#4{%
+   \.sdef{\_csstring#2}[##1]{\.pdfdefaultpageattr{#1}{#4}}%
+   \.sdef{\_csstring#3}[##1]{\.pdfcurrentpageattr{#1}{#4}}%
+   \_nspublic #2 #3 ;
+}
+
+   \_doc
+   Some of the useful attributes are `/Rotate`, which rotates the pages visually
+   (can be set with \`\defaultpagerotate` and \`\pagerotate`), and the additional
+   actions (`/AA`, see section~\ref[actions-additional], set using
+   \`\defaultpageactions` \`\pageactions`).
+   \_cod
+
+\.pdfpageattributesetters Rotate \defaultpagerotate \pagerotate {#1}
+
+\.pdfpageattributesetters AA \defaultpageactions \pageactions {\.pdfaactions{#1}}
+
+   \_doc
+   \label[transitions]
+   \secc Transitions, page durations
+
+   There are predefined types of transitions, like `/Wipe`, `/Box`, `/Split`,
+   etc. Most have other customizible attributes~-- usually directions set in
+   different ways depending on the animation type at hand, but the most
+   important attribute is the duration of the animation. Parsing friendly user
+   notation in the form of
+   `[<animation type>:<duration>:<other raw attributes>]`, where fields from the
+   right may be omitted to produce the default value, is handled by
+   \`\.maketrans`. This macro is also used by transition actions
+   (see~\ref[actions-jump]). The defaults are simply those defined by PDF
+   standard (no transition, 1 second duration and the respective default
+   directions).
+   \_cod
+
+\_def\.maketrans[#1]{\.maketransA#1:::\.end}
+\_def\.maketransA#1:#2:#3:#4\.end{%
+   \.emptyor{#1}{<</S /\.nonempty \.attrorempty{D}{#2} #3>>}
+}
+
+   \_doc
+   The attribute setters for transitions (\`\transitions`, \`\transition`) are a
+   simple wrappers. Similiar is the
+   setting of page duration in seconds after which PDF viewer automatically
+   advances to the next page (\`\defaultpageduration`, \`\pageduration`).
+   \_cod
+
+\.pdfpageattributesetters Trans \transitions \transition {\.maketrans[#1]}
+
+\.pdfpageattributesetters Dur \defaultpageduration \pageduration {#1}
+
+   \_doc
+   \label[nametrees]
+   \sec Name trees -- attachments and document level JavaScript
+
+   These don't have any last place to be in, so they are documented separately,
+   here. Attaching files using `/FileAttachment` annotations:
+   \begitems \style n
+   * is intended more towards viewers of the document for extra additions and
+   * doesn't work in the viewers as well as one would like.
+   \enditems
+
+   That is why instead embed files using normal `\filedef` and then allow them
+   to be added to the document level `/EmbeddedFiles` entry, which means they
+   will be shown in the user interface by PDF viewers. `/EmbeddedFiles` is a
+   document level name tree (contained inside `/Names` entry of `/Catalog`) that
+   maps names of files to their objects. Although we simplify matters by
+   constructing more of an array.
+
+   What works very similiarly is document level JavaScript. It is a name tree
+   within `/JavaScript` field. It maps names of JavaScript actions to their
+   object numbers. The names aren't very useful, but the actions have their
+   purpose. They are executed in turn after the document is opened. Hence they
+   can be used to predefine JavaScript functions in the global context, to be
+   used later within actions explicitly activated by the user.
+
+   The user level commands are \`\attach``[<name>]` (to attach a previously
+   `\filedef`'d name with fallback to embedding now if it is a valid path) and
+   \`\dljavascript``[<name>]{<script>}` (adds action that executes <script>
+   after document is opened, <name> is more or less meaningless).
+
+   Internally the commands construct lists of what ends up in the resulting name
+   array, i.e. pairs {\visiblesp `(<name>) <object number> 0 R `}. Intermediate
+   macros \`\.embeddedfiles` and \`\.dljavascripts` are used for this.
+
+   In the case of file attachments, nothing happens if file is defined and not
+   found by the fallback.
+
+   \_cod
+
+% file attachment
+\_def\.embeddedfiles{}
+\_def\.attach[#1]{\.isfiledefined{\.name}\_iftrue
+   \.xaddto\.embeddedfiles{(#1) \.cs{filespec:#1} }\_fi
+}
+\_nspublic \attach ;
+
+\_def\.dljavascripts{}
+\_def\.dljavascript[#1]#2{%
+   \_immediate\_pdfobj{<< \.jsaction[js:{#2}] >>}%
+   \.xaddto\.dljavascripts{(#1) \_the\_pdflastobj \_space 0 R }%
+}
+\_nspublic \dljavascript ;
+
+   \_doc
+   Renditions (see \ref[mm-renditions]) also need their name tree. This package
+   mostly doesn't play well with Unicode filenames, that is why they are
+   forbidden. However, Renditions that are accessed from JavaScript have to be
+   named/present in a `/Renditions` name tree, with the names encoded in the PDF
+   encoding (UTF-16BE).\nl
+   The names and object references are collected in \`\.renditions`. Unicode
+   encoding is hacked with \`\.pdfstringtounicode`.
+   \_cod
+
+\_def\.pdfstringstrip(#1){#1}%
+\_def\.pdfstringtounicode#1#2{%
+   \_ea\_pdfunidef\_ea#1\_ea{\_ea\.pdfstringstrip\_expanded{\.cs{filename:#2}}}%
+}
+\_def\.renditions{}
+
+   \_doc
+   Object creation, which is common to all name trees, is handled by\nl\indent
+   \`\.makenamearray``<name tree name><name tree content>`.\nl
+   It doesn't do anything
+   for empty lists, to not bloat PDF files when this mechanism isn't used.
+   \_cod
+
+\_def\.makenamearray#1#2{\_ifx#2\_empty\_else
+   \_immediate\_pdfobj {<< /Names [ #2 ] >>}%
+   \_pdfnames{/#1 \_the\_pdflastobj \_space 0 R }\_fi
+}
+
+   \_doc
+   The lists themselves can only be written out to the PDF file at the very end
+   of the run. We use \OpTeX/'s `\_byehook`, which is run in `\_bye`. But `\bye`
+   itself may be predefined by the user, for example when using some of the
+   \OpTeX/ tricks. We just hope that the user keeps `\_byehook`.
+   \_cod
+
+\_addto\_byehook{%
+   \.makenamearray{EmbeddedFiles}\.embeddedfiles
+   \.makenamearray{JavaScript}\.dljavascripts
+   \.makenamearray{Renditions}\.renditions
+}
+
+   \_doc
+   \sec Viewer preferences
+
+   There are a few customizations of display (and other preferences of PDF
+   viewers) possible in the document catalog or its subdictionary
+   `/ViewerPreferences`. Most are not that useful. The interesting
+   ones are implemented by \`\fullscreen`, \`\showoutlines`, \`\showattached`.
+   They all set the page mode using \`\.setpagemode`. We don't handle respecting
+   the last setting (using \`\_byehook`). To prevent invalid PDF files, we set
+   `\.setpagemode` to `\_relax` after use.
+   \_cod
+
+\_def\.setpagemode#1{\_pdfcatalog{/PageMode /#1}\_glet\.setpagemode=\_relax}
+
+\_def\.fullscreen{\.setpagemode{FullScreen}}
+\_def\.showoutlines{\.setpagemode{UseOutlines}}
+\_def\.showattached{\.setpagemode{UseAttachments}}
+
+\_nspublic \fullscreen \showoutlines \showattached ;
+
+   \_doc
+   Only the setting of duplex / double sided printing and display is in the
+   nested dictionary. It is handled by \`\duplexdisplay`. The simplistic version
+   does not handle more attributes in `/ViewerPreferences`. We also set the
+   meaning to `\_relax` to prevent more (erroneous) uses.
+   \_cod
+
+\_def\.duplexdisplay{\_pdfcatalog{%
+  /PageLayout /TwoPageRight
+  /ViewerPreferences <<
+    /Duplex /DuplexFlipLongEdge
+  >>}%
+  \_glet\.duplexdisplay=\_relax
+}
+
+\_def\duplexdisplay{\.duplexdisplay}
+
+   \_doc
+   \sec Multimedia
+
+   PDF essentially allows insertion of different types of multimedia:
+   \begitems
+   * images,
+   * audio/video,
+   * 3D art.
+   \enditems
+
+   The first is pretty standard and handled normally by the engine (\LuaTeX).
+   Others are possible, but have to be done manually according to one of the
+   mechanisms specified by PDF standard:
+
+   \begitems
+   * Sounds (audio only),
+   * Movies (video and/or audio),
+   * Renditions (video and/or audio),
+   * 3D annotations (3D art),
+   * Rich Media (video and/or audio, 3D art)
+   \enditems
+
+   Sadly all these mechanisms are badly flawed, each in different ways. At least
+   we try to use the one that works in the viewers.
+
+   For audio/video \"Movies" are the simplest mechanism, but they have been
+   deprecated in PDF 2.0 and no longer work in Acrobat/Foxit (same for
+   \"Sounds").
+
+   \"Renditions" are complicated, partly dependant on JavaScript, but at least
+   supported by Acrobat, Foxit, Evince and Okular.
+
+   \"Rich media" annotations were designed for Flash. This use case is no longer possible
+   today, but the obscurities remain. They are unnecessiraly complicated, but can
+   be used without Flash too. Although the result is very plain for audio/video~--
+   no controls can be displayed and there are no associated actions.
+
+   \"3D annotations" are reasonably simple, but also flawed. They cannot reuse
+   embedded file as a source for 3D data. Hence it is better and more consistent
+   to use Rich Media for 3D annotations. It even has additional benefits, like
+   the possibility of using multiple initialization scripts.
+
+   In the end, this package exposes two user commands corresponding to two
+   mechanisms~-- first are Renditions (`\render`) for audio/video that works in most
+   browsers and Rich Media (`\RM`) mainly for 3D art, but also for audio/video
+   with limited possibilities.
+
+   Both mechanisms have an annotation at their core. Annotations is essentially
+   a rectangular area on page. The area corresponds to where the
+   multimedium will show up. After activating the area somehow (by user click,
+   or action) the multimedium will start playing. Before annotations the
+   rectangular area will show something that is called \"normal appearance".
+   This appearance is of type form XObject. Those are really similiar to pages~--
+   they have dimensions, contents made up of PDF graphics operators, \dots,
+   but they are reusable. Not that useful for annotations where we will need the
+   form only once, but nice anyways. pdf\TeX/ has primitives for creating them~--
+   `\pdfxform` and friends. They essentially do the same code like `\shipout`
+   does, but instead of page, they make this reusable object. One can then
+   either use this reusable object in another page/form, but we will indirectly
+   refer to it for the appearance.
+
+   Important aspect of annotations is that they are really only rectangular
+   areas on the page, but they are not really part of the page. They sort of sit
+   on another level and are not influenced by PDF graphic operators which make
+   the page. In pdf\TeX/ annotations are handled by {\em whatsit} nodes. While
+   most nodes map to known primitive \TeX/ concepts (like typeset characters,
+   boxes, rules, etc.) Whatsits are essentially commands for \TeX/ that are
+   delayed until page is being shipped out (written to PDF file). `\write`,
+   `\special`, and most pdf\TeX/ commands create whatsits. For annotationos this
+   is important, because this means that the engine only stores the information
+   about annotation that we specify, but creates it at due time, when it should
+   be written to PDF.
+
+   Because whatsits are essentially dimensionless and we want it to be a part of
+   normal \TeX/ typesetting material we create the annotation (whatsit) in
+   `\hbox`. This box will be otherwise empty, because the apperance of the
+   rectangular area is determined by the normal appearance field (`/N` in
+   `/AP`). We set the dimensions of the box to the dimensions of normal
+   appearance. Everything will line up nicely, because when processed, the
+   annotation will take dimensions from the box.
+
+   All of these concepts are implemented in:\nl\indent
+   \`\.boxedannot``[<type>:<name>]{<appearance>}{<special text>}{<annotation attributes>}`\nl
+   <type> is used to determine the annotation border (same principle as with
+   Link annotations, section~\ref[actions-link]), <name> will be used as the
+   annotation name (`/NM`), <special text> is used for influencing the
+   `\pdfannot` primitive, and <annotation attributes> will become the body of
+   the annotation.
+
+   \_cod
+
+\_def\.boxedannot[#1:#2]#3#4#5{%
+   \_setbox0=\_hbox{#3}\_setbox2=\_null
+   \_ht2=\_ht0 \_wd2=\_wd0 \_dp2=\_dp0
+   \_preshipout0 \box0
+   \_immediate\_pdfxform0
+   % box with annotation both stretching to dimensions of appearance
+   \_hbox{\.setpageof{#1:#2}%
+      \_pdfannot #4 {#5
+         /AP <</N \_the\_pdflastxform \_space 0 R>>
+         \_pdfborder{#1}
+         /NM (#2)
+         /Contents (#1 '#2')
+      }%
+      \_copy2
+   }%
+}
+
+   \_doc
+   There is another weird thing common to both multimedia mechanisms~--
+   the redefinition of `\.name`. It is initially
+   set by `\.secondoptdef` to <name>, but may be redefined by user supplied
+   `name` key-value parameter. This should be used when there are multiple uses
+   of the same content. Otherwise samely named annotations would be
+   indistinguishable both for PDF viewer and our handling of actions (which
+   would all refer only to the first instance).
+
+   To somewhat overcome this, trying to use the same <name> (within the same
+   type of annotaiton) will use dummy name from \`\.unnamedannotcount` (for
+   uniqueness). This means that <name> will always refer to the first instance.
+   \`\.redefinename` handles this.
+   \_cod
+
+\_newcount\.unnamedannotcount
+\_def\.redefinename#1{%
+   \.isdefined{#1:\.name}\_iftrue
+      \_incr\.unnamedannotcount
+      \_edef\.name{\_the\.unnamedannotcount}%
+   \_else
+      \_edef\.name{\_kv{name}}%
+   \_fi
+}
+
+   \_doc
+   \label[mm-renditions]
+   \secc Renditions (audio/video)
+
+   There are three main types of PDF objects involved in the Renditions
+   (\"Multimedia") mechanism:
+
+   \begitems
+   * Screen annotations define the area for playing multimedia.
+   * Rendition objects define the multimedia to play.
+   * Rendition actions associate Rendition objects with Screen annotations.
+   \enditems
+
+   You can theoretically arbitrarily mix and match rendition objects and screen
+   annotations by invoking different actions. In practice Evince and Okular do
+   really simplistic parsing and don't fully support the actions fully. But by
+   keeping it simple it is possible to make it work almost the same in all
+   viewers that support renditions.
+
+   Different sources of audio/video should be possible. In fact all three file
+   specifications (embedded files, files specified by URL/path) could work.
+   Again in practice embedded file is the safest bet, that works in all viewers
+   that support renditions.
+
+   The user facing command is:\nl\indent
+   \`\render``[<name>][<optional key-value paramers>]{<horizontal material>}`\nl\noindent
+   <name> is the friendly name set using `\filedef` or file path if <name> isn't
+   `\filedef`d and is to be embedded. The key-value parameters in brackets
+   can be entirely omitted. They can influence the playback (except for `controls`
+   most are not well supported). Default values are taken from
+   `\.renderdefaults`.
+
+   `\render` doesn't do anything (except print warning) if file <name> isn't
+   defined and <name> isn't a path to file that can be embedded.
+
+   The first PDF object it defines is Rendition, which specifies information
+   about the multimedium (name, file specification, MIME type and options from
+   key-value parameters). Some of the fields are in `/BE` (\"best effort")
+   dictionaries. This is due to the very general design of Renditions, which
+   theoretically allows the PDF viewer to choose from multiple Renditions if
+   they know they can't support some of the requested features. But that is not
+   much useful in practice, so we just don't complicate it.
+
+   Next defined object is Screen annotation, which complicates thing by
+   requiring (`/P`) reference to the page where the annotation is (handled by
+   `\setpageof` and `\pageof` pair). Important field is `/A` which specifies
+   actions that shall be executed when the screen area is clicked. We let the
+   user change the action, but the sensible default of starting to play the
+   multimedium is used (and this is the only thing that works in some viewers
+   anyways). Additional actions `/AA` may be used to react to events like mouse
+   over or page open/close~-- the most probable use case is autoplay on page
+   open, for which shortcut of \`\renditionautoplay` is defined.
+
+   The code is slightly complicated by the fact, that actions need to reference
+   the Rendition and Screen objects. In the case of the action contained in
+   Screen annotation this essentialy involves a self reference. Hence it is
+   needed to first reserve an object number and later use it for the annotation.
+   Because the object numbers may also be needed by actions defined later, we need
+   to save them to `\_pdfextra_rendition:<name>` and `\_pdfextra_screen:<name>`
+   respectively, but also define aliases with empty names, so users can easily
+   reference the latest rendition.
+
+   \_cod
+
+\.secondoptdef\.render#1{\.isfiledefined{\.name}\_iftrue\_bgroup
+   \_ea\_readkv\_ea{\_ea\.renderdefaults\_ea,\_the\_opt}%
+   \.colortorgbdef\.bgcolor{\_kv{background}}%
+   % rendition object ("media specifaction")
+   \.pdfstringtounicode\.uiname\.name
+   \_pdfobj {<</Type /Rendition
+      /S /MR
+      /N \.uiname
+      /C <<%/Type /MediaClip
+        /S /MCD % subtype MediaClipData
+        /D \.cs{filespec:\.name}
+        /CT (\.cs{filemime:\.name})
+        /P << /TF (TEMPALWAYS) >> % allow creating temporary files
+      >>
+      /P <<%/Type /MediaPlayParams
+        /BE << /C \_kv{controls} /V \_kv{volume} /RC \_kv{repeat} >>
+      >>
+      /SP <<%/Type /MediaScreenParams
+        /BE << /O \_kv{opacity} /B [\.bgcolor] >>
+      >>
+   >>}\_pdfrefobj\_pdflastobj
+   \.xaddto\.renditions{\.uiname \_the\_pdflastobj \_space 0 R }%
+   \.redefinename{rendition}%
+   \.sxdef{rendition:\.name}{\_the\_pdflastobj}%
+   % screen annotation ("screen space allocation")
+   \_pdfannot reserveobjnum% "self" reference will be needed inside screen annot.
+   \.sxdef{screen:\.name}{\_the\_pdflastannot}%
+   % aliases to latest rendition/screen with empty name
+   \_global\.slet{rendition:}{rendition:\.name}%
+   \_global\.slet{screen:}{screen:\.name}%
+   \_edef\.action{\_kv{action}}\_edef\.aactions{\_kv{aactions}}%
+   \.boxedannot[rendition:\.name]{#1}{useobjnum\_the\_pdflastannot}{%
+      /Subtype /Screen
+      % reference to page of the rendition (\setpageof done by \.boxedannot)
+      % the spaces are weird, but \pdfpageref eats them
+      /P \_pdfpageref\.pageof{rendition:\.name} \_space 0 R
+      /A \_ea\.pdfaction\_ea[\.action]
+      /AA \_ea\.pdfaactions\_ea{\.aactions}
+   }%
+   \_egroup\_fi
+}
+\_nspublic \render ;
+
+   \_doc
+   Here are the defaults used for `\render`~-- \`\.renderdefaults`. Users can
+   redefine them all together or override as needed with key-value parameters.
+   The defaults correspond to values specified by PDF standard. Other values may
+   not be respected by all viewers.
+   \_cod
+
+\_def\.renderdefaults{%
+   name=\.name,
+   controls=false,
+   volume=100,
+   repeat=1,
+   opacity=1.0,
+   background=1 1 1,
+   action=rendition::play,
+   aactions={},
+}
+
+   \_doc
+   Most probable use of additional actions is to start auto-start playing of the
+   multimedium. For this purpose \`\renditionautoplay` is defined as a shorthand
+   for action to play the lastly defined rendition on page visible event.
+   \_cod
+
+\_def\.renditionautoplay{{PV}{rendition::play}}
+\_nspublic \renditionautoplay ;
+
+   \_doc
+   \seccc Rendition actions
+
+   Rendition actions unfortunately use cryptic symbolic numbers (`0`, `1`, `2`
+   and `3`) for actions that could be called `play`, `stop`, `pause` and
+   `resume` respectively. Except for these predefined actions (that use `/OP`)
+   running of JavaScript is possible using `/JS (<script>)` with potential
+   fallback to `/OP`. This is dangerous teritory, because support of the right
+   API in the viewer is very low. Although it is possible to define such action
+   type by:
+
+   \begtt
+\.sdef{renditionaction:myaction}{/JS (app.alert("something useful");) /OP 0}
+   \endtt
+
+   The use of rendition action is:
+   \`\.renditionaction``[rendition:<name>:<action type>]`. Empty name refers to
+   last rendition, so e.g.`\.renditionaction``[rendition::pause]` is possible.
+   \_cod
+
+\.sdef{renditionaction:play}{/OP 0}
+\.sdef{renditionaction:stop}{/OP 1}
+\.sdef{renditionaction:pause}{/OP 2}
+\.sdef{renditionaction:resume}{/OP 3}
+\_def\.renditionaction[#1:#2:#3]{/S /Rendition
+   \.cs{renditionaction:#3}
+   /R \.cs{rendition:#2} 0 R
+   /AN \.cs{screen:#2} 0 R%
+}
+
+   \_doc
+   \secc Rich Media (3D/audio/video)
+
+   Some principles seen with Renditions (section~\ref[mm-renditions]) apply here
+   too. But additionally we deal with 3D specifics and unfortunate Flash
+   leftovers.
+
+   Unlike Renditions both page area and multimedium specifaction are handled in
+   a single annotation~-- the Rich Media annotation. The code is unfortunately
+   obscured due to the weird requirements, but this is essentially what we are
+   trying to create with \`\RM`:
+\begtt
+/Type /Annot
+/Subtype /RichMedia
+/RichMediaSettings <<
+  /Activation <<
+    /Condition /PV
+    /Scripts [ 14 0 R ]
+  >>
+  /Deactivation << /Condition /XD >>
+>>
+/RichMediaContent <<
+  /Assets << /Names [ (kladka.prc) 2 0 R (wireframe.js) 14 0 R ] >>
+  /Configurations [ <<
+      /Type /RichMediaConfiguration
+      /Subtype /3D
+      /Instances [ <<
+          /Type /RichMediaInstance
+          /Subtype /3D
+          /Asset 2 0 R
+        >> ]
+    >> ]
+>>
+\endtt
+
+   The activation/deactivation will be dealt with later. But we see that to
+   insert a simple 3D file, we have to pack it inside a file specification
+   (indirect reference to object `2 0 R`), then in \"instance", inside a
+   \"configuration" inside \"content". As if it wasn't enough the names
+   (normally contained in the file specification) have to be specified again in
+   `Assets` name tree that uselessly maps names to file specifications. Because
+   this is a 3D Rich Media annotation there are other files at play~--
+   initialization scripts. These are specified in `/Scripts` and are executed in
+   turn when the annotation is activated. Not shown is, that some
+   \"configurations" and \"instances" actually have to be specified indirectly.
+
+   If it wasn't for Flash we could do with something like:
+
+\begtt
+/Type /Annot
+/Subtype /RichMedia
+/Activation /PV
+/Scripts [ 14 0 R ]
+/Deactivation /XD
+/Content 2 0 R
+\endtt
+
+   Which contains equivalent information. But unfortunately here we are\dots
+   \_cod
+
+\.secondoptdef\.RM#1{\.isfiledefined{\.name}\_iftrue
+      \_edef\.tmp{\.cs{filemime:\.name}}%
+      \_edef\.subtype{\_ea\.mimetormsubtype\_ea[\.tmp]\_space}%
+      \_ifx\.subtype\_space
+         \_opwarning{unknown rich media type for '\.name', ignored}\_else
+   \_bgroup
+   \_ea\_readkv\_ea{\_ea\.RMdefaults\_ea,\_the\_opt}%
+   % Instance that has the media file as an asset
+   \_pdfobj {<</Type /RichMediaInstance
+     /Subtype /\.subtype
+     /Asset \.cs{filespec:\.name}
+   >>}\_pdfrefobj\_pdflastobj
+   % Configuration with one single instance (the above)
+   \_pdfobj {<</Type /RichMediaConfiguration
+     /Subtype /\.subtype
+     /Instances [ \_the\_pdflastobj \_space 0 R ]
+   >>}\_pdfrefobj\_pdflastobj \_edef\.configuration{\_the\_pdflastobj}%
+   \_edef\.names{\.cs{filename:\.name} \.cs{filespec:\.name} }% initial asset
+   \.redefinename{rm}%
+   \_def\.scriptfilespecs{}%
+   \_edef\.views{\_kv{views}}\_edef\.scripts{\_kv{scripts}}%
+   \_ifx\.views\_empty \_edef\.views{\.name}\_fi
+   \_ea\.DDDscripts\_ea{\.scripts}%
+   % annotation in hbox
+   \.boxedannot[rm:\.name]{#1}{}{%
+      /Subtype /RichMedia
+      /RichMediaSettings <<
+        /Activation <<
+          /Condition \.cs{activation:\_kv{activation}}
+          \.emptyor{\.scriptfilespecs}{/Scripts [ \.nonempty ]}
+          /Presentation << /Toolbar \_kv{toolbar} \.RMpresentationextra >>
+        >>
+        /Deactivation << /Condition \.cs{deactivation:\_kv{deactivation}} >>
+      >>
+      /RichMediaContent <<
+        /Assets << /Names [ \.names ] >>
+        /Configurations [ \.configuration \_space 0 R ]
+        \.emptyor{\_ea\.DDDviews\_ea{\.views}}{/Views [ \.nonempty ]}
+      >>
+   }%
+   \.sxdef{rm:\.name}{\_the\_pdflastannot}%
+   \_global\.slet{rm:}{rm:\.name}%
+   \_egroup\_fi\_fi
+}
+\_nspublic \RM ;
+
+   \_doc
+   The code is similiar to `\render`, but we also ignore everything if we don't
+   recognize the type of media (`Video`, `Sound` or `3D`). For that we use a
+   simple mapping from MIME types with \`\.mimetormsubtype`. This means that
+   although we aim Rich Media mostly for 3D art it may also be used for Video
+   and Sound.
+   \_cod
+
+\_def\.mimetormsubtype[#1/#2]{\.cs{rmtype:#1}}
+
+\.sdef{rmtype:model}{3D}
+\.sdef{rmtype:video}{Video}
+\.sdef{rmtype:audio}{Sound}
+
+   \_doc
+   Then we also need to construct the weird name \"tree" (essentialy an array in
+   our case) and script array. \`\.DDDscripts` and \`\.DDDviews` do this.
+   Name tree is accumulated in `\.names`, and starts with the media file. After
+   that each script is added to \`\.names` and \`\.scriptfilespecs`. The scripts
+   are passed as a comma separated array. Ignoring initial spaces is done using
+   undelimited-delimited argument pair trick.
+   \_cod
+
+\_def\.DDDscripts#1{\.DDDscriptsA#1,,,\.end}
+\_def\.DDDscriptsA#1#2,{\_ifx,#1\_ea\.untilend\_else
+   \.isfiledefined{#1#2}\_iftrue%
+     \_addto\.scriptfilespecs{\.cs{filespec:#1#2} }%
+     \_addto\.names{\.cs{filename:#1#2} \.cs{filespec:#1#2} }%
+   \_fi
+   \_ea\.DDDscriptsA\_fi
+}
+
+   \_doc
+   For 3D views we need to process yet another comma separated list, this time
+   with \`\.DDDviews`. The result has to be separated by spaces and we also
+   don't want to emit something if the specified view was invalid. Unfortunately
+   this is expansion only context, so we can't issue a warning.
+
+   As a user convenience, before `\.DDDview` is executed, view with the name of
+   `\.name` is tried instead of empty view array. This means that for simple 3D
+   art with one view, one can create view with the same name as the 3D object
+   and not have to specify anything. We also take the name only after it is
+   redefined from optional key-value parameters~-- this is so we can support
+   even the case of e.g. `screw` 3D model used twice, once with `name=screw1`,
+   another time with `name=screw2` (with the corresponding `screw1` and `screw2`
+   views). This is probably less useful, but\dots
+   \_cod
+
+\_def\.DDDviews#1{\.DDDviewsA#1,,,\.end}
+\_def\.DDDviewsA#1#2,{\_ifx,#1\_ea\.untilend\_else
+   \.isdefined{3dview:#1#2}\_iftrue
+      \_lastnamedcs\_space \_fi
+   \_ea\.DDDviewsA\_fi
+}
+
+   \_doc
+   The activation/deactivation names are kind of cryptic, so we give them
+   descriptive names. Default is explicit (de)activation. Instead of `/PV` (page
+   visible) and `/PI` (page invisible) it would be possible to use \"page open"
+   and \"page close". These are slightly different in cases when more pages are
+   shown on screen at once, because only one page is \"open", while multiple are
+   \"visible".
+   \_cod
+
+\.sdef{activation:explicit}{/XA}
+\.sdef{activation:auto}{/PV}
+\.sdef{deactivation:explicit}{/XD}
+\.sdef{deactivation:auto}{/PI}
+
+   \_doc
+   Additional means of customization are here. \`\.RMdefaults` contains the
+   default key-value parameters. \`\.RMpresentationextra` can be used to set
+   more attributes in `/RichMediaPresentation` dictionary (although those are
+   more specific and not generally useful).
+   \_cod
+
+\_def\.RMdefaults{%
+   name=\.name,
+   activation=explicit,
+   deactivation=explicit,
+   toolbar=true,
+   views=,
+   scripts=,
+}
+\_def\.RMpresentationextra{}
+
+   \_doc
+   For scripting using JavaScript actions one needs to access the 3D context of
+   the 3D / Rich Media annotation. This requires the page number. We can't use
+   `this.pageNum`, because the script strictly doesn't have to be on
+   the same page. We use `\.pageof` (`\.setpageof` was done in `\.boxedannot`)
+   to retrieve the page number in next run. Also PDF indexes page numbers from
+   0. \`\DDDannot``{<name>}`. and \`\DDDcontext``{<name>}` allow this.
+   \_cod
+
+\_def\.DDDannot#1{%
+   this.getAnnotRichMedia(\_the\_numexpr\.pageof{rm:#1}-1\_relax, '#1')%
+}
+\_def\.DDDcontext#1{\.DDDannot{#1}.context3D}
+
+\_nspublic \DDDannot \DDDcontext ;
+
+   \_doc
+   \label[mm-3dviews]
+   \secc 3D views
+
+   This is the interesting part about 3D art. They can have a set of predefined
+   views~-- although a user may start from one, they can interactively change
+   all the aspects by dragging with mouse or messing with the settings shown by
+   right click menu.
+
+   There are several transformations that have to be done before it is possible
+   to display 3D scene on a computer screen:
+
+   \begitems \style n
+   * 3D transformation from the coordinate system of 3D artwork (\"model") to the \"world
+   coordinate system".
+   * 3D transformation from the world coordinate system to camera coordinate
+   system.
+   * projection to 2D (3D to 2D transformation).
+   \enditems
+
+   When talking about PDF, positive $x$ goes to the right, positive $y$ up, and
+   positive $z$ \"away" from us (\"into the page"). This means we are working
+   with a left handed coordinate system. In camera space, the camera sits at
+   $(0, 0, 0)$ facing towards positive $z$ with positive $x$ and $y$ going right
+   and up respectively. Projection (one way or another) discards the $z$
+   coordinate.
+
+   Although the transformations are not strictly linear, they are essentially
+   done using multiplication by {\em transformation matrices}. The matrix for
+   \"model to world" (or \"model") transformation is part of the 3D art file and can't
+   be changed. However, we can make it up, because we can fully control the
+   second transformation (\"world to camera" or \"view" transformation)~--
+   although we don't specify the \"world to camera" matrix but rather its
+   inverse, the \"camera to world" matrix (`/C2W`). This matrix has the $4 \times 4$
+   form, which also allows {\em linear transformation} and {\em translation}:
+
+   $$
+   M_{c2w} = \pmatrix{a & d & g & t_x \cr b & e & h & t_y \cr c & f & i & t_z \cr 0 & 0 & 0 & 1}
+   $$
+
+   Here we use the column major convention, which is also the order how we would
+   write the matrix to PDF file, where it is an array of 12 elements:
+
+   \begtt \catcode`\$=3
+   /C2W [$a$ $b$ $c$ $d$ $e$ $f$ $g$ $h$ $i$ $t_x$ $t_y$ $t_z$]
+   \endtt
+
+   In the rendering pipeline everything is transformed from world coordinates to
+   camera space coordinates. We can think about the process also in the other
+   way. Using $M_{c2w}$ we specify camera's position and orientation in the
+   world coordinate system. Due to how transformation using matrix
+   multiplication works, the first column in the $M_{c2w}$ matrix (vector $(a,
+   b, c)^T$) specifies how \"positive $x$ direcetion" (\"right") from camera
+   space ends up in world coordinate system. Similiarly for $(d, e, f)^T$ being
+   the image of positive $y$ (\"up") and $(g, h, i)^T$ being the image of
+   positive $z$ (\"forward"). The last column, $(t_x, t_y, t_z)^T$ represents
+   translation from camera space to world. Translation of origin (camera
+   position) will leave it in the point with coordinates $(t_x, t_y, t_z)$.
+   Because of these associations with the intuitive meanings of $x$,
+   $y$, $z$ in camera space we also sometimes call the vectors in the first
+   three columns of $M_{c2w}$ \"right", \"up" and \"forward" and the last one
+   \"eye":
+
+   $$
+   \vec{R} = \pmatrix{a \cr b \cr c}\!, \quad
+   \vec{U} = \pmatrix{d \cr e \cr f}\!, \quad
+   \vec{F} = \pmatrix{g \cr h \cr i}\!, \quad
+   \vec{E} = \pmatrix{t_x \cr t_y \cr t_z}\!.
+   $$
+
+   We usually want $\vec{R}$, $\vec{U}$ and  $\vec{F}$ to form an orthonormal set
+   of vectors, i.e. all of unit length and each pair is orthogonal. The
+   orthoganility will come from the way we calculate them, but the normality has
+   to be ensured by normalizing the vectors after computing them, which will not
+   be explicitly written out in the following text. $\vec{E}$ is a positional,
+   not directional, vector and it's length will be preserved.
+
+   Now we only need a convenient way to calculate all four vectors. A wide spread
+   method is sometimes called \"look at". It essentially involves having two
+   points: \"eye" ($E$, position of the camera) and \"target" ($T$, the point
+   where the camera is pointing at). The camera position is already provided:
+   $$
+   \vec{E} = E
+   $$
+   From these two points alone we can easily calculate the forward vector, which
+   corresponds to the direction of the camera:
+   $$
+   \vec{F} = \overrightarrow{ET} = T - E
+   $$
+   When we now imagine the point $E$ and vector $\vec{F}$ looking towards $T$ we
+   can see that there is a degree of freedom~-- the camera can rotate about the
+   forward vector. There is no other way than to arbitrarily choose
+   either up or right vector. Usually we choose an arbitrary \"global up" vector
+   $U_G$, which will influence the general direction of the final up vector.
+   This is because we use it to calculate the right vector:
+   $$
+   \vec{R} = \vec{U}_G \times \vec{F}
+   $$
+   The cross product makes it so that:
+   \begitems \style n
+   * $\vec{R}$ is perpendicular to $\vec{F}$
+   * it is also perpendicular to global up vector ($\vec{U}_G$) which we used to
+   get rid of remaining degree of freedom.
+   \enditems
+   Now that we have two orthonormal vectors (with the normalization not being
+   explicit) we can calculate the remaining up vector:
+   $$
+   \vec{U} = \vec{F} \times \vec{R}
+   $$
+
+   The last mysterious part about the calculation are the cross products. They
+   are of course not commutitative, so why e.g. $\vec{U}_G \times \vec{F}$ and
+   not the other way around? This is because we have to preserve the relations
+   these vectors had as directions of positive axes of the original camera
+   space. There we had positive $x$ going right, positive $y$ up and positive
+   $z$ forward in a left handed coordinate system. This means that following
+   holds (according the left hand rule):
+
+   $$\eqalign{
+   \vec{R} &= \vec{U} \times \vec{F} \cr % j * k = i
+   \vec{U} &= \vec{F} \times \vec{R} \cr % k * i = j
+   \vec{F} &= \vec{R} \times \vec{U} \cr % i * j = k
+   }$$
+
+   The scheme has one flaw though. When the directions of global up vector
+   $\vec{U}_G$ and forward vector $\vec{F}$ are linearly dependent the computed
+   right vector will be $(0, 0, 0)$. Hence some handling of this special case is
+   needed.
+
+   The \"look at" method is essentially what is used in Alexander Grahn's
+   package movie15\fnote{\url{https://www.ctan.org/pkg/movie15}}. Although the
+   input aren't two points, but rather a \"center of orbit" point ($COO$, our
+   \"target"), \"center of orbit to camera vector" ($\overrightarrow{C2C}$,
+   default is $(0, -1, 0)$) and distance of camera from the center of orbit
+   ($ROO$). The value used for the arbitrary \"global up" vector is $(0, 0, 1)$.
+   When forward vector is $(0, 0, z)$, then global up is chosen to be $(0, -1,
+   0)$ or $(0, 1, 0)$ to handle the \"0 right vector" issue.
+
+   Because the movie15 method of providing the parameters is used in essentially
+   all packages that handle PDF 3D art (movie15, media9, rmannot, Con\TeX/t) we
+   also follow the suite.
+
+   \`\DDDview`[<view name>][<key-value parameters>] is the command for defining
+   3D views. These have to be saved into separate PDF objects anyways, using
+   this interface we allow their reuse. If <view name> is same as <name> of
+   `\RM` argument and no other views are specified <view name> view is
+   automatically used (see `\RM` for details).
+
+   Key-value parameters are not optional this time, because rarely one suffices
+   with default values~-- different 3D views are about customization. Handling
+   of them is not as straightforward as before. We initially read the key-value
+   parameters only to determine the `method` used for calculating the `/C2W`
+   matrix. Then we reread key-value parameters again, this time with also with
+   the default values for this particular method. Not that the general 3d views
+   details are changed, but the methods themselves have key-value parameters of
+   their own, and we support specifying them in this \"flat" way.
+
+   Additionally we allow the different methods used to compute `/C2W` to not be
+   expandable. Hence they are executed outside of expansion only context and are
+   fully processed~-- the text they add to 3D view PDF object is temporarily
+   stored in \`\.viewparams`.
+
+   The rest is simply setting sensible defaults (or user overrides) for
+   internal/external name of the view (`/IN` and `/XN`, one is used for
+   scripting, one is shown by the PDF viewer), background color, rendering mode,
+   and lighting. Cross sections and nodes are currently not supported, although
+   users can hook in their own code using `\.DDDviewextra`,
+   `\.DDDrendermodeextra` or `\.DDDprojectionextra`.
+
+   We have to be careful about setting rendering mode and lighting scheme,
+   because they normally fall back to the values specified in 3D art file, which
+   we can't access, so better not set them to anything if they are empty.
+   \_cod
+
+\_def\.DDDview[#1][#2]{\_bgroup
+   \_readkv{\.DDDviewdefaults,#2}%
+   \_edef\.tmp{\.DDDviewdefaults,\.cs{3dview:\_kv{method}:defaults}}%
+   \_readkv{\.tmp,#2}%
+   \.colortorgbdef\.bgcolor{\_kv{background}}%
+   \.cs{3dview:\_kv{method}}% sets \.viewparams (/MS, /C2W, /CO)
+   \_pdfobj {<</Type /3DView
+     /XN (#1)
+     /IN (#1)
+     \.viewparams % /MS, /C2W, /CO
+     /P <<
+       \.cs{3dprojection:\_kv{projection}}
+       \.DDDprojectionextra
+     >>
+     /BG <<%/Type /3DBG
+       /Subtype /SC
+       /C [\.bgcolor]
+     >>
+     \.emptyor{\_kv{rendermode}}{%
+       /RM <<%/Type /3DRenderMode
+         /Subtype /\.nonempty
+         \.DDDrendermodeextra >> }%
+     \.emptyor{\_kv{lighting}}{%
+       /LS <<%/Type /3DLightingScheme
+         /Subtype /\.nonempty >> }%
+   >>}%
+   \_pdfrefobj\_pdflastobj
+   \.sxdef{3dview:#1}{\_the\_pdflastobj \_space 0 R}%
+   \_egroup
+}
+
+\_nspublic \DDDview ;
+
+
+   \_doc
+   \`\.DDDviewdefaults` stores default key-value parameters for 3D views. They
+   are mostly the PDF standard defaults or what movie15/media9 uses (for
+   compatibility).\`\.DDDviewextra`, \`\.DDDrendermodeextra` or
+   \`\.DDDprojectionextra` can be used by the users to hook themself into 3D
+   view object creation.
+   \_cod
+
+\_def\.DDDviewdefaults{
+  projection=perspective,
+  scale=1,
+  ps=Min,
+  FOV=30,
+  background=1 1 1,
+  rendermode=,
+  lighting=,
+  method=media9,
+}
+\_def\.DDDprojectionextra{}
+\_def\.DDDrendermodeextra{}
+\_def\.DDDviewextra{}
+
+   \_doc
+   There are two different projection methods:
+   \begitems
+   * Orthographic: $z$ coordinate is simply thrown away, `scale` is used for scaling
+   the result. For technical parts where we want lines that are parallel stay
+   parallel in the view.
+   * Perspective: is the way human eye sees. `FOV` can be used to set field of
+   view. (`ps` parameter for additonal scaling to fit width/height is also
+   available, but the default is fine for casual users).
+   \enditems
+   \_cod
+
+\.sdef{3dprojection:ortho}{/Subtype /O /OS \_kv{scale}}
+\.sdef{3dprojection:perspective}{/Subtype /P /FOV \_kv{FOV} /PS /\_kv{ps}}
+
+
+   \_doc
+   We offer the possibility of setting`/C2W` matrix and `/CO` (distance from
+   camera to center of orbit) directly using `method=manual`.
+   \_cod
+
+\.sdef{3dview:manual:defaults}{
+  matrix=1 0 0 0 1 0 0 0 1 0 0 0 ,
+  centeroforbit=0,
+}
+\.sdef{3dview:manual}{\_edef\.viewparams{
+  /MS /M
+  /C2W [\_kv{matrix}]
+  /CO \_kv{centeroforbit}
+}}
+
+   \_doc
+   Another simple way of specifying camera position/orientation is to use a
+   named setting of U3D file using a U3D path with `method=u3d`.
+   \_cod
+
+\.sdef{3dview:u3d:defaults}{
+  u3dpath=,
+}
+\.sdef{3dview:u3d}{%
+  \_pdfunidef\.tmp{\_kv{u3dpath}}%
+  \_edef\.viewparams{
+  /MS /U3D
+  /U3DPath \.tmp \_space
+}}
+
+   \_doc
+   The most advanced method of setting `/C2W` matrix and `/CO` is
+   `method=media9`. It is thoroughly explained above, the few differences are
+   because the input values are not two points. Also for conciseness \"x", \"y"
+   and \"z" are used instead of right, up and forward. The calculations are
+   done in Lua, for simplicity.
+
+   We expect the user to supply the numbers in the form \"`1 2 3`", but in Lua we
+   need them comma separated (\"1, 2, 3"). \`\.luatriplet` does this. Just in
+   case the code is somehow adapted without ensuring that $x$ and $z$ are
+   orthonormal, we normalize also $y$ after the second cross product.
+   \_cod
+
+\_def\.luatriplet#1 #2 #3 {#1, #2, #3}
+
+\.sdef{3dview:media9:defaults}{%
+  roo=0,
+  coo=0 0 0,
+  c2c=0 -1 0,
+}
+\.sdef{3dview:media9}{\_edef\.viewparams{
+  /MS /M
+  /C2W [\_directlua{
+  local function normalize(x, y, z)
+      local len = math.sqrt(x*x + y*y + z*z)
+      if len \csstring\~= 0 then return x/len, y/len, z/len else return 0, 0, 0 end
+  end
+  local function cross(ux, uy, uz, vx, vy, vz)
+      return uy*vz - uz*vy, uz*vx - ux*vz, ux*vy - uy*vx
+  end
+  local function printmat(...)
+      local arr = table.pack(...)
+      for k, v in ipairs(arr) do
+          arr[k] = string.format("\_pcent.6f", v)
+      end
+      tex.print(table.concat(arr, " "))
+  end
+
+  local roo = \_kv{roo}
+  local coo_x, coo_y, coo_z = \_ea\.luatriplet\_expanded{\_kv{coo}}
+  local c2c_x, c2c_y, c2c_z = normalize(\_ea\.luatriplet\_expanded{\_kv{c2c}})
+
+  local eye_x, eye_y, eye_z = coo_x + c2c_x*roo, coo_y + c2c_y*roo, coo_z + c2c_z*roo
+
+  local z_x, z_y, z_z = -c2c_x, -c2c_y, -c2c_z
+
+  local up_x, up_y, up_z = 0, 0, 1
+  if math.abs(z_x) + math.abs(z_y) < 0.0000001 then % z_x == 0 and z_y == 0
+      if z_z < 0.0000001 then % z_z <= 0
+          up_x, up_y, up_z = 0, 1, 0
+      else
+          up_x, up_y, up_z = 0, -1, 0
+      end
+  end
+
+  local x_x, x_y, x_z = normalize(cross(up_x, up_y, up_z, z_x, z_y, z_z))
+  local y_x, y_y, y_z = normalize(cross(z_x, z_y, z_z, x_x, x_y, x_z))
+
+  local eye_x, eye_y, eye_z = coo_x - z_x*roo, coo_y - z_y*roo, coo_z - z_z*roo
+
+  printmat(x_x, x_y, x_z, y_x, y_y, y_z, z_x, z_y, z_z, eye_x, eye_y, eye_z)
+  }]
+  /CO \_kv{roo}
+}}
+
+   \_doc
+   Last, but not least, is an action for setting the 3D view of a 3D/RM annotation
+   using an action. \`\.goto3dviewaction``[goto3dview:<name>:<view>]`. <name> is
+   name of the annotation which will be influenced. <view> is passed directly to
+   PDF. Therefore it can be either an index to the view array (starting at 0) or name
+   of view in parentheses~-- \"`(<view name>)`".
+   \_cod
+
+\.sdef{goto3dviewaction}[#1:#2:#3]{/S /GoTo3DView
+   /TA \.cs{rm:#2} 0 R
+   /V #3
+}
+
+   \_doc
+   \label[mime]
+   \sec MIME type database
+
+   This is the uninteresting MIME type database teased in section~\ref[files].
+   Ideally this would only be a subset of what IANA defines at
+   \url{https://www.iana.org/assignments/media-types/media-types.xhtml}.
+   But there are additions like `model/u3d` and `model/prc`, which don't
+   seem to be official, yet. Other \"unofficial" MIME types are taken from
+   Mozilla's \"common" lists:
+   \begitems
+   * \url{https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types}.
+   * \url{https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types}
+   \enditems
+
+
+   \`\.mimetype``{<extension>}{<MIME type>}` is a shortcut of mapping
+   <extension> to <MIME type>.
+   \_cod
+
+\_def\.mimetype#1#2{\_sdef{_pdfextra_mimetype:#1}{#2}}
+
+\.mimetype{js}{application/javascript}
+\.mimetype{pdf}{application/pdf}
+
+\.mimetype{prc}{model/prc}
+\.mimetype{u3d}{model/u3d}
+
+\.mimetype{wav}{audio/x-wav}
+\.mimetype{mp3}{audio/mpeg}
+\.mimetype{opus}{audio/opus}
+
+\.mimetype{avi}{video/x-msvideo}
+\.mimetype{mp4}{video/mp4}
+\.mimetype{webm}{video/webm}
+
+\_endnamespace
+\_endcode
