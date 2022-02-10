@@ -1,5 +1,4 @@
 /*3:*/
-#line 35 "./mpmathbinary.w"
 
 #ifndef MPMATHBINARY_H
 #define  MPMATHBINARY_H 1
@@ -22,12 +21,10 @@ int COMPILED__GNU_MP_VERSION_MINOR= __GNU_MP_VERSION_MINOR;
 int COMPILED__GNU_MP_VERSION_PATCHLEVEL= __GNU_MP_VERSION_PATCHLEVEL;
 
 /*8:*/
-#line 198 "./mpmathbinary.w"
 
 void*mp_initialize_binary_math(MP mp);
 
 /*:8*/
-#line 56 "./mpmathbinary.w"
 ;
 #endif
 

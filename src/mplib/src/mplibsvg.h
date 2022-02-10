@@ -1,5 +1,4 @@
 /*62:*/
-#line 1301 "./svgout.w"
 
 #ifndef MPLIBSVG_H
 #define MPLIBSVG_H 1

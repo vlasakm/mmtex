@@ -1,5 +1,4 @@
 /*4:*/
-#line 126 "./mpxout.w"
 
 #ifndef MPXOUT_H
 #define MPXOUT_H 1
@@ -9,7 +8,6 @@ mpx_troff_mode= 1
 }mpx_modes;
 typedef struct mpx_data*MPX;
 /*157:*/
-#line 2548 "./mpxout.w"
 
 typedef char*(*mpx_file_finder)(MPX,const char*,const char*,int);
 enum mpx_filetype{
@@ -23,7 +21,6 @@ mpx_specchar_format
 };
 
 /*:157*//*225:*/
-#line 4132 "./mpxout.w"
 
 typedef struct mpx_options{
 int mode;
@@ -40,7 +37,6 @@ int mpx_run_dvitomp(mpx_options*mpxopt);
 
 
 /*:225*/
-#line 134 "./mpxout.w"
 
 #endif
 

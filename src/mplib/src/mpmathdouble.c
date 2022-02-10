@@ -1,5 +1,4 @@
 /*1:*/
-#line 22 "./mpmathdouble.w"
 
 #include <w2c/config.h> 
 #include <stdio.h> 
@@ -56,14 +55,11 @@
 #define odd(A) (abs(A) %2==1)  \
 
 
-#line 30 "./mpmathdouble.w"
 
 
 /*:1*//*2:*/
-#line 32 "./mpmathdouble.w"
 
 /*5:*/
-#line 53 "./mpmathdouble.w"
 
 static void mp_double_scan_fractional_token(MP mp,int n);
 static void mp_double_scan_numeric_token(MP mp,int n);
@@ -134,32 +130,26 @@ static void mp_free_double_math(MP mp);
 static void mp_double_set_precision(MP mp);
 
 /*:5*//*19:*/
-#line 590 "./mpmathdouble.w"
 
 double mp_double_make_fraction(MP mp,double p,double q);
 
 /*:19*//*21:*/
-#line 611 "./mpmathdouble.w"
 
 double mp_double_take_fraction(MP mp,double p,double q);
 
 /*:21*//*24:*/
-#line 644 "./mpmathdouble.w"
 
 double mp_double_make_scaled(MP mp,double p,double q);
 
 
 /*:24*//*26:*/
-#line 658 "./mpmathdouble.w"
 
 static void mp_wrapup_numeric_token(MP mp,unsigned char*start,unsigned char*stop);
 
 /*:26*/
-#line 33 "./mpmathdouble.w"
 ;
 
 /*:2*//*7:*/
-#line 141 "./mpmathdouble.w"
 
 void*mp_initialize_double_math(MP mp){
 math_data*math= (math_data*)mp_xmalloc(mp,1,sizeof(math_data));
@@ -345,7 +335,6 @@ free(mp->math);
 }
 
 /*:7*//*9:*/
-#line 327 "./mpmathdouble.w"
 
 void mp_new_number(MP mp,mp_number*n,mp_number_type t){
 (void)mp;
@@ -354,7 +343,6 @@ n->type= t;
 }
 
 /*:9*//*10:*/
-#line 336 "./mpmathdouble.w"
 
 void mp_free_number(MP mp,mp_number*n){
 (void)mp;
@@ -362,7 +350,6 @@ n->type= mp_nan_type;
 }
 
 /*:10*//*11:*/
-#line 344 "./mpmathdouble.w"
 
 void mp_set_double_from_int(mp_number*A,int B){
 A->data.dval= B;
@@ -456,7 +443,6 @@ A->data.dval= A->data.dval*angle_multiplier;
 
 
 /*:11*//*12:*/
-#line 438 "./mpmathdouble.w"
 
 int mp_number_to_scaled(mp_number A){
 return(int)ROUND(A.data.dval*65536.0);
@@ -487,7 +473,6 @@ return(!(fabs(A.data.dval)==fabs(B.data.dval)));
 }
 
 /*:12*//*15:*/
-#line 498 "./mpmathdouble.w"
 
 char*mp_double_number_tostring(MP mp,mp_number n){
 static char set[64];
@@ -501,7 +486,6 @@ return ret;
 
 
 /*:15*//*16:*/
-#line 510 "./mpmathdouble.w"
 
 void mp_double_print_number(MP mp,mp_number n){
 char*str= mp_double_number_tostring(mp,n);
@@ -513,7 +497,6 @@ free(str);
 
 
 /*:16*//*17:*/
-#line 524 "./mpmathdouble.w"
 
 void mp_double_slow_add(MP mp,mp_number*ret,mp_number x_orig,mp_number y_orig){
 double x,y;
@@ -535,7 +518,6 @@ ret->data.dval= -EL_GORDO;
 }
 
 /*:17*//*18:*/
-#line 582 "./mpmathdouble.w"
 
 double mp_double_make_fraction(MP mp,double p,double q){
 return((p/q)*fraction_multiplier);
@@ -545,7 +527,6 @@ ret->data.dval= mp_double_make_fraction(mp,p.data.dval,q.data.dval);
 }
 
 /*:18*//*20:*/
-#line 603 "./mpmathdouble.w"
 
 double mp_double_take_fraction(MP mp,double p,double q){
 return((p*q)/fraction_multiplier);
@@ -555,7 +536,6 @@ ret->data.dval= mp_double_take_fraction(mp,p.data.dval,q.data.dval);
 }
 
 /*:20*//*22:*/
-#line 624 "./mpmathdouble.w"
 
 void mp_double_number_take_scaled(MP mp,mp_number*ret,mp_number p_orig,mp_number q_orig){
 ret->data.dval= p_orig.data.dval*q_orig.data.dval;
@@ -563,7 +543,6 @@ ret->data.dval= p_orig.data.dval*q_orig.data.dval;
 
 
 /*:22*//*23:*/
-#line 636 "./mpmathdouble.w"
 
 double mp_double_make_scaled(MP mp,double p,double q){
 return p/q;
@@ -573,7 +552,6 @@ ret->data.dval= p_orig.data.dval/q_orig.data.dval;
 }
 
 /*:23*//*27:*/
-#line 661 "./mpmathdouble.w"
 
 void mp_wrapup_numeric_token(MP mp,unsigned char*start,unsigned char*stop){
 double result;
@@ -609,7 +587,6 @@ set_cur_cmd((mp_variable_type)mp_numeric_token);
 }
 
 /*:27*//*28:*/
-#line 695 "./mpmathdouble.w"
 
 static void find_exponent(MP mp){
 if(mp->buffer[mp->cur_input.loc_field]=='e'||
@@ -643,7 +620,6 @@ mp_wrapup_numeric_token(mp,start,stop);
 
 
 /*:28*//*29:*/
-#line 730 "./mpmathdouble.w"
 
 void mp_double_scan_numeric_token(MP mp,int n){
 unsigned char*start= &mp->buffer[mp->cur_input.loc_field-1];
@@ -664,7 +640,6 @@ mp_wrapup_numeric_token(mp,start,stop);
 }
 
 /*:29*//*31:*/
-#line 783 "./mpmathdouble.w"
 
 void mp_double_velocity(MP mp,mp_number*ret,mp_number st,mp_number ct,mp_number sf,
 mp_number cf,mp_number t){
@@ -693,7 +668,6 @@ mp_number_to_double(t));
 
 
 /*:31*//*32:*/
-#line 815 "./mpmathdouble.w"
 
 void mp_ab_vs_cd(MP mp,mp_number*ret,mp_number a_orig,mp_number b_orig,mp_number c_orig,mp_number d_orig){
 integer q,r;
@@ -709,7 +683,6 @@ b= b_orig.data.dval;
 c= c_orig.data.dval;
 d= d_orig.data.dval;
 /*33:*/
-#line 862 "./mpmathdouble.w"
 
 if(a<0){
 a= -a;
@@ -747,7 +720,6 @@ goto RETURN;
 }
 
 /*:33*/
-#line 829 "./mpmathdouble.w"
 ;
 while(1){
 q= a/d;
@@ -782,7 +754,6 @@ return;
 
 
 /*:32*//*34:*/
-#line 931 "./mpmathdouble.w"
 
 static void mp_double_crossing_point(MP mp,mp_number*ret,mp_number aa,mp_number bb,mp_number cc){
 double a,b,c;
@@ -850,7 +821,6 @@ return;
 
 
 /*:34*//*36:*/
-#line 1002 "./mpmathdouble.w"
 
 int mp_round_unscaled(mp_number x_orig){
 int x= (int)ROUND(x_orig.data.dval);
@@ -858,14 +828,12 @@ return x;
 }
 
 /*:36*//*37:*/
-#line 1010 "./mpmathdouble.w"
 
 void mp_number_floor(mp_number*i){
 i->data.dval= floor(i->data.dval);
 }
 
 /*:37*//*38:*/
-#line 1016 "./mpmathdouble.w"
 
 void mp_double_fraction_to_round_scaled(mp_number*x_orig){
 double x= x_orig->data.dval;
@@ -876,14 +844,12 @@ x_orig->data.dval= x/fraction_multiplier;
 
 
 /*:38*//*40:*/
-#line 1031 "./mpmathdouble.w"
 
 void mp_double_square_rt(MP mp,mp_number*ret,mp_number x_orig){
 double x;
 x= x_orig.data.dval;
 if(x<=0){
 /*41:*/
-#line 1043 "./mpmathdouble.w"
 
 {
 if(x<0){
@@ -904,7 +870,6 @@ return;
 
 
 /*:41*/
-#line 1036 "./mpmathdouble.w"
 ;
 }else{
 ret->data.dval= sqrt(x);
@@ -913,7 +878,6 @@ ret->data.dval= sqrt(x);
 
 
 /*:40*//*42:*/
-#line 1064 "./mpmathdouble.w"
 
 void mp_double_pyth_add(MP mp,mp_number*ret,mp_number a_orig,mp_number b_orig){
 double a,b;
@@ -929,7 +893,6 @@ ret->data.dval= EL_GORDO;
 
 
 /*:42*//*43:*/
-#line 1080 "./mpmathdouble.w"
 
 void mp_double_pyth_sub(MP mp,mp_number*ret,mp_number a_orig,mp_number b_orig){
 double a,b;
@@ -937,7 +900,6 @@ a= fabs(a_orig.data.dval);
 b= fabs(b_orig.data.dval);
 if(a<=b){
 /*44:*/
-#line 1094 "./mpmathdouble.w"
 
 {
 if(a<b){
@@ -959,7 +921,6 @@ a= 0;
 
 
 /*:44*/
-#line 1086 "./mpmathdouble.w"
 ;
 }else{
 a= sqrt(a*a-b*b);
@@ -969,12 +930,10 @@ ret->data.dval= a;
 
 
 /*:43*//*46:*/
-#line 1123 "./mpmathdouble.w"
 
 void mp_double_m_log(MP mp,mp_number*ret,mp_number x_orig){
 if(x_orig.data.dval<=0){
 /*47:*/
-#line 1132 "./mpmathdouble.w"
 
 {
 char msg[256];
@@ -992,7 +951,6 @@ ret->data.dval= 0;
 
 
 /*:47*/
-#line 1126 "./mpmathdouble.w"
 ;
 }else{
 ret->data.dval= log(x_orig.data.dval)*256.0;
@@ -1000,7 +958,6 @@ ret->data.dval= log(x_orig.data.dval)*256.0;
 }
 
 /*:46*//*48:*/
-#line 1151 "./mpmathdouble.w"
 
 void mp_double_m_exp(MP mp,mp_number*ret,mp_number x_orig){
 errno= 0;
@@ -1017,12 +974,10 @@ ret->data.dval= 0;
 
 
 /*:48*//*49:*/
-#line 1169 "./mpmathdouble.w"
 
 void mp_double_n_arg(MP mp,mp_number*ret,mp_number x_orig,mp_number y_orig){
 if(x_orig.data.dval==0.0&&y_orig.data.dval==0.0){
 /*50:*/
-#line 1186 "./mpmathdouble.w"
 
 {
 const char*hlp[]= {
@@ -1036,7 +991,6 @@ ret->data.dval= 0;
 
 
 /*:50*/
-#line 1172 "./mpmathdouble.w"
 ;
 }else{
 ret->type= mp_angle_type;
@@ -1052,7 +1006,6 @@ mp_number_to_double(x_orig),mp_number_to_double(y_orig));
 
 
 /*:49*//*53:*/
-#line 1216 "./mpmathdouble.w"
 
 void mp_double_sin_cos(MP mp,mp_number z_orig,mp_number*n_cos,mp_number*n_sin){
 double rad;
@@ -1078,7 +1031,6 @@ mp_number_to_double(*n_cos),mp_number_to_double(*n_sin));
 }
 
 /*:53*//*54:*/
-#line 1243 "./mpmathdouble.w"
 
 #define KK 100                     
 #define LL  37                     
@@ -1152,7 +1104,6 @@ return ran_arr_buf[0];
 
 
 /*:54*//*55:*/
-#line 1317 "./mpmathdouble.w"
 
 void mp_init_randoms(MP mp,int seed){
 int j,jj,k;
@@ -1180,7 +1131,6 @@ ran_start((unsigned long)seed);
 }
 
 /*:55*//*56:*/
-#line 1343 "./mpmathdouble.w"
 
 static double modulus(double left,double right);
 double modulus(double left,double right){
@@ -1198,7 +1148,6 @@ a->data.dval= modulus(a->data.dval,b.data.dval);
 
 
 /*:56*//*57:*/
-#line 1361 "./mpmathdouble.w"
 
 static void mp_next_unif_random(MP mp,mp_number*ret){
 double a;
@@ -1212,7 +1161,6 @@ ret->data.dval= a;
 
 
 /*:57*//*58:*/
-#line 1375 "./mpmathdouble.w"
 
 static void mp_next_random(MP mp,mp_number*ret){
 if(mp->j_random==0)
@@ -1224,7 +1172,6 @@ mp_number_clone(ret,mp->randoms[mp->j_random]);
 
 
 /*:58*//*59:*/
-#line 1392 "./mpmathdouble.w"
 
 static void mp_double_m_unif_rand(MP mp,mp_number*ret,mp_number x_orig){
 mp_number y;
@@ -1256,7 +1203,6 @@ free_number(y);
 
 
 /*:59*//*60:*/
-#line 1426 "./mpmathdouble.w"
 
 static void mp_double_m_norm_rand(MP mp,mp_number*ret){
 mp_number ab_vs_cd;
@@ -1302,7 +1248,6 @@ free_number(u);
 
 
 /*:60*//*61:*/
-#line 1474 "./mpmathdouble.w"
 
 void mp_double_ab_vs_cd(MP mp,mp_number*ret,mp_number a_orig,mp_number b_orig,mp_number c_orig,mp_number d_orig){
 double ab,cd;

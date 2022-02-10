@@ -1,5 +1,4 @@
 /*1:*/
-#line 22 "./mpmathdecimal.w"
 
 #include <w2c/config.h> 
 #include <stdio.h> 
@@ -58,14 +57,11 @@
 #define PRECALC_FACTORIALS_CACHESIZE 50 \
 
 
-#line 30 "./mpmathdecimal.w"
 
 
 /*:1*//*2:*/
-#line 32 "./mpmathdecimal.w"
 
 /*5:*/
-#line 56 "./mpmathdecimal.w"
 
 #define DEBUG 0
 static void mp_decimal_scan_fractional_token(MP mp,int n);
@@ -140,7 +136,6 @@ static int decNumber_check(decNumber*dec,decContext*context);
 static char*mp_decnumber_tostring(decNumber*n);
 
 /*:5*//*10:*/
-#line 355 "./mpmathdecimal.w"
 
 static decNumber zero;
 static decNumber one;
@@ -159,26 +154,21 @@ static decNumber**factorials= NULL;
 static int last_cached_factorial= 0;
 static boolean initialized= false;
 /*:10*//*25:*/
-#line 948 "./mpmathdecimal.w"
 
 void mp_decimal_make_fraction(MP mp,decNumber*ret,decNumber*p,decNumber*q);
 
 /*:25*//*27:*/
-#line 970 "./mpmathdecimal.w"
 
 void mp_decimal_take_fraction(MP mp,decNumber*ret,decNumber*p,decNumber*q);
 
 /*:27*//*31:*/
-#line 1011 "./mpmathdecimal.w"
 
 static void mp_wrapup_numeric_token(MP mp,unsigned char*start,unsigned char*stop);
 
 /*:31*/
-#line 33 "./mpmathdecimal.w"
 ;
 
 /*:2*//*6:*/
-#line 132 "./mpmathdecimal.w"
 
 int decNumber_check(decNumber*dec,decContext*context)
 {
@@ -223,7 +213,6 @@ mp->arith_error= decNumber_check(dec,context);
 
 
 /*:6*//*7:*/
-#line 180 "./mpmathdecimal.w"
 
 static decContext set;
 static decContext limitedset;
@@ -269,7 +258,6 @@ return 0.0;
 }
 }
 /*:7*//*8:*/
-#line 247 "./mpmathdecimal.w"
 
 static void decNumberAtan(decNumber*result,decNumber*x_orig,decContext*set)
 {
@@ -351,7 +339,6 @@ decNumberMinus(result,result,set);
 }
 
 /*:8*//*11:*/
-#line 372 "./mpmathdecimal.w"
 
 void*mp_initialize_decimal_math(MP mp){
 math_data*math= (math_data*)mp_xmalloc(mp,1,sizeof(math_data));
@@ -599,7 +586,6 @@ free(mp->math);
 }
 
 /*:11*//*13:*/
-#line 620 "./mpmathdecimal.w"
 
 void mp_new_number(MP mp,mp_number*n,mp_number_type t){
 (void)mp;
@@ -609,7 +595,6 @@ n->type= t;
 }
 
 /*:13*//*14:*/
-#line 630 "./mpmathdecimal.w"
 
 void mp_free_number(MP mp,mp_number*n){
 (void)mp;
@@ -619,7 +604,6 @@ n->type= mp_nan_type;
 }
 
 /*:14*//*15:*/
-#line 640 "./mpmathdecimal.w"
 
 void mp_set_decimal_from_int(mp_number*A,int B){
 decNumberFromInt32(A->data.num,B);
@@ -739,7 +723,6 @@ decNumberMultiply(A->data.num,A->data.num,&angle_multiplier_decNumber,&set);
 
 
 /*:15*//*17:*/
-#line 764 "./mpmathdecimal.w"
 
 int mp_number_to_scaled(mp_number A){
 int32_t result;
@@ -752,7 +735,6 @@ return result;
 }
 
 /*:17*//*18:*/
-#line 779 "./mpmathdecimal.w"
 
 int mp_number_to_int(mp_number A){
 int32_t result;
@@ -819,7 +801,6 @@ return!decNumberIsZero(&res);
 }
 
 /*:18*//*21:*/
-#line 866 "./mpmathdecimal.w"
 
 char*mp_decnumber_tostring(decNumber*n){
 decNumber corrected;
@@ -836,7 +817,6 @@ return mp_decnumber_tostring(n.data.num);
 
 
 /*:21*//*22:*/
-#line 881 "./mpmathdecimal.w"
 
 void mp_decimal_print_number(MP mp,mp_number n){
 char*str= mp_decimal_number_tostring(mp,n);
@@ -848,14 +828,12 @@ free(str);
 
 
 /*:22*//*23:*/
-#line 895 "./mpmathdecimal.w"
 
 void mp_decimal_slow_add(MP mp,mp_number*ret,mp_number A,mp_number B){
 decNumberAdd(ret->data.num,A.data.num,B.data.num,&set);
 }
 
 /*:23*//*24:*/
-#line 938 "./mpmathdecimal.w"
 
 void mp_decimal_make_fraction(MP mp,decNumber*ret,decNumber*p,decNumber*q){
 decNumberDivide(ret,p,q,&set);
@@ -867,7 +845,6 @@ mp_decimal_make_fraction(mp,ret->data.num,p.data.num,q.data.num);
 }
 
 /*:24*//*26:*/
-#line 961 "./mpmathdecimal.w"
 
 void mp_decimal_take_fraction(MP mp,decNumber*ret,decNumber*p,decNumber*q){
 decNumberMultiply(ret,p,q,&set);
@@ -878,7 +855,6 @@ mp_decimal_take_fraction(mp,ret->data.num,p.data.num,q.data.num);
 }
 
 /*:26*//*28:*/
-#line 983 "./mpmathdecimal.w"
 
 void mp_decimal_number_take_scaled(MP mp,mp_number*ret,mp_number p_orig,mp_number q_orig){
 decNumberMultiply(ret->data.num,p_orig.data.num,q_orig.data.num,&set);
@@ -886,7 +862,6 @@ decNumberMultiply(ret->data.num,p_orig.data.num,q_orig.data.num,&set);
 
 
 /*:28*//*29:*/
-#line 995 "./mpmathdecimal.w"
 
 void mp_decimal_number_make_scaled(MP mp,mp_number*ret,mp_number p_orig,mp_number q_orig){
 decNumberDivide(ret->data.num,p_orig.data.num,q_orig.data.num,&set);
@@ -894,7 +869,6 @@ mp_check_decNumber(mp,ret->data.num,&set);
 }
 
 /*:29*//*32:*/
-#line 1017 "./mpmathdecimal.w"
 
 void mp_wrapup_numeric_token(MP mp,unsigned char*start,unsigned char*stop){
 decNumber result;
@@ -941,7 +915,6 @@ set_cur_cmd((mp_variable_type)mp_numeric_token);
 }
 
 /*:32*//*33:*/
-#line 1062 "./mpmathdecimal.w"
 
 static void find_exponent(MP mp){
 if(mp->buffer[mp->cur_input.loc_field]=='e'||
@@ -975,7 +948,6 @@ mp_wrapup_numeric_token(mp,start,stop);
 
 
 /*:33*//*34:*/
-#line 1096 "./mpmathdecimal.w"
 
 void mp_decimal_scan_numeric_token(MP mp,int n){
 unsigned char*start= &mp->buffer[mp->cur_input.loc_field-1];
@@ -996,7 +968,6 @@ mp_wrapup_numeric_token(mp,start,stop);
 }
 
 /*:34*//*36:*/
-#line 1149 "./mpmathdecimal.w"
 
 void mp_decimal_velocity(MP mp,mp_number*ret,mp_number st,mp_number ct,mp_number sf,
 mp_number cf,mp_number t){
@@ -1063,7 +1034,6 @@ mp_check_decNumber(mp,ret->data.num,&set);
 
 
 /*:36*//*37:*/
-#line 1219 "./mpmathdecimal.w"
 
 void mp_ab_vs_cd(MP mp,mp_number*ret,mp_number a_orig,mp_number b_orig,mp_number c_orig,mp_number d_orig){
 decNumber q,r,test;
@@ -1084,7 +1054,6 @@ return;
 
 
 /*38:*/
-#line 1281 "./mpmathdecimal.w"
 
 if(decNumberIsNegative(&a)){
 decNumberCopyNegate(&a,&a);
@@ -1128,7 +1097,6 @@ goto RETURN;
 }
 
 /*:38*/
-#line 1238 "./mpmathdecimal.w"
 ;
 while(1){
 decNumberDivide(&q,&a,&d,&set);
@@ -1173,7 +1141,6 @@ return;
 
 
 /*:37*//*39:*/
-#line 1356 "./mpmathdecimal.w"
 
 static void mp_decimal_crossing_point(MP mp,mp_number*ret,mp_number aa,mp_number bb,mp_number cc){
 decNumber a,b,c;
@@ -1249,7 +1216,6 @@ return;
 
 
 /*:39*//*41:*/
-#line 1435 "./mpmathdecimal.w"
 
 int mp_round_unscaled(mp_number x_orig){
 double xx= mp_number_to_double(x_orig);
@@ -1258,7 +1224,6 @@ return x;
 }
 
 /*:41*//*42:*/
-#line 1444 "./mpmathdecimal.w"
 
 void mp_number_floor(mp_number*i){
 int round= set.round;
@@ -1268,7 +1233,6 @@ set.round= round;
 }
 
 /*:42*//*43:*/
-#line 1453 "./mpmathdecimal.w"
 
 void mp_decimal_fraction_to_round_scaled(mp_number*x_orig){
 x_orig->type= mp_scaled_type;
@@ -1278,14 +1242,12 @@ decNumberDivide(x_orig->data.num,x_orig->data.num,&fraction_multiplier_decNumber
 
 
 /*:43*//*45:*/
-#line 1467 "./mpmathdecimal.w"
 
 void mp_decimal_square_rt(MP mp,mp_number*ret,mp_number x_orig){
 decNumber x;
 decNumberCopy(&x,x_orig.data.num);
 if(!decNumberIsPositive(&x)){
 /*46:*/
-#line 1480 "./mpmathdecimal.w"
 
 {
 if(decNumberIsNegative(&x)){
@@ -1306,7 +1268,6 @@ return;
 
 
 /*:46*/
-#line 1472 "./mpmathdecimal.w"
 ;
 }else{
 decNumberSquareRoot(ret->data.num,&x,&set);
@@ -1316,7 +1277,6 @@ mp_check_decNumber(mp,ret->data.num,&set);
 
 
 /*:45*//*47:*/
-#line 1501 "./mpmathdecimal.w"
 
 void mp_decimal_pyth_add(MP mp,mp_number*ret,mp_number a_orig,mp_number b_orig){
 decNumber a,b;
@@ -1335,7 +1295,6 @@ mp_check_decNumber(mp,ret->data.num,&set);
 }
 
 /*:47*//*48:*/
-#line 1520 "./mpmathdecimal.w"
 
 void mp_decimal_pyth_sub(MP mp,mp_number*ret,mp_number a_orig,mp_number b_orig){
 decNumber a,b;
@@ -1343,7 +1302,6 @@ decNumberCopyAbs(&a,a_orig.data.num);
 decNumberCopyAbs(&b,b_orig.data.num);
 if(!decNumberGreater(&a,&b)){
 /*49:*/
-#line 1539 "./mpmathdecimal.w"
 
 {
 if(decNumberLess(&a,&b)){
@@ -1365,7 +1323,6 @@ decNumberZero(&a);
 
 
 /*:49*/
-#line 1526 "./mpmathdecimal.w"
 ;
 }else{
 decNumber asq,bsq;
@@ -1380,12 +1337,10 @@ mp_check_decNumber(mp,ret->data.num,&set);
 
 
 /*:48*//*50:*/
-#line 1562 "./mpmathdecimal.w"
 
 void mp_decimal_m_log(MP mp,mp_number*ret,mp_number x_orig){
 if(!decNumberIsPositive((decNumber*)x_orig.data.num)){
 /*51:*/
-#line 1576 "./mpmathdecimal.w"
 
 {
 char msg[256];
@@ -1403,7 +1358,6 @@ decNumberZero(ret->data.num);
 
 
 /*:51*/
-#line 1565 "./mpmathdecimal.w"
 ;
 }else{
 decNumber twofivesix;
@@ -1416,7 +1370,6 @@ mp_check_decNumber(mp,ret->data.num,&set);
 }
 
 /*:50*//*52:*/
-#line 1595 "./mpmathdecimal.w"
 
 void mp_decimal_m_exp(MP mp,mp_number*ret,mp_number x_orig){
 decNumber temp,twofivesix;
@@ -1438,12 +1391,10 @@ limitedset.status= 0;
 
 
 /*:52*//*53:*/
-#line 1618 "./mpmathdecimal.w"
 
 void mp_decimal_n_arg(MP mp,mp_number*ret,mp_number x_orig,mp_number y_orig){
 if(decNumberIsZero((decNumber*)x_orig.data.num)&&decNumberIsZero((decNumber*)y_orig.data.num)){
 /*54:*/
-#line 1644 "./mpmathdecimal.w"
 
 {
 const char*hlp[]= {
@@ -1457,7 +1408,6 @@ decNumberZero(ret->data.num);
 
 
 /*:54*/
-#line 1621 "./mpmathdecimal.w"
 ;
 }else{
 decNumber atan2val,oneeighty_angle;
@@ -1482,7 +1432,6 @@ mp_check_decNumber(mp,ret->data.num,&set);
 
 
 /*:53*//*55:*/
-#line 1665 "./mpmathdecimal.w"
 
 static void sinecosine(decNumber*theangle,decNumber*c,decNumber*s)
 {
@@ -1534,7 +1483,6 @@ decNumberAdd(c,c,&pxa,&set);
 }
 
 /*:55*//*56:*/
-#line 1716 "./mpmathdecimal.w"
 
 void mp_decimal_sin_cos(MP mp,mp_number z_orig,mp_number*n_cos,mp_number*n_sin){
 decNumber rad;
@@ -1580,7 +1528,6 @@ mp_check_decNumber(mp,n_sin->data.num,&set);
 }
 
 /*:56*//*57:*/
-#line 1763 "./mpmathdecimal.w"
 
 #define KK 100                     
 #define LL  37                     
@@ -1654,7 +1601,6 @@ return ran_arr_buf[0];
 
 
 /*:57*//*58:*/
-#line 1837 "./mpmathdecimal.w"
 
 void mp_init_randoms(MP mp,int seed){
 int j,jj,k;
@@ -1681,7 +1627,6 @@ ran_start((unsigned long)seed);
 }
 
 /*:58*//*59:*/
-#line 1862 "./mpmathdecimal.w"
 
 void mp_decimal_number_modulo(mp_number*a,mp_number b){
 decNumberRemainder(a->data.num,a->data.num,b.data.num,&set);
@@ -1689,7 +1634,6 @@ decNumberRemainder(a->data.num,a->data.num,b.data.num,&set);
 
 
 /*:59*//*60:*/
-#line 1870 "./mpmathdecimal.w"
 
 static void mp_next_unif_random(MP mp,mp_number*ret){
 decNumber a;
@@ -1706,7 +1650,6 @@ mp_check_decNumber(mp,ret->data.num,&set);
 
 
 /*:60*//*61:*/
-#line 1887 "./mpmathdecimal.w"
 
 static void mp_next_random(MP mp,mp_number*ret){
 if(mp->j_random==0)
@@ -1718,7 +1661,6 @@ mp_number_clone(ret,mp->randoms[mp->j_random]);
 
 
 /*:61*//*62:*/
-#line 1904 "./mpmathdecimal.w"
 
 static void mp_decimal_m_unif_rand(MP mp,mp_number*ret,mp_number x_orig){
 mp_number y;
@@ -1750,7 +1692,6 @@ free_number(y);
 
 
 /*:62*//*63:*/
-#line 1938 "./mpmathdecimal.w"
 
 static void mp_decimal_m_norm_rand(MP mp,mp_number*ret){
 mp_number ab_vs_cd;
@@ -1796,7 +1737,6 @@ free_number(u);
 
 
 /*:63*//*64:*/
-#line 1988 "./mpmathdecimal.w"
 
 
 

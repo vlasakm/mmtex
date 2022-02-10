@@ -1,5 +1,4 @@
 /*3:*/
-#line 80 "./psout.w"
 
 #ifndef MPPSOUT_H
 #define MPPSOUT_H 1
@@ -8,7 +7,6 @@
 #include "mpmp.h"
 #include "mplibps.h"
 /*18:*/
-#line 385 "./psout.w"
 
 typedef struct{
 boolean loaded;
@@ -21,7 +19,6 @@ integer tounicode;
 
 
 /*:18*//*36:*/
-#line 759 "./psout.w"
 
 enum _mode{FM_DUPIGNORE,FM_REPLACE,FM_DELETE};
 enum _ltype{MAPFILE,MAPLINE};
@@ -34,7 +31,6 @@ int lineno;
 }mapitem;
 
 /*:36*//*68:*/
-#line 1625 "./psout.w"
 
 typedef char char_entry;
 #ifndef ZCONF_H
@@ -43,7 +39,6 @@ typedef Byte Bytef;
 #endif
 
 /*:68*//*81:*/
-#line 1904 "./psout.w"
 
 typedef unsigned char byte;
 typedef struct{
@@ -62,13 +57,11 @@ boolean valid;
 }cs_entry;
 
 /*:81*//*83:*/
-#line 1930 "./psout.w"
 
 typedef char t1_line_entry;
 typedef char t1_buf_entry;
 
 /*:83*//*91:*/
-#line 2311 "./psout.w"
 
 typedef struct{
 const char*pdfname;
@@ -78,7 +71,6 @@ boolean valid;
 }key_entry;
 
 /*:91*//*95:*/
-#line 2606 "./psout.w"
 
 typedef struct{
 char*ff_name;
@@ -86,7 +78,6 @@ char*ff_path;
 }ff_entry;
 
 /*:95*//*102:*/
-#line 3439 "./psout.w"
 
 typedef struct mp_ps_font{
 int font_num;
@@ -99,7 +90,6 @@ int t1_lenIV;
 int slant;
 int extend;
 /*107:*/
-#line 3556 "./psout.w"
 
 double flex_hint_data[14];
 unsigned int flex_hint_index;
@@ -112,12 +102,10 @@ mp_gr_knot pp;
 
 
 /*:107*/
-#line 3450 "./psout.w"
 
 }mp_ps_font;
 
 /*:102*//*115:*/
-#line 4044 "./psout.w"
 
 typedef struct{
 char*tfm_name;
@@ -143,12 +131,10 @@ short eid;
 
 
 /*:115*//*138:*/
-#line 4586 "./psout.w"
 
 enum mp_char_mark_state{mp_unused= 0,mp_used};
 
 /*:138*//*174:*/
-#line 5086 "./psout.w"
 
 #define gr_left_type(A)  (A)->data.types.left_type
 #define gr_right_type(A) (A)->data.types.right_type
@@ -162,7 +148,6 @@ enum mp_char_mark_state{mp_unused= 0,mp_used};
 #define gr_originator(A) (A)->originator
 
 /*:174*//*187:*/
-#line 5266 "./psout.w"
 
 #define gr_type(A)         (A)->type
 #define gr_link(A)         (A)->next
@@ -201,7 +186,6 @@ enum mp_char_mark_state{mp_unused= 0,mp_used};
 #define gr_tyy_val(A)      ((mp_text_object *)A)->tyy
 
 /*:187*//*191:*/
-#line 5428 "./psout.w"
 
 typedef struct _gs_state{
 double red_field;
@@ -229,7 +213,6 @@ double width_field;
 
 
 /*:191*//*228:*/
-#line 6123 "./psout.w"
 
 typedef struct mp_font_size_node_data{
 NODE_BODY;
@@ -239,29 +222,24 @@ typedef struct mp_font_size_node_data*mp_font_size_node;
 
 
 /*:228*/
-#line 87 "./psout.w"
 
 typedef struct psout_data_struct{
 /*7:*/
-#line 142 "./psout.w"
 
 integer ps_offset;
 
 
 /*:7*//*19:*/
-#line 401 "./psout.w"
 
 #define ENC_BUF_SIZE  0x1000
 char enc_line[ENC_BUF_SIZE];
 void*enc_file;
 
 /*:19*//*23:*/
-#line 555 "./psout.w"
 
 avl_tree enc_tree;
 
 /*:23*//*33:*/
-#line 713 "./psout.w"
 
 void*fm_file;
 size_t fm_byte_waiting;
@@ -269,7 +247,6 @@ size_t fm_byte_length;
 unsigned char*fm_bytes;
 
 /*:33*//*37:*/
-#line 770 "./psout.w"
 
 mapitem*mitem;
 fm_entry*fm_cur;
@@ -279,21 +256,18 @@ fm_entry*non_tfm_found;
 fm_entry*not_avail_tfm_found;
 
 /*:37*//*43:*/
-#line 917 "./psout.w"
 
 avl_tree tfm_tree;
 avl_tree ps_tree;
 avl_tree ff_tree;
 
 /*:43*//*69:*/
-#line 1632 "./psout.w"
 
 char_entry*char_ptr,*char_array;
 size_t char_limit;
 char*job_id_string;
 
 /*:69*//*75:*/
-#line 1779 "./psout.w"
 
 #define PRINTF_BUF_SIZE     1024
 char*dvips_extra_charset;
@@ -306,7 +280,6 @@ size_t t1_byte_length;
 unsigned char*t1_bytes;
 
 /*:75*//*79:*/
-#line 1863 "./psout.w"
 
 char**t1_glyph_names;
 char*t1_builtin_glyph_names[256];
@@ -315,14 +288,12 @@ boolean read_encoding_only;
 int t1_encoding;
 
 /*:79*//*82:*/
-#line 1925 "./psout.w"
 
 unsigned short t1_dr,t1_er;
 unsigned short t1_cslen;
 short t1_lenIV;
 
 /*:82*//*84:*/
-#line 1934 "./psout.w"
 
 t1_line_entry*t1_line_ptr,*t1_line_array;
 size_t t1_line_limit;
@@ -337,7 +308,6 @@ char*subr_array_start,*subr_array_end;
 int subr_max,subr_size,subr_size_pos;
 
 /*:84*//*87:*/
-#line 1964 "./psout.w"
 
 const char**cs_token_pair;
 boolean t1_pfa,t1_cs,t1_scan,t1_eexec_encrypt,t1_synthetic;
@@ -348,7 +318,6 @@ void*t1_file;
 int hexline_length;
 
 /*:87*//*116:*/
-#line 4069 "./psout.w"
 
 #define FONTNAME_BUF_SIZE 128
 boolean fontfile_found;
@@ -356,72 +325,59 @@ boolean is_otf_font;
 char fontname_buf[FONTNAME_BUF_SIZE];
 
 /*:116*//*192:*/
-#line 5454 "./psout.w"
 
 struct _gs_state*gs_state;
 
 /*:192*/
-#line 89 "./psout.w"
 
 }psout_data_struct;
 /*5:*/
-#line 121 "./psout.w"
 
 void mp_ps_backend_initialize(MP mp);
 void mp_ps_backend_free(MP mp);
 
 /*:5*//*55:*/
-#line 1408 "./psout.w"
 
 fm_entry*mp_fm_lookup(MP mp,font_number f);
 
 /*:55*//*59:*/
-#line 1521 "./psout.w"
 
 void mp_map_file(MP mp,mp_string t);
 void mp_map_line(MP mp,mp_string t);
 void mp_init_map_file(MP mp,int is_troff);
 
 /*:59*//*65:*/
-#line 1587 "./psout.w"
 
 void mp_read_psname_table(MP mp);
 
 /*:65*//*72:*/
-#line 1677 "./psout.w"
 
 void mp_set_job_id(MP mp);
 
 /*:72*//*104:*/
-#line 3524 "./psout.w"
 
 mp_ps_font*mp_ps_font_parse(MP mp,int tex_font);
 
 /*:104*//*106:*/
-#line 3550 "./psout.w"
 
 void mp_ps_font_free(MP mp,mp_ps_font*f);
 
 
 /*:106*//*109:*/
-#line 3601 "./psout.w"
 
 mp_edge_object*mp_ps_font_charstring(MP mp,mp_ps_font*f,int c);
 mp_edge_object*mp_ps_do_font_charstring(MP mp,mp_ps_font*f,char*n);
 
 
 /*:109*//*189:*/
-#line 5387 "./psout.w"
 
 mp_graphic_object*mp_new_graphic_object(MP mp,int type);
 
 /*:189*//*233:*/
-#line 6192 "./psout.w"
 
 int mp_gr_ship_out(mp_edge_object*hh,int prologues,int procset,int standalone);
 
 /*:233*/
-#line 91 "./psout.w"
 
 #endif
 

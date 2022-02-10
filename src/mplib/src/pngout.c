@@ -1,5 +1,4 @@
 /*1:*/
-#line 57 "./pngout.w"
 
 #include <w2c/config.h> 
 #include <stdio.h> 
@@ -49,10 +48,8 @@ object_color_d= pq->color.d_val; \
 #define number_to_double(A) (((math_data*) (mp->math) ) ->to_double) (A)  \
 
 
-#line 70 "./pngout.w"
 
 /*12:*/
-#line 207 "./pngout.w"
 
 typedef struct mp_pen_info{
 double tx,ty;
@@ -62,7 +59,6 @@ double ww;
 
 
 /*:12*//*31:*/
-#line 593 "./pngout.w"
 
 typedef struct{
 unsigned char*data;
@@ -71,7 +67,6 @@ int width;
 }bitmap_t;
 
 /*:31*//*32:*/
-#line 603 "./pngout.w"
 
 typedef struct{
 void*fp;
@@ -79,67 +74,54 @@ MP mp;
 }mp_png_io;
 
 /*:32*/
-#line 71 "./pngout.w"
 
 /*8:*/
-#line 124 "./pngout.w"
 
 static void mp_png_start(MP mp,mp_edge_object*hh,double hppp,double vppp,int colormodel,int antialias);
 
 /*:8*//*11:*/
-#line 202 "./pngout.w"
 
 static void mp_png_color_out(MP mp,mp_graphic_object*p);
 
 /*:11*//*13:*/
-#line 217 "./pngout.w"
 
 mp_pen_info*mp_png_pen_info(MP mp,mp_gr_knot pp,mp_gr_knot p);
 
 /*:13*//*16:*/
-#line 317 "./pngout.w"
 
 static boolean mp_is_curved(mp_gr_knot p,mp_gr_knot q);
 
 
 /*:16*//*19:*/
-#line 378 "./pngout.w"
 
 static double mp_png_choose_scale(MP mp,mp_graphic_object*p);
 
 /*:19*//*22:*/
-#line 417 "./pngout.w"
 
 void mp_reallocate_psfonts(MP mp,int l);
 
 /*:22*//*24:*/
-#line 425 "./pngout.w"
 
 static void mp_png_text_out(MP mp,mp_text_object*p);
 
 /*:24*//*26:*/
-#line 496 "./pngout.w"
 
 static void mp_png_stroke_out(MP mp,mp_graphic_object*h,
 mp_pen_info*pen,boolean fill_also);
 
 
 /*:26*//*28:*/
-#line 569 "./pngout.w"
 
 static void mp_png_fill_out(MP mp,mp_gr_knot p,mp_graphic_object*h);
 
 /*:28*//*34:*/
-#line 627 "./pngout.w"
 
 int mp_png_save_to_file(MP mp,const bitmap_t*bitmap,const char*path,int colormodel);
 
 /*:34*/
-#line 72 "./pngout.w"
 
 
 /*:1*//*5:*/
-#line 100 "./pngout.w"
 
 void mp_png_backend_initialize(MP mp){
 mp->png= mp_xmalloc(mp,1,sizeof(pngout_data_struct));
@@ -151,7 +133,6 @@ mp->png= NULL;
 }
 
 /*:5*//*9:*/
-#line 128 "./pngout.w"
 
 void mp_png_start(MP mp,mp_edge_object*hh,double hppp,double vppp,int colormodel,int antialias){
 double w,h;
@@ -184,7 +165,6 @@ cairo_set_antialias(mp->png->cr,antialias);
 }
 
 /*:9*//*10:*/
-#line 168 "./pngout.w"
 
 static void mp_png_color_out(MP mp,mp_graphic_object*p){
 int object_color_model;
@@ -220,7 +200,6 @@ cairo_set_source_rgb(mp->png->cr,object_color_a,object_color_b,object_color_c);
 }
 
 /*:10*//*14:*/
-#line 227 "./pngout.w"
 
 static double coord_range_x(mp_gr_knot h,double dz){
 double z;
@@ -258,7 +237,6 @@ return(zhi-zlo<=dz?aspect_bound:aspect_default);
 }
 
 /*:14*//*15:*/
-#line 264 "./pngout.w"
 
 mp_pen_info*mp_png_pen_info(MP mp,mp_gr_knot pp,mp_gr_knot p){
 double wx,wy;
@@ -308,7 +286,6 @@ return pen;
 }
 
 /*:15*//*17:*/
-#line 324 "./pngout.w"
 
 boolean mp_is_curved(mp_gr_knot p,mp_gr_knot q){
 double d;
@@ -330,7 +307,6 @@ return true;
 
 
 /*:17*//*18:*/
-#line 346 "./pngout.w"
 
 static void mp_png_path_out(MP mp,mp_gr_knot h){
 mp_gr_knot p,q;
@@ -362,7 +338,6 @@ cairo_close_path(mp->png->cr);
 }
 
 /*:18*//*20:*/
-#line 381 "./pngout.w"
 double mp_png_choose_scale(MP mp,mp_graphic_object*p){
 
 double a,b,c,d,ad,bc;
@@ -383,7 +358,6 @@ return sqrt(ret1*ret1+ret2*ret2);
 }
 
 /*:20*//*21:*/
-#line 404 "./pngout.w"
 
 void mp_reallocate_psfonts(MP mp,int l){
 if(l>=mp->png->font_max){
@@ -398,7 +372,6 @@ mp->png->font_max= l;
 }
 
 /*:21*//*25:*/
-#line 428 "./pngout.w"
 
 void mp_png_text_out(MP mp,mp_text_object*p){
 double ds;
@@ -460,7 +433,6 @@ cairo_restore(mp->png->cr);
 }
 
 /*:25*//*27:*/
-#line 501 "./pngout.w"
 
 void mp_png_stroke_out(MP mp,mp_graphic_object*h,
 mp_pen_info*pen,boolean fill_also){
@@ -528,7 +500,6 @@ cairo_restore(mp->png->cr);
 }
 
 /*:27*//*29:*/
-#line 572 "./pngout.w"
 
 void mp_png_fill_out(MP mp,mp_gr_knot p,mp_graphic_object*h){
 cairo_save(mp->png->cr);
@@ -539,7 +510,6 @@ cairo_restore(mp->png->cr);
 }
 
 /*:29*//*33:*/
-#line 610 "./pngout.w"
 
 static void mp_write_png_data(png_structp png_ptr,png_bytep data,png_size_t length)
 {
@@ -554,7 +524,6 @@ static void mp_write_png_flush(png_structp png_ptr)
 
 
 /*:33*//*35:*/
-#line 630 "./pngout.w"
 
 int mp_png_save_to_file(MP mp,const bitmap_t*bitmap,const char*path,int colormodel)
 {
@@ -698,7 +667,6 @@ return status;
 
 
 /*:35*//*36:*/
-#line 775 "./pngout.w"
 
 int mp_png_gr_ship_out(mp_edge_object*hh,const char*options,int standalone){
 char*ss;
@@ -826,7 +794,6 @@ return 1;
 }
 
 /*:36*//*38:*/
-#line 907 "./pngout.w"
 
 int mp_png_ship_out(mp_edge_object*hh,const char*options){
 return mp_png_gr_ship_out(hh,options,(int)true);

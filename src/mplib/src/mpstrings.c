@@ -1,5 +1,4 @@
 /*2:*/
-#line 17 "./mpstrings.w"
 
 #include <w2c/config.h> 
 #include <stdio.h> 
@@ -14,7 +13,6 @@
 #include "mpstrings.h"          
 
 /*:2*//*5:*/
-#line 52 "./mpstrings.w"
 
 #define STRCMP_RESULT(a) ((a)<0 ? -1 : ((a)> 0 ? 1 : 0))
 static int comp_strings_entry(void*p,const void*pa,const void*pb){
@@ -57,7 +55,6 @@ return NULL;
 }
 
 /*:5*//*7:*/
-#line 96 "./mpstrings.w"
 
 static mp_string new_strings_entry(MP mp){
 mp_string ff;
@@ -70,7 +67,6 @@ return ff;
 
 
 /*:7*//*9:*/
-#line 116 "./mpstrings.w"
 
 char*mp_strldup(const char*p,size_t l){
 char*r,*s;
@@ -90,7 +86,6 @@ return mp_strldup(p,strlen(p));
 }
 
 /*:9*//*10:*/
-#line 134 "./mpstrings.w"
 
 int mp_xstrcmp(const char*a,const char*b){
 if(a==NULL&&b==NULL)
@@ -121,7 +116,6 @@ return mp_xstrldup(mp,s,strlen(s));
 
 
 /*:10*//*11:*/
-#line 163 "./mpstrings.w"
 
 void mp_initialize_strings(MP mp){
 mp->strings= avl_create(comp_strings_entry,
@@ -133,7 +127,6 @@ mp->cur_string_size= 0;
 }
 
 /*:11*//*12:*/
-#line 173 "./mpstrings.w"
 
 void mp_dealloc_strings(MP mp){
 if(mp->strings!=NULL)
@@ -146,7 +139,6 @@ mp->cur_string_size= 0;
 }
 
 /*:12*//*15:*/
-#line 199 "./mpstrings.w"
 
 char*mp_str(MP mp,mp_string ss){
 (void)mp;
@@ -154,7 +146,6 @@ return(char*)ss->str;
 }
 
 /*:15*//*16:*/
-#line 205 "./mpstrings.w"
 
 mp_string mp_rtsl(MP mp,const char*s,size_t l){
 mp_string str,nstr;
@@ -172,7 +163,6 @@ return nstr;
 }
 
 /*:16*//*17:*/
-#line 221 "./mpstrings.w"
 
 mp_string mp_rts(MP mp,const char*s){
 return mp_rtsl(mp,s,strlen(s));
@@ -180,7 +170,6 @@ return mp_rtsl(mp,s,strlen(s));
 
 
 /*:17*//*20:*/
-#line 266 "./mpstrings.w"
 
 void mp_reset_cur_string(MP mp){
 mp_xfree(mp->cur_string);
@@ -192,7 +181,6 @@ memset(mp->cur_string,0,64);
 
 
 /*:20*//*24:*/
-#line 305 "./mpstrings.w"
 
 void mp_flush_string(MP mp,mp_string s){
 if(s->refs==0){
@@ -204,7 +192,6 @@ mp->pool_in_use= mp->pool_in_use-(integer)s->len;
 
 
 /*:24*//*25:*/
-#line 318 "./mpstrings.w"
 
 mp_string mp_intern(MP mp,const char*s){
 mp_string r;
@@ -214,7 +201,6 @@ return r;
 }
 
 /*:25*//*28:*/
-#line 337 "./mpstrings.w"
 
 mp_string mp_make_string(MP mp){
 mp_string str;
@@ -242,7 +228,6 @@ return str;
 
 
 /*:28*//*30:*/
-#line 371 "./mpstrings.w"
 
 integer mp_str_vs_str(MP mp,mp_string s,mp_string t){
 (void)mp;
@@ -252,7 +237,6 @@ return comp_strings_entry(NULL,(const void*)s,(const void*)t);
 
 
 /*:30*//*32:*/
-#line 382 "./mpstrings.w"
 
 mp_string mp_cat(MP mp,mp_string a,mp_string b){
 mp_string str;
@@ -280,7 +264,6 @@ return str;
 
 
 /*:32*//*34:*/
-#line 411 "./mpstrings.w"
 
 mp_string mp_chop_string(MP mp,mp_string s,integer a,integer b){
 integer l;

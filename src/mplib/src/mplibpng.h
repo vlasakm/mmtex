@@ -1,5 +1,4 @@
 /*37:*/
-#line 901 "./pngout.w"
 
 #ifndef MPLIBPNG_H
 #define MPLIBPNG_H 1

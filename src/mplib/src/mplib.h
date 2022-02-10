@@ -1,5 +1,4 @@
 /*3:*/
-#line 89 "./mp.w"
 
 #ifndef MPLIB_H
 #define MPLIB_H 1
@@ -8,16 +7,13 @@
 typedef int boolean;
 #endif
 /*2:*/
-#line 78 "./mp.w"
 
 #define metapost_version "2.01"
 
 /*:2*/
-#line 96 "./mp.w"
 
 typedef struct MP_instance*MP;
 /*17:*/
-#line 378 "./mp.w"
 
 typedef enum{
 mp_nan_type= 0,
@@ -212,7 +208,6 @@ set_precision_func set_precision;
 
 
 /*:17*//*45:*/
-#line 909 "./mp.w"
 
 enum mp_filetype{
 mp_filetype_terminal= 0,
@@ -241,7 +236,6 @@ typedef void(*mp_file_writer)(MP,void*,const char*);
 typedef void(*mp_binfile_writer)(MP,void*,void*,size_t);
 
 /*:45*//*77:*/
-#line 1408 "./mp.w"
 
 typedef struct{
 unsigned char*str;
@@ -251,7 +245,6 @@ int refs;
 typedef mp_lstring*mp_string;
 
 /*:77*//*103:*/
-#line 1867 "./mp.w"
 
 enum mp_interaction_mode{
 mp_unspecified_mode= 0,
@@ -262,7 +255,6 @@ mp_error_stop_mode
 };
 
 /*:103*//*109:*/
-#line 1943 "./mp.w"
 
 enum mp_history_state{
 mp_spotless= 0,
@@ -273,12 +265,10 @@ mp_system_error_stop
 };
 
 /*:109*//*123:*/
-#line 2108 "./mp.w"
 
 typedef void(*mp_editor_cmd)(MP,char*,int);
 
 /*:123*//*167:*/
-#line 2816 "./mp.w"
 
 typedef enum{
 mp_math_scaled_mode= 0,
@@ -288,7 +278,6 @@ mp_math_decimal_mode= 3
 }mp_math_mode;
 
 /*:167*//*304:*/
-#line 7098 "./mp.w"
 
 typedef struct mp_knot_data*mp_knot;
 typedef struct mp_knot_data{
@@ -312,7 +301,6 @@ unsigned char originator;
 
 
 /*:304*//*305:*/
-#line 7123 "./mp.w"
 
 typedef struct mp_gr_knot_data*mp_gr_knot;
 typedef struct mp_gr_knot_data{
@@ -336,7 +324,6 @@ unsigned char originator;
 
 
 /*:305*//*308:*/
-#line 7232 "./mp.w"
 
 enum mp_knot_originator{
 mp_program_code= 0,
@@ -344,12 +331,10 @@ mp_metapost_user
 };
 
 /*:308*//*898:*/
-#line 22269 "./mp.w"
 
 typedef int(*mp_makempx_cmd)(MP mp,char*origname,char*mtxname);
 
 /*:898*//*1066:*/
-#line 30445 "./mp.w"
 
 #undef term_in
 #undef term_out
@@ -371,16 +356,13 @@ struct mp_edge_object*edges;
 }mp_run_data;
 
 /*:1066*//*1288:*/
-#line 35246 "./mp.w"
 
 typedef void(*mp_backend_writer)(MP,void*);
 
 /*:1288*/
-#line 98 "./mp.w"
 
 typedef struct MP_options{
 /*29:*/
-#line 736 "./mp.w"
 
 int error_line;
 int half_error_line;
@@ -393,7 +375,6 @@ int ini_version;
 int utf8_mode;
 
 /*:29*//*46:*/
-#line 936 "./mp.w"
 
 mp_file_finder find_file;
 mp_file_opener open_file;
@@ -408,73 +389,59 @@ mp_file_writer write_ascii_file;
 mp_binfile_writer write_binary_file;
 
 /*:46*//*53:*/
-#line 1021 "./mp.w"
 
 int print_found_names;
 
 /*:53*//*55:*/
-#line 1039 "./mp.w"
 
 int file_line_error_style;
 
 /*:55*//*71:*/
-#line 1283 "./mp.w"
 
 char*command_line;
 
 /*:71*//*104:*/
-#line 1876 "./mp.w"
 
 int interaction;
 int noninteractive;
 int extensions;
 
 /*:104*//*124:*/
-#line 2111 "./mp.w"
 
 mp_editor_cmd run_editor;
 
 /*:124*//*156:*/
-#line 2614 "./mp.w"
 
 int random_seed;
 
 /*:156*//*168:*/
-#line 2824 "./mp.w"
 
 int math_mode;
 
 /*:168*//*200:*/
-#line 4127 "./mp.w"
 
 int troff_mode;
 
 /*:200*//*865:*/
-#line 21712 "./mp.w"
 
 char*mem_name;
 
 /*:865*//*878:*/
-#line 21907 "./mp.w"
 
 char*job_name;
 
 /*:878*//*899:*/
-#line 22272 "./mp.w"
 
 mp_makempx_cmd run_make_mpx;
 
 /*:899*//*1289:*/
-#line 35249 "./mp.w"
 
 mp_backend_writer shipout_backend;
 
 /*:1289*/
-#line 100 "./mp.w"
 
 }MP_options;
 /*20:*/
-#line 675 "./mp.w"
 
 extern MP_options*mp_options(void);
 extern MP mp_initialize(MP_options*opt);
@@ -483,25 +450,21 @@ extern boolean mp_finished(MP mp);
 extern void*mp_userdata(MP mp);
 
 /*:20*//*121:*/
-#line 2080 "./mp.w"
 
 extern void mp_error(MP mp,const char*msg,const char**hlp,boolean deletions_allowed);
 extern void mp_warn(MP mp,const char*msg);
 
 
 /*:121*//*138:*/
-#line 2376 "./mp.w"
 
 extern void mp_fatal_error(MP mp,const char*s);
 
 
 /*:138*//*202:*/
-#line 4152 "./mp.w"
 
 int mp_troff_mode(MP mp);
 
 /*:202*//*235:*/
-#line 4917 "./mp.w"
 
 double mp_get_numeric_value(MP mp,const char*s,size_t l);
 int mp_get_boolean_value(MP mp,const char*s,size_t l);
@@ -509,7 +472,6 @@ char*mp_get_string_value(MP mp,const char*s,size_t l);
 mp_knot mp_get_path_value(MP mp,const char*s,size_t l);
 
 /*:235*//*384:*/
-#line 9203 "./mp.w"
 
 int mp_close_path_cycle(MP mp,mp_knot p,mp_knot q);
 int mp_close_path(MP mp,mp_knot q,mp_knot first);
@@ -532,7 +494,6 @@ int mp_solve_path(MP mp,mp_knot first);
 void mp_free_path(MP mp,mp_knot p);
 
 /*:384*//*386:*/
-#line 9240 "./mp.w"
 
 #define mp_knot_left_curl mp_knot_left_x
 #define mp_knot_left_given mp_knot_left_x
@@ -553,17 +514,14 @@ double mp_number_as_double(MP mp,mp_number n);
 
 
 /*:386*//*1065:*/
-#line 30422 "./mp.w"
 
 void mp_set_internal(MP mp,char*n,char*v,int isstring);
 
 /*:1065*//*1074:*/
-#line 30763 "./mp.w"
 
 extern mp_run_data*mp_rundata(MP mp);
 
 /*:1074*//*1082:*/
-#line 30920 "./mp.w"
 
 int mp_run(MP mp);
 int mp_execute(MP mp,char*s,size_t l);
@@ -571,13 +529,11 @@ int mp_finish(MP mp);
 char*mp_metapost_version(void);void mp_show_library_versions(void);
 
 /*:1082*//*1249:*/
-#line 34429 "./mp.w"
 
 double mp_get_char_dimension(MP mp,char*fname,int n,int t);
 
 
 /*:1249*//*1305:*/
-#line 35507 "./mp.w"
 
 int mp_memory_usage(MP mp);
 int mp_hash_usage(MP mp);
@@ -585,10 +541,8 @@ int mp_param_usage(MP mp);
 int mp_open_usage(MP mp);
 
 /*:1305*/
-#line 102 "./mp.w"
 
 /*206:*/
-#line 4282 "./mp.w"
 
 enum mp_color_model{
 mp_no_model= 1,
@@ -600,7 +554,6 @@ mp_uninitialized_model= 9
 
 
 /*:206*//*306:*/
-#line 7145 "./mp.w"
 
 enum mp_knot_type{
 mp_endpoint= 0,
@@ -612,26 +565,21 @@ mp_end_cycle
 };
 
 /*:306*//*464:*/
-#line 11183 "./mp.w"
 
 enum mp_graphical_object_code{
 /*466:*/
-#line 11223 "./mp.w"
 
 mp_fill_code= 1,
 
 /*:466*//*470:*/
-#line 11308 "./mp.w"
 
 mp_stroked_code= 2,
 
 /*:470*//*477:*/
-#line 11511 "./mp.w"
 
 mp_text_code= 3,
 
 /*:477*//*481:*/
-#line 11609 "./mp.w"
 
 mp_start_clip_code= 4,
 mp_start_bounds_code= 5,
@@ -640,18 +588,15 @@ mp_stop_bounds_code= 7,
 
 
 /*:481*//*1279:*/
-#line 34944 "./mp.w"
 
 mp_special_code= 8,
 
 /*:1279*/
-#line 11185 "./mp.w"
 
 mp_final_graphic
 };
 
 /*:464*/
-#line 103 "./mp.w"
 
 #endif
 

@@ -1,5 +1,4 @@
 /*4:*/
-#line 113 "./mp.w"
 
 #ifndef MPMP_H
 #define MPMP_H 1
@@ -31,7 +30,6 @@ typedef int integer;
 
 
 /*170:*/
-#line 2837 "./mp.w"
 
 extern void mp_xfree(void*x);
 extern void*mp_xrealloc(MP mp,void*p,size_t nmem,size_t size);
@@ -40,10 +38,8 @@ extern void mp_do_snprintf(char*str,int size,const char*fmt,...);
 extern void*do_alloc_node(MP mp,size_t size);
 
 /*:170*/
-#line 143 "./mp.w"
 ;
 /*190:*/
-#line 3233 "./mp.w"
 
 typedef enum{
 mp_start_tex= 1,
@@ -139,7 +135,6 @@ mp_undefined_cs,
 }mp_command_code;
 
 /*:190*//*191:*/
-#line 3341 "./mp.w"
 
 typedef enum{
 mp_undefined= 0,
@@ -192,7 +187,6 @@ mp_edge_header_node_type,
 }mp_variable_type;
 
 /*:191*//*194:*/
-#line 3556 "./mp.w"
 
 typedef enum{
 mp_root= 0,
@@ -224,7 +218,6 @@ mp_expr_sym,
 mp_suffix_sym,
 mp_text_sym,
 /*195:*/
-#line 3604 "./mp.w"
 
 mp_true_code,
 mp_false_code,
@@ -333,30 +326,24 @@ mp_glyph_infont,
 mp_kern_flag
 
 /*:195*/
-#line 3586 "./mp.w"
 
 }mp_name_type_type;
 
 /*:194*/
-#line 144 "./mp.w"
 ;
 /*36:*/
-#line 810 "./mp.w"
 
 typedef unsigned char ASCII_code;
 
 /*:36*//*37:*/
-#line 818 "./mp.w"
 
 typedef unsigned char text_char;
 
 /*:37*//*44:*/
-#line 906 "./mp.w"
 
 typedef unsigned char eight_bits;
 
 /*:44*//*166:*/
-#line 2780 "./mp.w"
 
 typedef struct mp_value_node_data*mp_value_node;
 typedef struct mp_node_data*mp_node;
@@ -389,7 +376,6 @@ four_quarters qqqq;
 
 
 /*:166*//*197:*/
-#line 4037 "./mp.w"
 
 enum mp_given_internal{
 mp_output_template= 1,
@@ -450,7 +436,6 @@ char*intname;
 
 
 /*:197*//*220:*/
-#line 4640 "./mp.w"
 
 typedef struct mp_symbol_entry{
 halfword type;
@@ -460,7 +445,6 @@ void*parent;
 }mp_symbol_entry;
 
 /*:220*//*255:*/
-#line 5624 "./mp.w"
 
 typedef enum{
 mp_general_macro,
@@ -477,7 +461,6 @@ mp_text_param
 }mp_macro_info;
 
 /*:255*//*297:*/
-#line 6930 "./mp.w"
 
 typedef struct mp_save_data{
 quarterword type;
@@ -486,7 +469,6 @@ struct mp_save_data*link;
 }mp_save_data;
 
 /*:297*//*390:*/
-#line 9320 "./mp.w"
 
 enum mp_bb_code{
 mp_x_code= 0,
@@ -494,12 +476,10 @@ mp_y_code
 };
 
 /*:390*//*485:*/
-#line 11706 "./mp.w"
 
 typedef struct mp_dash_node_data*mp_dash_node;
 
 /*:485*//*681:*/
-#line 17579 "./mp.w"
 
 typedef struct{
 char*long_name_field;
@@ -510,7 +490,6 @@ quarterword index_field;
 }in_state_record;
 
 /*:681*//*755:*/
-#line 19215 "./mp.w"
 
 typedef struct mp_subst_list_item{
 mp_name_type_type info_mod;
@@ -521,7 +500,6 @@ struct mp_subst_list_item*link;
 }mp_subst_list_item;
 
 /*:755*//*833:*/
-#line 21074 "./mp.w"
 
 typedef struct mp_loop_data{
 mp_sym var;
@@ -538,38 +516,31 @@ struct mp_loop_data*link;
 }mp_loop_data;
 
 /*:833*//*904:*/
-#line 22319 "./mp.w"
 
 typedef unsigned int readf_index;
 typedef unsigned int write_index;
 
 /*:904*//*1070:*/
-#line 30497 "./mp.w"
 
 typedef struct File{
 FILE*f;
 }File;
 
 /*:1070*//*1238:*/
-#line 34239 "./mp.w"
 
 typedef unsigned int font_number;
 
 /*:1238*/
-#line 145 "./mp.w"
 ;
 /*26:*/
-#line 722 "./mp.w"
 
 #define bistack_size 1500       
 
 
 /*:26*/
-#line 146 "./mp.w"
 ;
 typedef struct MP_instance{
 /*29:*/
-#line 736 "./mp.w"
 
 int error_line;
 int half_error_line;
@@ -582,7 +553,6 @@ int ini_version;
 int utf8_mode;
 
 /*:29*//*46:*/
-#line 936 "./mp.w"
 
 mp_file_finder find_file;
 mp_file_opener open_file;
@@ -597,77 +567,62 @@ mp_file_writer write_ascii_file;
 mp_binfile_writer write_binary_file;
 
 /*:46*//*53:*/
-#line 1021 "./mp.w"
 
 int print_found_names;
 
 /*:53*//*55:*/
-#line 1039 "./mp.w"
 
 int file_line_error_style;
 
 /*:55*//*71:*/
-#line 1283 "./mp.w"
 
 char*command_line;
 
 /*:71*//*104:*/
-#line 1876 "./mp.w"
 
 int interaction;
 int noninteractive;
 int extensions;
 
 /*:104*//*124:*/
-#line 2111 "./mp.w"
 
 mp_editor_cmd run_editor;
 
 /*:124*//*156:*/
-#line 2614 "./mp.w"
 
 int random_seed;
 
 /*:156*//*168:*/
-#line 2824 "./mp.w"
 
 int math_mode;
 
 /*:168*//*200:*/
-#line 4127 "./mp.w"
 
 int troff_mode;
 
 /*:200*//*865:*/
-#line 21712 "./mp.w"
 
 char*mem_name;
 
 /*:865*//*878:*/
-#line 21907 "./mp.w"
 
 char*job_name;
 
 /*:878*//*899:*/
-#line 22272 "./mp.w"
 
 mp_makempx_cmd run_make_mpx;
 
 /*:899*//*1289:*/
-#line 35249 "./mp.w"
 
 mp_backend_writer shipout_backend;
 
 /*:1289*/
-#line 148 "./mp.w"
 
 /*16:*/
-#line 375 "./mp.w"
 
 void*math;
 
 /*:16*//*28:*/
-#line 729 "./mp.w"
 
 int pool_size;
 
@@ -676,23 +631,19 @@ int max_in_open;
 int param_size;
 
 /*:28*//*32:*/
-#line 773 "./mp.w"
 
 integer bad;
 
 /*:32*//*40:*/
-#line 832 "./mp.w"
 
 ASCII_code xord[256];
 text_char xchr[256];
 
 /*:40*//*52:*/
-#line 1014 "./mp.w"
 
 char*name_of_file;
 
 /*:52*//*65:*/
-#line 1181 "./mp.w"
 
 size_t buf_size;
 
@@ -702,14 +653,12 @@ size_t last;
 size_t max_buf_stack;
 
 /*:65*//*70:*/
-#line 1255 "./mp.w"
 
 void*term_in;
 void*term_out;
 void*err_out;
 
 /*:70*//*78:*/
-#line 1419 "./mp.w"
 
 avl_tree strings;
 unsigned char*cur_string;
@@ -717,7 +666,6 @@ size_t cur_length;
 size_t cur_string_size;
 
 /*:78*//*81:*/
-#line 1433 "./mp.w"
 
 integer pool_in_use;
 integer max_pl_used;
@@ -726,7 +674,6 @@ integer max_strs_used;
 
 
 /*:81*//*82:*/
-#line 1492 "./mp.w"
 
 void*log_file;
 void*output_file;
@@ -741,24 +688,20 @@ integer trick_count;
 integer first_count;
 
 /*:82*//*110:*/
-#line 1952 "./mp.w"
 
 int history;
 int error_count;
 
 /*:110*//*114:*/
-#line 1981 "./mp.w"
 
 boolean use_err_help;
 mp_string err_help;
 
 /*:114*//*116:*/
-#line 1997 "./mp.w"
 
 jmp_buf*jump_buf;
 
 /*:116*//*143:*/
-#line 2452 "./mp.w"
 
 integer interrupt;
 boolean OK_to_interrupt;
@@ -767,18 +710,15 @@ boolean finished;
 boolean reading_preload;
 
 /*:143*//*147:*/
-#line 2511 "./mp.w"
 
 boolean arith_error;
 
 /*:147*//*155:*/
-#line 2610 "./mp.w"
 
 mp_number randoms[55];
 int j_random;
 
 /*:155*//*171:*/
-#line 2852 "./mp.w"
 
 mp_node token_nodes;
 int num_token_nodes;
@@ -792,13 +732,11 @@ mp_node symbolic_nodes;
 int num_symbolic_nodes;
 
 /*:171*//*180:*/
-#line 3005 "./mp.w"
 
 size_t var_used;
 size_t var_used_max;
 
 /*:180*//*186:*/
-#line 3147 "./mp.w"
 
 mp_dash_node null_dash;
 mp_value_node dep_head;
@@ -812,25 +750,21 @@ mp_node hold_head;
 mp_node spec_head;
 
 /*:186*//*199:*/
-#line 4122 "./mp.w"
 
 mp_internal*internal;
 int int_ptr;
 int max_internal;
 
 /*:199*//*213:*/
-#line 4459 "./mp.w"
 
 unsigned int old_setting;
 
 /*:213*//*215:*/
-#line 4501 "./mp.w"
 
 #define digit_class 0 
 int char_class[256];
 
 /*:215*//*221:*/
-#line 4648 "./mp.w"
 
 integer st_count;
 avl_tree symbols;
@@ -854,22 +788,18 @@ mp_sym frozen_dump;
 
 
 /*:221*//*230:*/
-#line 4777 "./mp.w"
 
 mp_sym id_lookup_test;
 
 /*:230*//*298:*/
-#line 6937 "./mp.w"
 
 mp_save_data*save_ptr;
 
 /*:298*//*332:*/
-#line 7638 "./mp.w"
 
 mp_knot path_tail;
 
 /*:332*//*347:*/
-#line 7952 "./mp.w"
 
 int path_size;
 mp_number*delta_x;
@@ -878,7 +808,6 @@ mp_number*delta;
 mp_number*psi;
 
 /*:347*//*352:*/
-#line 8107 "./mp.w"
 
 mp_number*theta;
 mp_number*uu;
@@ -886,7 +815,6 @@ mp_number*vv;
 mp_number*ww;
 
 /*:352*//*374:*/
-#line 8717 "./mp.w"
 
 mp_number st;
 mp_number ct;
@@ -894,48 +822,40 @@ mp_number sf;
 mp_number cf;
 
 /*:374*//*391:*/
-#line 9332 "./mp.w"
 
 mp_number bbmin[mp_y_code+1];
 mp_number bbmax[mp_y_code+1];
 
 
 /*:391*//*437:*/
-#line 10588 "./mp.w"
 
 mp_number half_cos[8];
 mp_number d_cos[8];
 
 /*:437*//*454:*/
-#line 10915 "./mp.w"
 
 mp_number cur_x;
 mp_number cur_y;
 
 /*:454*//*550:*/
-#line 13285 "./mp.w"
 
 integer spec_offset;
 
 /*:550*//*553:*/
-#line 13448 "./mp.w"
 
 mp_knot spec_p1;
 mp_knot spec_p2;
 
 /*:553*//*612:*/
-#line 15644 "./mp.w"
 
 unsigned int tol_step;
 
 /*:612*//*613:*/
-#line 15711 "./mp.w"
 
 mp_number*bisect_stack;
 integer bisect_ptr;
 
 /*:613*//*618:*/
-#line 15798 "./mp.w"
 
 mp_number cur_t;
 mp_number cur_tt;
@@ -943,7 +863,6 @@ integer time_to_go;
 mp_number max_t;
 
 /*:618*//*622:*/
-#line 15951 "./mp.w"
 
 mp_number delx;
 mp_number dely;
@@ -955,24 +874,20 @@ mp_number appr_t;
 mp_number appr_tt;
 
 /*:622*//*631:*/
-#line 16187 "./mp.w"
 
 integer serial_no;
 
 /*:631*//*642:*/
-#line 16387 "./mp.w"
 
 boolean fix_needed;
 boolean watch_coefs;
 mp_value_node dep_final;
 
 /*:642*//*675:*/
-#line 17526 "./mp.w"
 
 mp_node cur_mod_;
 
 /*:675*//*682:*/
-#line 17588 "./mp.w"
 
 in_state_record*input_stack;
 integer input_ptr;
@@ -981,7 +896,6 @@ in_state_record cur_input;
 int stack_size;
 
 /*:682*//*687:*/
-#line 17695 "./mp.w"
 
 integer in_open;
 integer in_open_max;
@@ -994,19 +908,16 @@ char**iarea_stack;
 mp_string*mpx_name;
 
 /*:687*//*693:*/
-#line 17824 "./mp.w"
 
 mp_node*param_stack;
 integer param_ptr;
 integer max_param_stack;
 
 /*:693*//*699:*/
-#line 17879 "./mp.w"
 
 integer file_ptr;
 
 /*:699*//*727:*/
-#line 18477 "./mp.w"
 
 #define tex_flushing 7 
 integer scanner_status;
@@ -1016,24 +927,20 @@ integer warning_line;
 mp_node warning_info_node;
 
 /*:727*//*738:*/
-#line 18843 "./mp.w"
 
 boolean force_eof;
 
 /*:738*//*770:*/
-#line 19661 "./mp.w"
 
 mp_sym bg_loc;
 mp_sym eg_loc;
 
 /*:770*//*774:*/
-#line 19715 "./mp.w"
 
 int expand_depth_count;
 int expand_depth;
 
 /*:774*//*819:*/
-#line 20790 "./mp.w"
 
 mp_node cond_ptr;
 integer if_limit;
@@ -1041,19 +948,16 @@ quarterword cur_if;
 integer if_line;
 
 /*:819*//*834:*/
-#line 21089 "./mp.w"
 
 mp_loop_data*loop_ptr;
 
 /*:834*//*853:*/
-#line 21537 "./mp.w"
 
 char*cur_name;
 char*cur_area;
 char*cur_ext;
 
 /*:853*//*856:*/
-#line 21565 "./mp.w"
 
 integer area_delimiter;
 
@@ -1061,13 +965,11 @@ integer ext_delimiter;
 boolean quoted_filename;
 
 /*:856*//*877:*/
-#line 21903 "./mp.w"
 
 boolean log_opened;
 char*log_name;
 
 /*:877*//*905:*/
-#line 22323 "./mp.w"
 
 readf_index max_read_files;
 void**rd_file;
@@ -1079,12 +981,10 @@ char**wr_fname;
 write_index write_files;
 
 /*:905*//*911:*/
-#line 22466 "./mp.w"
 
 mp_value cur_exp;
 
 /*:911*//*938:*/
-#line 23394 "./mp.w"
 
 mp_number max_c[mp_proto_dependent+1];
 mp_value_node max_ptr[mp_proto_dependent+1];
@@ -1092,17 +992,14 @@ mp_value_node max_link[mp_proto_dependent+1];
 
 
 /*:938*//*941:*/
-#line 23435 "./mp.w"
 
 int var_flag;
 
 /*:941*//*998:*/
-#line 27163 "./mp.w"
 
 mp_string eof_line;
 
 /*:998*//*1011:*/
-#line 28352 "./mp.w"
 
 mp_number txx;
 mp_number txy;
@@ -1112,34 +1009,28 @@ mp_number tx;
 mp_number ty;
 
 /*:1011*//*1069:*/
-#line 30490 "./mp.w"
 
 mp_run_data run_data;
 
 /*:1069*//*1142:*/
-#line 32107 "./mp.w"
 
 quarterword last_add_type;
 
 
 /*:1142*//*1153:*/
-#line 32366 "./mp.w"
 
 mp_sym start_sym;
 
 /*:1153*//*1162:*/
-#line 32497 "./mp.w"
 
 boolean long_help_seen;
 
 /*:1162*//*1170:*/
-#line 32654 "./mp.w"
 
 void*tfm_file;
 char*metric_file_name;
 
 /*:1170*//*1179:*/
-#line 32913 "./mp.w"
 
 #define TFM_ITEMS 257
 eight_bits bc;
@@ -1177,29 +1068,24 @@ eight_bits label_char[257];
 short label_ptr;
 
 /*:1179*//*1209:*/
-#line 33623 "./mp.w"
 
 mp_number perturbation;
 integer excess;
 
 /*:1209*//*1217:*/
-#line 33773 "./mp.w"
 
 mp_node dimen_head[5];
 
 /*:1217*//*1223:*/
-#line 33920 "./mp.w"
 
 mp_number max_tfm_dimen;
 integer tfm_changed;
 
 /*:1223*//*1237:*/
-#line 34230 "./mp.w"
 
 void*tfm_infile;
 
 /*:1237*//*1239:*/
-#line 34246 "./mp.w"
 
 font_number font_max;
 size_t font_mem_size;
@@ -1221,13 +1107,11 @@ int*depth_base;
 mp_node*font_sizes;
 
 /*:1239*//*1259:*/
-#line 34570 "./mp.w"
 
 integer ten_pow[10];
 integer scaled_out;
 
 /*:1259*//*1267:*/
-#line 34839 "./mp.w"
 
 char*first_file_name;
 char*last_file_name;
@@ -1237,47 +1121,38 @@ integer last_output_code;
 integer total_shipped;
 
 /*:1267*//*1275:*/
-#line 34912 "./mp.w"
 
 mp_node last_pending;
 
 
 /*:1275*//*1291:*/
-#line 35255 "./mp.w"
 
 psout_data ps;
 svgout_data svg;
 pngout_data png;
 
 /*:1291*//*1294:*/
-#line 35282 "./mp.w"
 
 void*mem_file;
 
 /*:1294*/
-#line 149 "./mp.w"
 
 }MP_instance;
 /*12:*/
-#line 328 "./mp.w"
 
 /*873:*/
-#line 21859 "./mp.w"
 
 void mp_str_scan_file(MP mp,mp_string s);
 
 /*:873*//*875:*/
-#line 21879 "./mp.w"
 
 extern void mp_ptr_scan_file(MP mp,char*s);
 
 /*:875*/
-#line 329 "./mp.w"
 
 
 
 /*:12*//*88:*/
-#line 1563 "./mp.w"
 
 void mp_print(MP mp,const char*s);
 void mp_printf(MP mp,const char*ss,...);
@@ -1288,103 +1163,84 @@ void mp_print_nl(MP mp,const char*s);
 void mp_print_two(MP mp,mp_number x,mp_number y);
 
 /*:88*//*98:*/
-#line 1794 "./mp.w"
 
 void mp_print_int(MP mp,integer n);
 void mp_print_pointer(MP mp,void*n);
 
 /*:98*//*113:*/
-#line 1978 "./mp.w"
 
 void mp_normalize_selector(MP mp);
 
 /*:113*//*118:*/
-#line 2011 "./mp.w"
 
 void mp_jump_out(MP mp);
 
 /*:118*//*139:*/
-#line 2380 "./mp.w"
 
 void mp_overflow(MP mp,const char*s,integer n);
 
 
 /*:139*//*141:*/
-#line 2411 "./mp.w"
 
 void mp_confusion(MP mp,const char*s);
 
 /*:141*//*159:*/
-#line 2634 "./mp.w"
 
 void mp_new_randoms(MP mp);
 
 /*:159*//*177:*/
-#line 2962 "./mp.w"
 
 
 #define mp_snprintf(...) (snprintf(__VA_ARGS__) < 0 ? abort() : (void)0)
 
 /*:177*//*185:*/
-#line 3138 "./mp.w"
 
 void mp_free_node(MP mp,mp_node p,size_t siz);
 void mp_free_symbolic_node(MP mp,mp_node p);
 void mp_free_value_node(MP mp,mp_node p);
 
 /*:185*//*336:*/
-#line 7735 "./mp.w"
 
 void mp_make_choices(MP mp,mp_knot knots);
 
 /*:336*//*864:*/
-#line 21709 "./mp.w"
 
 void mp_pack_file_name(MP mp,const char*n,const char*a,const char*e);
 
 /*:864*//*882:*/
-#line 21952 "./mp.w"
 
 void mp_pack_job_name(MP mp,const char*s);
 
 /*:882*//*884:*/
-#line 21974 "./mp.w"
 
 void mp_prompt_file_name(MP mp,const char*s,const char*e);
 
 /*:884*//*1108:*/
-#line 31203 "./mp.w"
 
 void mp_grow_internals(MP mp,int l);
 
 /*:1108*//*1243:*/
-#line 34330 "./mp.w"
 
 void mp_reallocate_fonts(MP mp,font_number l);
 
 
 /*:1243*//*1262:*/
-#line 34594 "./mp.w"
 
 void mp_open_output_file(MP mp);
 char*mp_get_output_file_name(MP mp);
 char*mp_set_output_file_name(MP mp,integer c);
 
 /*:1262*//*1265:*/
-#line 34820 "./mp.w"
 
 void mp_store_true_output_filename(MP mp,int c);
 
 /*:1265*//*1273:*/
-#line 34900 "./mp.w"
 
 boolean mp_has_font_size(MP mp,font_number f);
 
 /*:1273*/
-#line 151 "./mp.w"
 
 /*8:*/
-#line 254 "./mp.w"
 
 
 #if DEBUG
@@ -1410,13 +1266,11 @@ void do_debug_printf(MP mp,const char*prefix,const char*fmt,...);
 #endif
 
 /*:8*//*39:*/
-#line 828 "./mp.w"
 
 #define xchr(A) mp->xchr[(A)]
 #define xord(A) mp->xord[(A)]
 
 /*:39*//*72:*/
-#line 1300 "./mp.w"
 
 #define update_terminal()  (mp->flush_file)(mp,mp->term_out)      
 #define clear_terminal()          
@@ -1424,7 +1278,6 @@ void do_debug_printf(MP mp,const char*prefix,const char*fmt,...);
 
 
 /*:72*//*87:*/
-#line 1546 "./mp.w"
 
 #define mp_fputs(b,f) (mp->write_ascii_file)(mp,f,b)
 #define wterm(A)     mp_fputs((A), mp->term_out)
@@ -1438,7 +1291,6 @@ void do_debug_printf(MP mp,const char*prefix,const char*fmt,...);
 
 
 /*:87*//*179:*/
-#line 2984 "./mp.w"
 
 #define NODE_BODY                       \
   mp_variable_type type;                \
@@ -1452,7 +1304,6 @@ mp_value_data data;
 typedef struct mp_node_data*mp_symbolic_node;
 
 /*:179*//*198:*/
-#line 4096 "./mp.w"
 
 #define internal_value(A) mp->internal[(A)].v.data.n
 #define set_internal_from_number(A,B) do { \
@@ -1476,12 +1327,10 @@ typedef struct mp_node_data*mp_symbolic_node;
 
 
 /*:198*//*242:*/
-#line 5264 "./mp.w"
 
 typedef struct mp_node_data*mp_token_node;
 
 /*:242*//*258:*/
-#line 5758 "./mp.w"
 
 typedef struct mp_value_node_data{
 NODE_BODY;
@@ -1494,7 +1343,6 @@ mp_node subscr_head_;
 }mp_value_node_data;
 
 /*:258*//*269:*/
-#line 6042 "./mp.w"
 
 typedef struct mp_pair_node_data{
 NODE_BODY;
@@ -1504,7 +1352,6 @@ mp_node y_part_;
 typedef struct mp_pair_node_data*mp_pair_node;
 
 /*:269*//*274:*/
-#line 6121 "./mp.w"
 
 typedef struct mp_transform_node_data{
 NODE_BODY;
@@ -1518,7 +1365,6 @@ mp_node yy_part_;
 typedef struct mp_transform_node_data*mp_transform_node;
 
 /*:274*//*277:*/
-#line 6187 "./mp.w"
 
 typedef struct mp_color_node_data{
 NODE_BODY;
@@ -1529,7 +1375,6 @@ mp_node blue_part_;
 typedef struct mp_color_node_data*mp_color_node;
 
 /*:277*//*280:*/
-#line 6237 "./mp.w"
 
 typedef struct mp_cmykcolor_node_data{
 NODE_BODY;
@@ -1541,7 +1386,6 @@ mp_node black_part_;
 typedef struct mp_cmykcolor_node_data*mp_cmykcolor_node;
 
 /*:280*//*462:*/
-#line 11077 "./mp.w"
 
 #define mp_fraction mp_number
 #define mp_angle mp_number
@@ -1551,7 +1395,6 @@ typedef struct mp_cmykcolor_node_data*mp_cmykcolor_node;
 #define free_number(A) (((math_data *)(mp->math))->free)(mp, &(A))
 
 /*:462*//*465:*/
-#line 11206 "./mp.w"
 
 typedef struct mp_fill_node_data{
 NODE_BODY;
@@ -1570,7 +1413,6 @@ mp_number miterlim;
 typedef struct mp_fill_node_data*mp_fill_node;
 
 /*:465*//*469:*/
-#line 11287 "./mp.w"
 
 typedef struct mp_stroked_node_data{
 NODE_BODY;
@@ -1593,7 +1435,6 @@ typedef struct mp_stroked_node_data*mp_stroked_node;
 
 
 /*:469*//*476:*/
-#line 11487 "./mp.w"
 
 typedef struct mp_text_node_data{
 NODE_BODY;
@@ -1619,7 +1460,6 @@ mp_number tyy;
 typedef struct mp_text_node_data*mp_text_node;
 
 /*:476*//*480:*/
-#line 11588 "./mp.w"
 
 typedef struct mp_start_clip_node_data{
 NODE_BODY;
@@ -1642,7 +1482,6 @@ typedef struct mp_stop_bounds_node_data*mp_stop_bounds_node;
 
 
 /*:480*//*484:*/
-#line 11697 "./mp.w"
 
 typedef struct mp_dash_node_data{
 NODE_BODY;
@@ -1653,7 +1492,6 @@ mp_node dash_info_;
 }mp_dash_node_data;
 
 /*:484*//*489:*/
-#line 11753 "./mp.w"
 
 typedef struct mp_edge_header_node_data{
 NODE_BODY;
@@ -1674,7 +1512,6 @@ halfword ref_count_;
 typedef struct mp_edge_header_node_data*mp_edge_header_node;
 
 /*:489*//*817:*/
-#line 20772 "./mp.w"
 
 typedef struct mp_if_node_data{
 NODE_BODY;
@@ -1683,7 +1520,6 @@ int if_line_field_;
 typedef struct mp_if_node_data*mp_if_node;
 
 /*:817*/
-#line 152 "./mp.w"
 
 #endif
 

@@ -13,7 +13,6 @@
 #define max_command_line_size 0xFFFFFFF \
 
 /*2:*/
-#line 40 "./mpost.w"
 
 #include <w2c/config.h> 
 #include <stdio.h> 
@@ -45,7 +44,6 @@ string output_directory;
 static boolean restricted_mode= false;
 
 /*25:*/
-#line 821 "./mpost.w"
 
 
 
@@ -83,7 +81,6 @@ static struct option mpost_options[]
 
 
 /*:25*//*27:*/
-#line 967 "./mpost.w"
 
 
 
@@ -98,25 +95,20 @@ static struct option dvitomp_options[]
 
 
 /*:27*/
-#line 70 "./mpost.w"
 
 /*7:*/
-#line 283 "./mpost.w"
 
 void recorder_start(char*jobname);
 
 /*:7*//*19:*/
-#line 727 "./mpost.w"
 
 void internal_set_option(const char*opt);
 
 /*:19*//*21:*/
-#line 770 "./mpost.w"
 
 void run_set_list(MP mp);
 
 /*:21*//*37:*/
-#line 1373 "./mpost.w"
 
 #define DLLPROC dllmpostmain
 #if defined(WIN32) && !defined(__MINGW32__) && defined(DLLPROC)
@@ -126,11 +118,9 @@ extern __declspec(dllexport)int DLLPROC(int argc,char**argv);
 #endif
 
 /*:37*/
-#line 71 "./mpost.w"
 
 
 /*:2*//*3:*/
-#line 77 "./mpost.w"
 
  /*@only@*/ /*@out@*/ static void*mpost_xmalloc(size_t bytes){
 void*w= malloc(bytes);
@@ -168,7 +158,6 @@ return mpost_xstrdup(res+idx+1);
 
 
 /*:3*//*4:*/
-#line 113 "./mpost.w"
 
 #ifdef WIN32
 static int
@@ -306,7 +295,6 @@ exit(EXIT_FAILURE);
 }
 
 /*:4*//*6:*/
-#line 254 "./mpost.w"
 
 static string normalize_quotes(const char*name,const char*mesg){
 boolean quoted= false;
@@ -335,7 +323,6 @@ return ret;
 }
 
 /*:6*//*8:*/
-#line 286 "./mpost.w"
 
 void recorder_start(char*jobname){
 char cwd[1024];
@@ -366,7 +353,6 @@ fprintf(recorder_file,"PWD <unknown>\n");
 
 
 /*:8*//*9:*/
-#line 315 "./mpost.w"
 
  /*@null@*/ static char*makempx_find_file(MPX mpx,const char*nam,
 const char*mode,int ftype){
@@ -394,7 +380,6 @@ return kpse_find_file(nam,fmt,req);
 }
 
 /*:9*//*10:*/
-#line 349 "./mpost.w"
 
 #ifndef MPXCOMMAND
 #define MPXCOMMAND "makempx"
@@ -586,7 +571,6 @@ return ret;
 
 
 /*:10*//*12:*/
-#line 545 "./mpost.w"
 
 static int get_random_seed(void){
 int ret= 0;
@@ -608,7 +592,6 @@ return ret;
 }
 
 /*:12*//*14:*/
-#line 571 "./mpost.w"
 
 static char*mpost_find_in_output_directory(const char*s,const char*fmode)
 {
@@ -622,7 +605,6 @@ return NULL;
 
 
 /*:14*//*15:*/
-#line 583 "./mpost.w"
 
 static char*mpost_find_file(MP mp,const char*fname,const char*fmode,int ftype){
 size_t l;
@@ -734,7 +716,6 @@ return s;
 }
 
 /*:15*//*17:*/
-#line 702 "./mpost.w"
 
 typedef struct set_list_item{
 int isstring;
@@ -744,12 +725,10 @@ struct set_list_item*next;
 }set_list_item;
 
 /*:17*//*18:*/
-#line 711 "./mpost.w"
 
 struct set_list_item*set_list= NULL;
 
 /*:18*//*20:*/
-#line 730 "./mpost.w"
 
 void internal_set_option(const char*opt){
 struct set_list_item*itm;
@@ -787,7 +766,6 @@ itm->next= NULL;
 }
 
 /*:20*//*22:*/
-#line 773 "./mpost.w"
 
 void run_set_list(MP mp){
 struct set_list_item*itm;
@@ -801,7 +779,6 @@ itm= itm->next;
 
 
 /*:22*//*23:*/
-#line 785 "./mpost.w"
 
 static void*mpost_open_file(MP mp,const char*fname,const char*fmode,int ftype){
 char realmode[3];
@@ -834,7 +811,6 @@ return NULL;
 }
 
 /*:23*//*33:*/
-#line 1156 "./mpost.w"
 
 static int setup_var(int def,const char*var_name,boolean nokpse){
 if(!nokpse){
@@ -851,7 +827,6 @@ return def;
 }
 
 /*:33*//*38:*/
-#line 1383 "./mpost.w"
 
 static char*cleaned_invocation_name(char*arg)
 {
@@ -894,7 +869,6 @@ dvitomp_only= 1;
 }
 if(dvitomp_only){
 /*28:*/
-#line 981 "./mpost.w"
 
 {
 int g;
@@ -916,7 +890,6 @@ kpathsea_debug|= (unsigned)atoi(optarg);
 user_progname= optarg;
 }else if(option_is("help")){
 /*30:*/
-#line 1058 "./mpost.w"
 
 {
 char*s= mp_metapost_version();
@@ -944,11 +917,9 @@ exit(EXIT_SUCCESS);
 }
 
 /*:30*/
-#line 1001 "./mpost.w"
 ;
 }else if(option_is("version")){
 /*31:*/
-#line 1085 "./mpost.w"
 
 {
 char*s= mp_metapost_version();
@@ -976,18 +947,15 @@ exit(EXIT_SUCCESS);
 }
 
 /*:31*/
-#line 1003 "./mpost.w"
 ;
 }
 }
 }
 
 /*:28*/
-#line 1424 "./mpost.w"
 ;
 }else{
 /*26:*/
-#line 859 "./mpost.w"
 
 {
 int g;
@@ -1068,7 +1036,6 @@ options->file_line_error_style= false;
 }else if(ARGUMENT_IS("help")){
 if(dvitomp_only){
 /*30:*/
-#line 1058 "./mpost.w"
 
 {
 char*s= mp_metapost_version();
@@ -1096,11 +1063,9 @@ exit(EXIT_SUCCESS);
 }
 
 /*:30*/
-#line 938 "./mpost.w"
 ;
 }else{
 /*29:*/
-#line 1009 "./mpost.w"
 
 {
 char*s= mp_metapost_version();
@@ -1150,12 +1115,10 @@ exit(EXIT_SUCCESS);
 }
 
 /*:29*/
-#line 940 "./mpost.w"
 ;
 }
 }else if(ARGUMENT_IS("version")){
 /*31:*/
-#line 1085 "./mpost.w"
 
 {
 char*s= mp_metapost_version();
@@ -1183,7 +1146,6 @@ exit(EXIT_SUCCESS);
 }
 
 /*:31*/
-#line 943 "./mpost.w"
 ;
 }else if(ARGUMENT_IS("s")){
 if(strchr(optarg,'=')==NULL){
@@ -1208,7 +1170,6 @@ options->ini_version= (int)ini_version_test;
 }
 
 /*:26*/
-#line 1426 "./mpost.w"
 ;
 }
 if(dvitomp_only){
@@ -1223,7 +1184,6 @@ mpx= argv[optind++];
 }
 if(dvi==NULL){
 /*30:*/
-#line 1058 "./mpost.w"
 
 {
 char*s= mp_metapost_version();
@@ -1251,7 +1211,6 @@ exit(EXIT_SUCCESS);
 }
 
 /*:30*/
-#line 1439 "./mpost.w"
 ;
 }else{
 if(!nokpse)
@@ -1278,7 +1237,6 @@ options->error_line= setup_var(79,"error_line",nokpse);
 options->half_error_line= setup_var(50,"half_error_line",nokpse);
 options->max_print_line= setup_var(100,"max_print_line",nokpse);
 /*34:*/
-#line 1171 "./mpost.w"
 
 {
 char*mpversion= mp_metapost_version();
@@ -1302,10 +1260,8 @@ mpost_xfree(mpversion);
 }
 
 /*:34*/
-#line 1464 "./mpost.w"
 ;
 /*32:*/
-#line 1118 "./mpost.w"
 
 {
 mpost_xfree(options->command_line);
@@ -1344,10 +1300,8 @@ options->command_line[k]= '\0';
 }
 
 /*:32*/
-#line 1465 "./mpost.w"
 ;
 /*35:*/
-#line 1200 "./mpost.w"
 
 {
 char*m= NULL;
@@ -1440,10 +1394,8 @@ options->mem_name= mpost_xstrdup(kpse_program_name);
 
 
 /*:35*/
-#line 1466 "./mpost.w"
 ;
 /*36:*/
-#line 1296 "./mpost.w"
 
 {
 char*tmp_job= NULL;
@@ -1518,40 +1470,33 @@ job_name= tmp_job;
 options->job_name= job_name;
 
 /*:36*/
-#line 1467 "./mpost.w"
 ;
 /*5:*/
-#line 250 "./mpost.w"
 
 options->run_editor= mpost_run_editor;
 
 /*:5*//*11:*/
-#line 540 "./mpost.w"
 
 if(!nokpse)
 options->run_make_mpx= mpost_run_make_mpx;
 
 
 /*:11*//*13:*/
-#line 565 "./mpost.w"
 
 options->random_seed= get_random_seed();
 
 
 /*:13*//*16:*/
-#line 693 "./mpost.w"
 
 if(!nokpse)
 options->find_file= mpost_find_file;
 
 /*:16*//*24:*/
-#line 816 "./mpost.w"
 
 if(!nokpse)
 options->open_file= mpost_open_file;
 
 /*:24*/
-#line 1468 "./mpost.w"
 ;
 mp= mp_initialize(options);
 mpost_xfree(options->command_line);
