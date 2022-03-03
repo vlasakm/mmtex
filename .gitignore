@@ -1,8 +1,3 @@
-doc/*.pdf
-doc/*.log
-src
-pkg
-mmtex*.deb
-mmtex*.pkg.*
-mmtex*.tar.gz
-build
+/build*
+/scripts/texmf/src
+/scripts/texmf/texmf
