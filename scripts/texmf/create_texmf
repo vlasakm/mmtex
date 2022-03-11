@@ -120,12 +120,17 @@ install "$optexdir/pkg/"*  -t "$TEXMF/tex/optex/pkg"
 install pdfextra/pdfextra.opm -t "$TEXMF/tex/pdfextra"
 
 # install minim
-install minim*/*.tex minim*/*.lua minim*/*.ini minim*/*.mp -t "$TEXMF/tex/minim"
+install minim*/*.tex minim*/*.lua minim*/*.ini -t "$TEXMF/tex/minim"
+install minim*/*.mp -t "$TEXMF/metapost/minim"
+rm -f "$TEXMF/tex/minim/minim-lamp.ini" "$TEXMF/metapost/minim/minim-hatching-doc.mp"
 
 # install PGF/TikZ
 install base/tex/* -t "$TEXMF/tex/pgf"
-(cd "$TEXMF/tex/pgf"; rm -rf pgfsys-* pgfutil-* *.sty LUA_CODING_STYLE example_graph_for_ascii_displayer.txt)
+(cd "$TEXMF/tex/pgf"; rm -rf pgfsys-*.def pgfutil-*.def *.sty LUA_CODING_STYLE example_graph_for_ascii_displayer.txt)
 install base/tex/pgfsys-common-pdf.def base/tex/pgfsys-luatex.def base/tex/pgfutil-plain.def -t "$TEXMF/tex/pgf"
+
+# install metapost base files
+install mp-base/*.mp -t "$TEXMF/metapost/base"
 
 # install our files
 install mmoptex.ini -t "$TEXMF/tex/mmoptex"

@@ -46,6 +46,10 @@ Files in the "optex" directory come from "OpTeX",
 Files in the "unicode-data" directory come from Unicode, Inc
 (https://www.unicode.org/Public/UNIDATA/, Unicode, Inc., see LICENSE.unicode).
 
+Files in the "metapost" directory come from "Metapost"
+(https://tug.org/metapost.html,
+https://serveur-svn.lri.fr/svn/modhel/metapost/, John Hobby, Public Domain).
+
 Files in the "rsfs" directory come from "rsfs" package
 (https://www.ctan.org/pkg/rsfs, Ralph Smith, Taco Hoekwater, provided under
 following conditions: "You are welcome to use and distribute these files; if
