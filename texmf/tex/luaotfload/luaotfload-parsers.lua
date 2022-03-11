@@ -7,8 +7,8 @@
 
 assert(luaotfload_module, "This is a part of luaotfload and should not be loaded independently") { 
     name          = "luaotfload-parsers",
-    version       = "3.18",       --TAGVERSION
-    date          = "2021-05-21", --TAGDATE
+    version       = "3.20",       --TAGVERSION
+    date          = "2022-02-27", --TAGDATE
     description   = "luaotfload submodule / parsers",
     license       = "GPL v2.0"
 }
@@ -523,7 +523,7 @@ local featuresep = comma + semicolon
     we only support the shorthands for italic / bold / bold italic
     shapes, as well as setting optical size, the rest is ignored.
 --doc]]--
-local style_modifier    = (S'bB' * S'iI'^-1 + S'iI' * S'bB'^-1)
+local style_modifier    = (S'bB' * S'iI'^-1 + S'iI' * S'bB'^-1 + S'rR')
                         / stringlower
 local size_modifier     = S"Ss" * P"="    --- optical size
                         * Cc"optsize" * C(decimal)

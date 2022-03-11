@@ -5,8 +5,8 @@
 
 assert(luaotfload_module, "This is a part of luaotfload and should not be loaded independently") { 
     name          = "luaotfload-tounicode",
-    version       = "3.18",       --TAGVERSION
-    date          = "2021-05-21", --TAGDATE
+    version       = "3.20",       --TAGVERSION
+    date          = "2022-02-27", --TAGDATE
     description   = "luaotfload submodule / tounicode",
     license       = "GPL v2.0",
     author        = "Hans Hagen, Khaled Hosny, Elie Roux, Philipp Gesang, Marcel Krüger",

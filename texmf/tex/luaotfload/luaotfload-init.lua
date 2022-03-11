@@ -7,8 +7,8 @@
 
 assert(luaotfload_module, "This is a part of luaotfload and should not be loaded independently") {
     name          = "luaotfload-init",
-    version       = "3.18",       --TAGVERSION
-    date          = "2021-05-21", --TAGDATE
+    version       = "3.20",       --TAGVERSION
+    date          = "2022-02-27", --TAGDATE
     description   = "luaotfload submodule / initialization",
     license       = "GPL v2.0"
 }
@@ -551,10 +551,16 @@ local function init_post_load_agl ()
 
 end
 
+local function init_post_apply_keepnames ()
+  local keepnames = config.luaotfload.misc.keepnames
+  luaotfload.fontloader.fonts.privateoffsets.keepnames = keepnames
+end
+
 --- (unit -> unit) list
 local init_post_actions = {
   init_post_install_callbacks,
   init_post_load_agl,
+  init_post_apply_keepnames
 }
 
 --- unit -> size_t

@@ -5,8 +5,8 @@
 
 assert(luaotfload_module, "This is a part of luaotfload and should not be loaded independently") { 
     name          = "luaotfload-features",
-    version       = "3.18",       --TAGVERSION
-    date          = "2021-05-21", --TAGDATE
+    version       = "3.20",       --TAGVERSION
+    date          = "2022-02-27", --TAGDATE
     description   = "luaotfload submodule / features",
     license       = "GPL v2.0",
     author        = "Hans Hagen, Khaled Hosny, Elie Roux, Philipp Gesang, Marcel Krüger",
@@ -29,6 +29,8 @@ local lower             = string.lower
 local table             = table
 local tabletohash       = table.tohash
 local tablesort         = table.sort
+
+local stringunpack      = string.unpack
 
 --- this appears to be based in part on luatex-fonts-def.lua
 
@@ -322,6 +324,7 @@ local supported = {
     b    = "b",
     i    = "i",
     bi   = "bi",
+    r    = "r",
     aat  = false,
     icu  = false,
     gr   = false,
@@ -776,6 +779,103 @@ do
         },
     }
 end
+
+do
+    local function restore(tfmdata, value, features)
+        if not tfmdata.properties.monospaced then return end
+        if features.fixedspace then return end -- In this case, 'auto' is true
+        local parameters = tfmdata.parameters
+        local space = parameters.space
+        parameters.space_stretch, parameters.space_shrink = space/2, space/3
+    end
+    fonts.constructors.features.otf.register {
+        name = 'internal__variablespace',
+        default = true,
+        initializers = {
+            base = restore,
+            node = restore,
+        },
+    }
+    local function node_fixedspace(tfmdata, value, features)
+        if value == 'auto' then return end
+        if tfmdata.properties.monospaced then return end -- handled by internal__variablespace
+        local parameters = tfmdata.parameters
+        parameters.space_stretch, parameters.space_shrink = 0, 0
+    end
+    local hb = luaotfload.harfbuzz
+    local post_tag = hb and hb.Tag.new'post'
+    local function harf_fixedspace(tfmdata, value, features)
+        if value == 'auto' then
+            -- We have to determine if we have a monospace font.
+            -- Let's be honest, it would be boring if that were easy.
+            local post_table = tfmdata.hb.shared.face:get_table(post_tag):get_data()
+            if #post_table < 16 then
+                -- Invalid OpenType font... Let's assume that it's not
+                -- monospaced:
+                return
+            end
+            local monospaced = string.unpack('>I4', post_table, 13) ~= 0
+            if not monospaced then return end -- FIXME: How to determine?
+        end
+        local parameters = tfmdata.parameters
+        parameters.space_stretch, parameters.space_shrink = 0, 0
+    end
+    fonts.constructors.features.otf.register {
+        name = 'fixedspace',
+        description = 'Do not stretch or shrink spaces',
+        default = 'auto',
+        initializers = {
+            base = node_fixedspace,
+            node = node_fixedspace,
+            plug = harf_fixedspace,
+        },
+    }
+end
+
+local uni_normalize = require'lua-uni-normalize'.direct
+local normalize_lookup = setmetatable({}, {__index = function(t, f)
+    local fontdir = assert(font.getfont(f))
+    local normalize_func = t[fontdir]
+    local characters = fontdir.characters
+    local function result(head)
+        return normalize_func(head, f, characters, true)
+    end
+    t[fontdir] = result
+    return result
+end})
+-- When this is loaded as part of luaotfload-tool, then we can't access nodes
+-- and therefore uni_normalize doesn't exists. In that case we don't need it
+-- anyway, so just skip it then.
+local normalize_funcs = uni_normalize and {
+    nfc = uni_normalize.NFC,
+    nfd = uni_normalize.NFD,
+    nfkd = uni_normalize.NFKD,
+}
+fonts.constructors.features.otf.register {
+    name = 'normalize',
+    default = 'nfc',
+    description = 'Normalize text to NFC before shaping',
+    manipulators = {
+        node = function(fonttable, _, value)
+            if value == true then
+                value = 'nfc'
+            end
+            local func = normalize_funcs[value]
+            if not func then
+                report ("report", 0, "features",
+                        "Unsupported normalization method replaced by NFC")
+                func = normalize_funcs.nfc
+            end
+            normalize_lookup[fonttable] = func
+        end,
+    },
+    processors = {
+      node = function(head, f, _, _, _)
+          return normalize_lookup[f](head)
+      end,
+    },
+}
+
 
 return function ()
     if not fonts and fonts.handlers then

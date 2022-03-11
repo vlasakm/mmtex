@@ -7,8 +7,8 @@
 
 assert(luaotfload_module, "This is a part of luaotfload and should not be loaded independently") { 
     name          = "luaotfload-configuration",
-    version       = "3.18",       --TAGVERSION
-    date          = "2021-05-21", --TAGDATE
+    version       = "3.20",       --TAGVERSION
+    date          = "2022-02-27", --TAGDATE
     description   = "luaotfload submodule / config file reader",
     license       = "GPL v2.0"
 }
@@ -218,6 +218,7 @@ local default_config = {
     version        = luaotfload.version,
     statistics     = false,
     termwidth      = nil,
+    keepnames      = true,
   },
   paths = {
     names_dir           = "names",
@@ -611,6 +612,7 @@ local option_spec = {
         return w
       end,
     },
+    keepnames       = { in_t = boolean_t, },
   },
   paths = {
     names_dir           = { in_t = string_t, },
@@ -741,7 +743,7 @@ local formatters = {
     anon_sequence   = { false, format_list    },
     color_callback  = { false, format_string  },
     definer         = { false, format_string  },
-    fontloader      = { false, format_string  },
+    fontloader      = { true, format_string  },
     log_level       = { false, format_integer },
     resolver        = { false, format_string  },
   },

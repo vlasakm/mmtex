@@ -1,15 +1,15 @@
 --- a/luaotfload/luaotfload-database.lua
 +++ b/luaotfload/luaotfload-database.lua
-@@ -717,7 +717,7 @@
-
+@@ -725,7 +725,7 @@
+ 
  -- MK Added mini scope to avoid variable limit
  do
 -local type1_metrics = { "tfm", "ofm", }
 +local type1_metrics = { "tfm", "ofm", "afm" }
  -- /MK
-
+ 
  function lookup_font_file (filename)
-@@ -2319,6 +2319,8 @@
+@@ -2324,6 +2324,8 @@
              logreport ("both", 3, "db",
                         "Path %q matches $PWD (%q), skipping.",
                         dir, pwd)
@@ -41,11 +41,11 @@
 --- a/luaotfload/luaotfload-resolvers.lua
 +++ b/luaotfload/luaotfload-resolvers.lua
 @@ -141,7 +141,7 @@
-
+ 
  --doc]]--
-
+ 
 -local tex_formats = { "tfm", "ofm" }
 +local tex_formats = { "tfm", "ofm", "afm" }
-
+ 
  local resolvers_findfile = luaotfload.fontloader.resolvers.findfile
  local function resolve_tex_format (specification)
