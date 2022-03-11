@@ -1,0 +1,125 @@
+#!/bin/bash
+
+set -e
+
+pkgname="texmf"
+
+basedir=$(dirname $(readlink -f "$BASH_SOURCE"))
+pkgdir=$(readlink -fm "$basedir/$pkgname")
+srcdir=$(readlink -fm "$basedir/src/")
+
+mkdir -p "$basedir" "$pkgdir" "$srcdir"
+
+echo "Getting sources.."
+cd "$srcdir"
+sed -e 's/#.*//' -e 's/\s\+$//' -e '/^$/ d' "$basedir/sources.txt" | while read -r src dest; do
+	case "$src" in
+	git+*)
+		url=${src##git+}
+		ref=${url##*@}
+		url=${url%@*}
+		: "${dest:="${url##*/}"}"
+
+		echo "Getting git repository '$url'.."
+		if [ ! -d "$dest" ]; then
+			git clone --depth=1 --branch="$ref" -c advice.detachedHead=false "$url" "$dest"
+		fi
+	;;
+	svn+*)
+		url=${src##svn+}
+		: "${dest:="${url##*/}"}"
+
+		echo "Getting subversion repository '$url'.."
+		if [ ! -d "$dest" ]; then
+			svn checkout --username anonsvn --password anonsvn "$url" "$dest"
+		fi
+	;;
+	svnfile+*)
+		url=${src##svnfile+}
+		: "${dest:="${url##*/}"}"
+
+		echo "Getting subversion file '$url'.."
+		if [ ! -f "$dest" ]; then
+			svn export --force --username anonsvn --password anonsvn "$url" "$dest"
+		fi
+	;;
+	http://*|https://*)
+		url=$src
+		: "${dest:="${url##*/}"}"
+
+		echo "Getting remote source '$url'.."
+		if [ ! -f "$dest" ]; then
+			curl -fLo "$dest" "$url"
+		fi
+
+		case "$dest" in
+		*.zip)
+			unzip -uo "$dest" ;;
+		*.tar*)
+			tar -xf "$dest" ;;
+		esac
+	;;
+	*)
+		echo "Getting local source '$src'.."
+		cp -rf "$basedir/files/$src" .
+	esac
+done
+
+patch() {
+	# don't complain if patch is already applied (by previous build)
+	command patch -N -p1 "$@" || true
+}
+
+install() {
+	command install -Dm644 "$@"
+}
+
+
+## PATCH SOURCES
+
+# patch luaotfload
+patch -i luaotfload.patch
+
+export TEXMF="$pkgdir"
+export TEXMFDOTDIR
+
+# use docstrip.dtx as docstrip.tex
+ln -sf docstrip.dtx docstrip.tex
+
+# generate lipsum.ltd.tex
+TEXMFDOTDIR=.:lipsum mmluatex -ini 'lipsum.ins'
+
+# generate some lualibs files
+TEXMFDOTDIR=.:lualibs mmluatex -ini '\catcode`\{=1 \catcode`\}=2 \let\obeyspaces\relax \input lualibs.dtx'
+
+# install luatex generic packages
+install hyph-utf8/tex/generic/hyph-utf8/patterns/tex/* -t "$TEXMF/tex/hyph-utf8"
+install UnicodeData.txt CaseFolding.txt PropList.txt ScriptExtensions.txt Scripts.txt SpecialCasing.txt auxiliary/WordBreakProperty.txt -t "$TEXMF/tex/unicode-data"
+install lualibs*.lua lualibs/lualibs*-merged.lua lualibs/*-compat.lua -t "$TEXMF/tex/lualibs"
+install luaotfload/luaotfload*.lua luaotfload/fontloader-????-??-??.lua luaotfload/fontloader-basics-gen.lua -t "$TEXMF/tex/luaotfload"
+rm -f "$TEXMF/tex/luaotfload/luaotfload-characters.lua"
+
+# install external files needed by optex
+install lipsum.sty *.ltd.tex -t "$TEXMF/tex/lipsum"
+install hyphen.tex -t "$TEXMF/tex/knuth-lib"
+install emoji-table.def -t "$TEXMF/tex/emoji"
+install librarian.tex -t "$TEXMF/tex/librarian"
+(cd luavlna; install luavlna.lua luavlna-presi.lua luavlna-si.lua luavlna-predegrees.lua luavlna-sufdegrees.lua -t "$TEXMF/tex/luavlna")
+
+# install fonts
+install rsfs/type1/afm/* -t "$TEXMF/fonts/afm"
+install rsfs/type1/*.pfb -t "$TEXMF/fonts/type1"
+
+# install optex
+optexdir=optex
+[[ -e optex/optex/base ]] && optexdir=optex/optex
+install "$optexdir/base/"* -t "$TEXMF/tex/optex/base"
+install "$optexdir/pkg/"*  -t "$TEXMF/tex/optex/pkg"
+
+# install optex extra
+install pdfextra/pdfextra.opm -t "$TEXMF/tex/pdfextra"
+
+# install our files
+install mmoptex.ini -t "$TEXMF/tex/mmoptex"
+
+printf '\n%s\n' "Done, "$pkgname" created succesfully."
