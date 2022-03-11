@@ -1,0 +1,60 @@
+
+% The purpose of this module is allowing arbitrary code be run at specific 
+% places. I have not yet included it in the manual, because I still am a bit 
+% unsure about the details of the implementation.
+%
+% The first thing done here is inserting a callback into \shipout (and 
+% tex.shipout) mirroring finish_pdf, allowing last-minute manipulation before 
+% the pdf code will be assembled.
+%
+% The second feature is adding things to the beginning of a paragraph without 
+% (seemingly) disturbing \everypar, and also adding things to the next 
+% paragraph only.
+%
+% Both features are implemented in a way that is repeatable and should coexist 
+% peacefully with other packages doing something of the same. But please let me 
+% know if you run into any problems.
+
+\ifdefined\minimhooksloaded
+    \message{(skipped)}
+    \expandafter\endinput\fi
+\chardef\minimhooksloaded = \catcode`\:
+\catcode`\: = 11
+
+\directlua{ require('minim-hooks') }
+
+% 1 the pre_shipout callback
+
+\newbox\minim:shipout:box \let\minim:shipout:orig = \shipout
+\def\minim:shipout:do{\minim:shipout:orig\box\minim:shipout:box}
+\protected\def\minim:shipout:new{\directlua{
+    tex.box[\the\minim:shipout:box] = token.scan_list()
+    require('minim-callbacks').call_callback('pre_shipout', \the\minim:shipout:box)
+    token.put_next(token.create('minim:shipout:do'))}}
+\let\shipout = \minim:shipout:new
+
+% 1 invisibly adding to \everypar
+
+\let\minim:everypar = \everypar
+\newtoks\minim:ateverypar
+\newtoks\minim:atnextpar
+\newtoks\everypar \everypar\minim:everypar
+\minim:everypar\expandafter{\expandafter
+    \minim:changeparindent
+    % expansion makes this process repeatable
+    \expandafter\the\everypar
+    \the\minim:ateverypar
+    \minim:atnextpar\expandafter
+        {\expandafter}\the\minim:atnextpar}
+\let\minim:changeparindent = \relax % as of yet unused
+
+% There is no need for the following.
+
+%\let\minim:par = \par
+%\newtoks\minim:aftereverypar
+%\protected\def\par{\ifhmode \unskip
+%    \the\minim:aftereverypar \fi \minim:par}
+
+\catcode`\: = \minimhooksloaded
+
+

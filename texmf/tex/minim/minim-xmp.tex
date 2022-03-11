@@ -1,0 +1,38 @@
+
+\ifdefined\minimxmploaded
+    \message{(skipped)}
+    \expandafter\endinput\fi
+\chardef\minimxmploaded=\catcode`\:
+\catcode`\:=11
+
+\input minim-alloc
+\directlua { require('minim-xmp') }
+
+% do not add pdf metadata by default
+\pdfvariable suppressoptionalinfo = 255
+
+% \metadatamodification
+\newcount \metadatamodification
+\metadatamodification = 0
+
+% \metadataseparator
+\newcount \metadataseparator
+\metadataseparator    = `\;
+
+% \writedocumentmetadata
+\newcount \writedocumentmetadata
+\writedocumentmetadata = 1
+
+% Defined from the lua side:
+%
+%  \getmetadata ns:key
+%  \setmetadata ns:key {value}
+%  \startmetadata
+%
+%    idem, but undocumented as of yet:
+%  \newmetadata
+%  \writemetadata               (expands to pdf object number)
+%  \includemetadata{filename}   (expands to pdf object number)
+
+\catcode`\:=\minimxmploaded
+

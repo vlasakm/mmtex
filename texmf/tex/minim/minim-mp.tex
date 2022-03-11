@@ -1,0 +1,62 @@
+
+\ifdefined\minimmploaded
+    \message{(skipped)}
+    \expandafter\endinput\fi
+\chardef\minimmploaded = \catcode`\:
+\catcode`\: = 11
+
+\input minim-alloc
+\input minim-pdfresources
+
+% a default catcode table
+\newcatcodetable \minim:mp:catcodes
+{\catcode`\:=12 \catcode`\@=12
+    \savecatcodetable\csname minim:mp:catcodes\endcsname}
+
+\directlua { require('minim-mp') }
+
+% The following are provided from the lua side.
+%
+% Note that only two of these are \protected – you are responsible for the 
+% proper time and place of expansion of the others.
+%
+%   \closemetapostinstance \instance
+%   \runmetapost           \instance { code } % \protected
+%   \runmetapostimage      \instance { code } % \protected
+%   \getnextmpimage        \instance
+%   \getnamedmpimage       \instance {name}
+%   \remainingmpimages     \instance
+%   \boxnextmpimage        \instance box-nr
+%   \boxnamedmpimage       \instance box-nr {name}
+
+% \directmetapost [ options ] { code }
+\protected\def\directmetapost{\withoptions[]\directmetapost:}
+\long\def\directmetapost:[#1]#2{%
+    \begingroup
+        \newmetapostinstance[#1]\:mpinst:
+        \runmetapost\:mpinst:{#2}%
+        \loop \ifnum\remainingmpimages\:mpinst:>0\relax
+            \getnextmpimage\:mpinst: \repeat
+        \closemetapostinstance\:mpinst:
+    \endgroup}
+
+% \newmetapostinstance [ options ] \instance
+\protected\def\newmetapostinstance{\withoptions[]\newmetapostinstance:}
+\def\newmetapostinstance:[#1]#2{%
+    \chardef#2=\directlua{
+            tex.sprint(require('minim-mp').open{#1})
+        }\relax}
+
+% colour conversion: 1 grayscale 2 cmyk 3 rgb 4 rgb as spot
+\newcount \convertmpcolours
+\convertmpcolours = 0
+
+\newcount\RtoG \RtoG = 2126
+\newcount\GtoG \GtoG = 7152
+\newcount\BtoG \BtoG = 0722
+
+\catcode`\: = \minimmploaded
+
+
+
+

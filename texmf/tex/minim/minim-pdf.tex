@@ -1,0 +1,357 @@
+
+\ifdefined\minimpdfloaded
+    \message{(skipped)}
+    \expandafter\endinput\fi
+\chardef\minimpdfloaded = \catcode`\:
+\catcode`\: = 11
+
+\input minim-alloc
+\input minim-hooks
+
+% Abbreviations used throughout this document:
+%   se   structure element
+%   mci  marked content item
+
+\newcount \writedocumentstructure
+\newcount \writehyphensandspaces
+\newcount \strictstructuretagging
+
+\writedocumentstructure = 0
+\writehyphensandspaces  = 1
+\strictstructuretagging = 0
+
+% 1 the attributes
+
+% By three attributes do we determine the document structure.
+%
+%   One for marking the current structure element:
+%   - is the index of the lua-side se table
+%   - assignments are always local
+\newattribute \tagging:current:se  \tagging:current:se = 1
+%
+%   One for ordering children of structure elements:
+%   - assignments are always global
+%   - should generally increase monotously
+%   - should change (increase) at every se boundary
+\newattribute \tagging:element:order \tagging:element:order = 1
+%
+%   One for marking the status:
+%   - assignments are generally local
+%   - if set, disables tagging and content marking in pre_shipout
+%   - values >10 indicate artifacts
+\newattribute \tagging:current:status \tagging:current:status = \unset
+%
+%   A fourth attribute keeps track of the current language
+%   - assignments are local
+%   - sets language of structure elements
+\newattribute \tagging:current:language \tagging:current:language = \language
+
+\directlua { require('minim-pdf') }
+
+% 1 artifacts and content items
+
+% \stoptagging ... \starttagging
+%     disables marking structure elements
+\newif\iftagging:enabled \tagging:enabledtrue
+\protected\def\starttagging{\tagging:enabledtrue
+    \ifnum0<\tagging:current:status
+        \tagging:current:status\unset\fi}
+\protected\def\stoptagging{\tagging:enabledfalse
+    \ifnum\unset=\tagging:current:status
+        \tagging:current:status1\relax\fi}
+
+% \markartifact {Layout} {...}
+% \startartifact {Pagination /Subtype/Header} ... \stopartifact
+\long\def\markartifact#1#2{\startartifact{#1}#2\stopartifact}
+\protected\def\startartifact{\begingroup\tagging:enabledfalse
+    \tagging:current:status=\tagging:current:artifact
+    \global\advance\tagging:current:artifact1\relax
+    \tagging:mci:incr\tagging:art:markstart}
+\protected\def\stopartifact{\tagging:art:markstop\tagging:mci:incr\endgroup}
+\newcount\tagging:current:artifact \tagging:current:artifact = 11
+
+% \startcontentitem ... \stopcontentitem
+\protected\def\startcontentitem{\iftagging:enabled\tagging:mci:incr\tagging:mci:markstart\fi}
+\protected\def\stopcontentitem{\iftagging:enabled\tagging:mci:markstop\tagging:mci:incr\fi}
+
+% \startsinglecontentitem ... \stopsinglecontentitem
+\protected\def\startsinglecontentitem{\begingroup \startcontentitem\stoptagging}
+\protected\def\stopsinglecontentitem{\endgroup\stopcontentitem}
+
+% \ensurecontentitem
+\protected\def\ensurecontentitem{\iftagging:enabled\tagging:mci:content\fi}
+\protected\def\tagging:mci:incr{\global\advance\tagging:element:order1\relax}
+
+% 1 structure elements
+
+% \savecurrentelement ... \continueelement
+% \savecurrentelementto\name ... \continueelementfrom\name
+\protected\def\savecurrentelementto#1{\global\chardef#1\tagging:current:se}
+\protected\def\continueelementfrom#1{\tagging:current:se#1\tagging:mci:incr}
+\def\savecurrentelement{\savecurrentelementto\tagging:saved:se}
+\def\continueelement{\continueelementfrom\tagging:saved:se}
+
+% \markelement {Tag} {...}
+% \startelement {Tag} ... \stopelement {Tag}
+% \ensurestopelement {Tag}
+\long\protected\def\markelement#1#2{\iftagging:enabled
+    \startelement{#1}#2\stopelement{#1}\else#2\fi}
+\protected\def\startelement{\iftagging:enabled \tagging:mci:incr
+    \expandafter\tagging:startelement\else
+    \expandafter\tagging:ignore\fi}
+\protected\def\stopelement{\iftagging:enabled \tagging:mci:incr
+    \expandafter\tagging:stopelement\else
+    \expandafter\tagging:ignore\fi}
+\protected\def\ensurestopelement{\iftagging:enabled \tagging:mci:incr
+    % n.b. this can cause problems if you skip levels
+    \expandafter\tagging:ensurestopelement\else
+    \expandafter\tagging:ignore\fi}
+\def\tagging:ignore#1#{\ignore}
+
+% \addstructuretype [options] Existing Alias
+\protected\def\addstructuretype{\withoptions[]\addstructure:type}
+\def\addstructure:type[#1]{\struct:addalias{return {#1}}}
+
+% \setalttext {...} and \setactualtext {...}
+\protected\def\setalttext{\iftagging:enabled
+    \expandafter\tagging:alt\fi}
+\protected\def\setactualtext{\iftagging:enabled
+    \expandafter\tagging:actual\fi}
+
+
+% 1 auto-marking paragraphs
+
+% \nextpartag {H}
+% \nextpartag {}    % no tag inserted for next paragraph
+% \markparagraphs(true|false)
+\newif\ifmarkparagraphs \markparagraphstrue
+\newtoks\nextpartag \nextpartag{P}
+\toksapp\minim:ateverypar{\iftagging:enabled \ifmarkparagraphs
+    \expandafter\ifx\expandafter\relax\the\nextpartag\relax\else
+        \startelement{\the\nextpartag}\fi
+    \nextpartag{P}\fi \fi}
+
+% 1 tagging helper macros
+
+% \marktocentry {destination}{label}{title}{filler}{page}
+\def\marktocentry#1#2#3#4#5{%
+    \ifx\marktocentry#1\marktocentry
+        \def\marktocentry:link##1{##1}\else
+        \def\marktocentry:link##1{\hyperlink dest{#1}##1\endlink}\fi
+    \markelement{TOCI}{\nextpartag{}\quitvmode
+        \ifx\marktocentry#2\marktocentry\else
+            \markelement{Lbl}{\marktocentry:link{#2}}\fi
+        \markelement{Reference}{\marktocentry:link{#3%
+            \ifx\marktocentry#4\marktocentry\else
+                \markartifact{Layout}{#4}\fi#5}}}}
+
+% \marktable \halign {\marktablerow#&\marktablecell#\cr
+%    \marktableheader
+%       Header & cells \cr
+%    \marktablebody
+%       ... & ... \cr ...
+%    \marktablefooter
+%       ... & ... \cr ... }
+%
+\def\marktable{\startelement{Table}%
+    \def\tagging:cell{TD}}
+\def\marktableheader{%
+    \noalign{\gdef\tagging:cell{TH}%
+        \startelement{THead}%
+        \savecurrentelementto\tagging:tpart}}
+\def\marktablebody{%
+    \noalign{\gdef\tagging:cell{TD}%
+        \startelement{TBody}%
+        \savecurrentelementto\tagging:tpart}}
+\def\marktablefooter{%
+    \noalign{\startelement{TFoot}%
+        \savecurrentelementto\tagging:tpart}}
+\def\marktablerow{
+    \unless\ifdefined\tagging:tpart
+        \startelement{TBody}%
+        \savecurrentelementto\tagging:tpart\fi
+    \continueelementfrom\tagging:tpart
+    \startelement{TR}%
+    \savecurrentelementto\tagging:row
+    \startelement{\tagging:cell}}
+\def\marktablecell{%
+    \continueelementfrom\tagging:row
+    \startelement{\tagging:cell}}
+
+% \automarktable \halign ... { ... }
+\def\automarktable#1#{\marktable
+    \def\tagging:table{\tagging:mktrow{#1}}%
+    \afterassignment\tagging:table
+    \let\tagging:tmp= }
+\def\tagging:mktrow#1#2&#3\cr{\iftrue
+    \tagging:mktcell{#1\bgroup\marktablerow#2}\fi
+        #3&\tagging:mktrow&\cr}
+\def\tagging:mktcell#1#2\fi#3&{\fi
+    \ifx\tagging:mktrow#3\tagging:mkthdr{#1}\fi
+    \ifx\tagging:mktrow#3\tagging:mktrow
+        \tagging:mktcell{#1&}\else
+        \tagging:mktcell{#1&\marktablecell#3}\fi}
+\def\tagging:mkthdr#1#2\cr#3\cr{\fi#1\cr
+    \marktableheader#3\cr\marktablebody}
+\def\tagging:fi{\fi}
+
+% \marktableaslist \halign ... { ... }
+\def\marktableaslist#1#{\startelement{L}%
+    \def\tagging:table{\tagging:mktlist{#1}}%
+    \afterassignment\tagging:table
+    \let\tagging:tmp= }
+\def\tagging:mktlist#1#2&{#1\bgroup
+    \startelement{LI}\savecurrentelement
+    \startelement{Lbl}#2&\continueelement
+    \startelement{LBody}}
+
+% \autotagformulas
+% \stopformulatagging ... \startformulatagging
+% \formulafilename
+\newif \iftagging:indisplay
+\newif \iftagging:toplevelmath \tagging:toplevelmathtrue
+\newif \iftagging:formulaenabled
+\let\startformulatagging = \tagging:formulaenabledtrue
+\let\stopformulatagging = \tagging:formulaenabledfalse
+\newcount \tagging:formulanr
+\def\formulafilename{unnumbered-equation-\the\tagging:formulanr}
+\def\autotagformulas{\startformulatagging
+    \everymath\expandafter{\the\everymath
+        \tagging:formula\tagging:startformula}%
+    \everydisplay\expandafter{\the\everydisplay \tagging:indisplaytrue
+        \tagging:formula\tagging:startdisplay}}
+\def\tagging:formula#1{%
+    \iftagging:enabled \iftagging:formulaenabled \iftagging:toplevelmath
+        \tagging:toplevelmathfalse #1\fi\fi\fi}
+\def\tagging:startformula\fi\fi\fi#1${\tagging:makeformula{#1}{$}}
+\def\tagging:startdisplay\fi\fi\fi#1$${\tagging:makeformula{#1}{$$}}
+\def\tagging:makeformula#1#2{\fi\fi\fi
+    \global\advance\tagging:formulanr1\relax
+    \startelement attr Layout Placement \iftagging:indisplay/Block\else/Inline
+        % some html converters ignore Placement attributes
+        attr CSS-2.00 display (inline)\fi{Formula}%
+    \formulasource:set{#1}%
+    \scantextokens{#1}#2}
+\def\tagging:formulasource#1{%
+    $\iftagging:indisplay$\fi
+    \unexpanded{#1}%
+    $\iftagging:indisplay$\fi}
+
+% \includeformulasources {none|actualtext|attachment|both}
+\def\includeformulasources#1{%
+    \expandafter\let
+        \expandafter\formulasource:set
+            \csname formulasource:#1\endcsname}
+\def\formulasource:none#1{}
+\def\formulasource:actualtext#1{%
+    \setactualtext{\tagging:formulasource{#1}}}
+\def\formulasource:attachment#1{%
+    \ifnum3=\pdfaconformancelevel
+        \embedfile mimetype text/x-tex
+            relation Source desc {Equation source}
+            name {\formulafilename.tex}
+            string {\tagging:formulasource{#1}}\fi}
+\def\formulasource:both#1{%
+    \formulasource:actualtext{#1}%
+    \formulasource:attachment{#1}}
+\includeformulasources{both}
+
+
+% 1 hyperlinks
+
+% provided by the lua module:
+%    \newdestinationname
+%    \lastdestinationname
+
+% \nameddestination {name}
+\def\nameddestination{\ifhmode\expandafter\linkdest:h\else\expandafter\linkdest:v\fi}
+\def\linkdest:h#1{\vadjust pre{\linkdest:v{#1}}}
+\def\linkdest:v#1{\pdfextension dest name {#1} xyz\nobreak}
+
+% \hyperlink dest {name} ... \endlink
+% \hyperlink url {url} ... \endlink
+\protected\def\endlink{\pdfextension endlink\stopelement{Link}\relax}
+\protected\def\startlink{\startelement{Link}\pdfextension startlink}
+\def\hyperlink#1#{\quitvmode\hyperlink:rmspace#1 \hyperlink:rmspace}
+\def\hyperlink:rmspace#1 #2\hyperlink:rmspace{%
+    \startlink attr {\minim:linkattr}%
+    \csname hyperlink:#1\endcsname}
+\def\hyperlink:dest#1{user {/Subtype/Link /F 4 /A <</S/GoTo /D (#1)>>}}
+\def\hyperlink:url#1{user {/Subtype/Link /F 4 /A <</S/URI /URI (#1)>>}}
+\def\minim:linkattr{/Border [0 0 0]}
+
+% 1 languages
+
+% provided by the lua module:
+%    \setdocumentlanguage {name or code}
+%    \setlanguagecode {name} {code}
+
+% \newnamedlanguage {name} {lhm} {rhm}
+\def\newnamedlanguage#1#2#3{%
+    \expandafter\newlanguage\csname lang@#1\endcsname
+    \expandafter\chardef\csname lhm@#1\endcsname=#2\relax
+    \expandafter\chardef\csname rhm@#1\endcsname=#3\relax
+    \csname lu@texhyphen@loaded@\the\csname lang@#1\endcsname\endcsname}
+
+% \newnameddialect {language} {dialect}
+\def\newnameddialect#1#2{%
+    \expandafter\chardef\csname lang@#2\endcsname\csname lang@#1\endcsname
+    \expandafter\chardef\csname lhm@#2\endcsname\csname lhm@#1\endcsname
+    \expandafter\chardef\csname rhm@#2\endcsname\csname rhm@#1\endcsname}
+
+% and provide several dummy languages
+\ifcsname lang@nohyph\endcsname \else
+    \newnamedlanguage {nohyph} 1 1 \fi
+\ifcsname lang@nolang\endcsname \else
+    \newnameddialect {nohyph} {nolang} \fi
+\ifcsname lang@uncoded\endcsname \else
+    \newnameddialect {nohyph} {uncoded} \fi
+\ifcsname lang@undetermined\endcsname \else
+    \newnameddialect {nohyph} {undetermined} \fi
+
+% 1 embedded files
+
+% provided by the lua module
+%    \embedfile <options>
+
+% \setembeddedfilesmodate { yyyy-mm-dd }
+\newtoks\setembeddedfilesmoddate
+    \setembeddedfilesmoddate{}
+\newtoks\embeddedfiles:moddate
+\def\minim:makedefaultmoddate{%
+    \expandafter\edef\expandafter
+        \minim:tmp\expandafter{\the\setembeddedfilesmoddate}%
+    \embeddedfiles:moddate\expandafter{\minim:tmp}}
+
+% 1 declarations of pdf/a conformance
+
+\newcount \pdfaconformancelevel
+\pdfaconformancelevel = 0
+
+% \pdfalevel 2b
+\def\pdfalevel#1#2{%
+    \global\pdfaconformancelevel=#1\relax
+    \ifcsname minim:pdfa:#1#2\endcsname \lastnamedcs\else
+        \errmessage{Unknown pdf/a standard pdf/a-#1}\fi}
+
+\def\minim:pdfasettings#1#2#3{%
+    \pdfvariable minorversion #1\relax
+    \minim:default:rgb:profile
+    \if#2A\writedocumentstructure1\fi
+    \input minim-xmp
+    \setmetadata pdfaid:conformance{#2}%
+    \setmetadata pdfaid:part{#3}}
+
+\expandafter\def\csname minim:pdfa:1a\endcsname{\minim:pdfasettings 4A1}
+\expandafter\def\csname minim:pdfa:1b\endcsname{\minim:pdfasettings 4B1}
+\expandafter\def\csname minim:pdfa:2a\endcsname{\minim:pdfasettings 7A2}
+\expandafter\def\csname minim:pdfa:2b\endcsname{\minim:pdfasettings 7B2}
+\expandafter\def\csname minim:pdfa:2u\endcsname{\minim:pdfasettings 7U2}
+\expandafter\def\csname minim:pdfa:3a\endcsname{\minim:pdfasettings 7A3}
+\expandafter\def\csname minim:pdfa:3b\endcsname{\minim:pdfasettings 7B3}
+\expandafter\def\csname minim:pdfa:3u\endcsname{\minim:pdfasettings 7U3}
+
+% 
+
+\catcode`\: = \minimpdfloaded
+

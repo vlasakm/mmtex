@@ -1,0 +1,28 @@
+
+% This file, used in the minim and minim-mp formats, replaces the named fonts 
+% from plain.tex with latin modern equivalents.
+
+\ifdefined\minimlmodernloaded
+    \message{(skipped)}
+    \expandafter\endinput\fi
+\chardef\minimlmodernloaded=\catcode`\:
+\catcode`\:=11
+
+\def\preloadfont#1#2#3{\def#1{\initfontloader\font#1{#2}at#3#1}}
+\def\initfontloader{\input luaotfload.sty \let\initfontloader=\relax}
+
+\preloadfont \tenrm {Latin Modern Roman:script=latn;+liga;+kern;+dlig;}{10pt}
+\preloadfont \tenit {Latin Modern Roman/I:script=latn;+liga;+kern;+dlig;}{10pt}
+\preloadfont \tenbf {Latin Modern Roman/B:script=latn;+liga;+kern;+dlig;}{10pt}
+\preloadfont \tensl {Latin Modern Roman Slanted:script=latn;+liga;+kern;+dlig;}{10pt}
+\preloadfont \tentt {Latin Modern Mono:script=latn;+liga;+kern;+dlig;}{10pt}
+
+\preloadfont\tenmath   {Latin Modern Math:mode=base;script=math;ssty=0;}{10pt}
+\preloadfont\tenmaths  {Latin Modern Math:mode=base;script=math;ssty=1;}{7pt}
+\preloadfont\tenmathss {Latin Modern Math:mode=base;script=math;ssty=2;}{5pt}
+
+\toksapp\everyjob{\tenmath\tenmaths\tenmathss\tenrm
+    \textfont0=\tenmath\scriptfont0=\tenmaths\scriptscriptfont0=\tenmathss}
+
+\catcode`\:=\minimlmodernloaded
+

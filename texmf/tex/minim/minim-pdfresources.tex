@@ -1,0 +1,51 @@
+
+\ifdefined \minimpdfresourcesloaded
+    \message{(skipped)}
+    \expandafter\endinput\fi
+\chardef\minimpdfresourcesloaded=\catcode`\:
+\catcode`\:=11
+
+% at the moment, this file only deals with pgf compatibility. if you do not use 
+% pgf, you only need the lua module.
+
+\directlua{ require 'minim-pdfresources' }
+
+% 1 pgf compatibility
+
+% this ballet inserts our fix directly at the end of pgfsys-luatex.def
+\expandafter\def\csname minim:intercept:pgfsys-luatex.def\endcsname
+   {\wlog{minim: applying pgf patches...}\newtoks\minim:pgf:fix:toks
+    \minim:pgf:fix:toks\csname pgfutil@everybye\endcsname
+    \let\endinput=\minim:pgf:fix:endinput}
+\def\minim:pgf:fix:endinput{%
+    \begincsname minim:pgf:fix:\minim:currentfile\endcsname
+    \minim:endinput}
+\expandafter\def\csname minim:pgf:fix:pgfsys-luatex.def\endcsname{%
+    \csname pgfutil@everybye\endcsname\minim:pgf:fix:toks \minim:pgf:fix:common
+    \let\endinput=\minim:endinput \wlog{minim: done applying pgf patches}}
+
+\def\minim:pgf:fix:common{\directlua{%
+    local pdfres = require 'minim-pdfresources'
+    pdfres.add_global_resource('ExtGState', nil,
+        '\luaescapestring{\csname pgf@sys@pgf@resource@list@extgs\endcsname}')
+    pdfres.add_global_resource('Pattern', nil,
+        '\luaescapestring{\csname pgf@sys@pgf@resource@list@patterns\endcsname}')
+    pdfres.add_global_resource('ColorSpace', nil,
+        '\luaescapestring{\csname pgf@sys@pgf@resource@list@colorspaces\endcsname}')}
+    \expandafter\let\csname pgf@sys@pdf@possible@resources\endcsname = \empty
+    \minim:pgf:fix:luaside \pdfvariable pageresources{}}
+
+% if pgf has already been loaded, copy the already-defined resources
+\ifcsname pgf@sys@pdf@extgs@objnum\endcsname \minim:pgf:fix:common
+    % three empty registers will be written at the end. having three unused 
+    % empty objects in the pdf is not ideal, but will not lead to problems.
+    \expandafter\let\csname pgf@sys@pgf@resource@list@extgs\endcsname = \empty
+    \expandafter\let\csname pgf@sys@pgf@resource@list@patterns\endcsname  = \empty
+    \expandafter\let\csname pgf@sys@pgf@resource@list@colorspaces\endcsname = \empty
+\fi
+
+% 
+
+\catcode`\:=\minimpdfresourcesloaded
+\endinput
+
