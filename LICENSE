@@ -37,6 +37,9 @@ Files in the "luaotfload" directory come from "luaotfload"
 (https://www.ctan.org/pkg/luaotfload, Luaotfload Development Team, ConTeXt
 developers, under GPLv2).
 
+Files in the "lua-uni-algos" directory come from "lua-uni-algos"
+(https://www.ctan.org/pkg/lua-uni-algos, Marcel Krüger, under LPPLv1.3).
+
 Files in the "luavlna" directory come from "luavlna"
 (https://ctan.org/pkg/luavlna, Michal Hoftich, Miro Hrončok, under LPPLv1.3).
 
