@@ -2,6 +2,8 @@
 
 -- The basic lua functions and declarations used in \OpTeX/ are here
 
+local fmt = string.format
+
 -- \medskip\secc General^^M
 --
 -- Define namespace where some \OpTeX/ functions will be added.
@@ -49,9 +51,8 @@ end
 -- Allocator for Lua functions ("pseudoprimitives"). It passes variadic
 -- arguments (\"`...`") like `"global"` to `token.set_lua`.
 local function_table = lua.get_functions_table()
-local luafnalloc = 0
 function define_lua_command(csname, fn, ...)
-    luafnalloc = luafnalloc + 1
+    local luafnalloc = #function_table + 1
     token.set_lua(csname, luafnalloc, ...) -- WARNING: needs LuaTeX 1.08 (2019) or newer
     function_table[luafnalloc] = fn
 end
@@ -411,8 +412,74 @@ callback.add_to_callback("input_level_string", function(n)
         return ""
     end
 end, "_tracingmacros")
+-- \medskip\secc[lua-pdf-resources] Management of PDF page resources^^M
 --
--- \medskip\secc[lua-colors] Handling of colors using attributes^^M
+-- Traditionally, pdf\TeX/ allowed managing PDF page resources (graphics
+-- states, patterns, shadings, etc.) using a single toks register,
+-- `\pdfpageresources`. This is insufficient due to the expected PDF object
+-- structer and also because many \"packages" want to add page resources and
+-- thus fight for the access to that register. We add a finer alternative,
+-- which allows adding different kinds of resources to a global page resources
+-- dictionary. Note that some resource types (fonts and XObjects) are already
+-- managed by \LuaTeX/ and shouldn't be added!
+--
+-- XObject forms can also use resources, but there are several ways to make
+-- \LuaTeX/ reference resources from forms. It is hence left up to the user to
+-- insert page resources managed by us, if they need them. For that, use
+-- `pdf.get_page_resources()`, or the below \TeX/ alternative for that.
+--
+local pdfdict_mt = {
+    __tostring = function(dict)
+        local out = {"<<"}
+        for k, v in pairs(dict) do
+            out[#out+1] = fmt("/%s %s", tostring(k), tostring(v))
+        end
+        out[#out+1] = ">>"
+        return table.concat(out, "\n")
+    end,
+}
+local function pdf_dict(t)
+    return setmetatable(t or {}, pdfdict_mt)
+end
+--
+local resource_dict_objects = {}
+local page_resources = {}
+function pdf.add_page_resource(type, name, value)
+    local resources = page_resources[type]
+    if not resources then
+        local obj = pdf.reserveobj()
+        pdf.setpageresources(fmt("%s /%s %d 0 R", pdf.get_page_resources(), type, obj))
+        resource_dict_objects[type] = obj
+        resources = pdf_dict()
+        page_resources[type] = resources
+    end
+    page_resources[type][name] = value
+end
+function pdf.get_page_resources()
+    return pdf.getpageresources() or ""
+end
+--
+-- New \"pseudo" primitives are introduced.
+-- \`\_addpageresource``{<type>}{<PDF name>}{<PDF dict>}` adds more reources
+-- of given resource <type> to our data structure.
+-- \`\_pageresources` expands to the saved <type>s and object numbers.
+define_lua_command("_addpageresource", function()
+    pdf.add_page_resource(token.scan_string(), token.scan_string(), token.scan_string())
+end)
+define_lua_command("_pageresources", function()
+    tex.print(pdf.get_page_resources())
+end)
+--
+-- We write the objects with resources to the PDF file in the `finish_pdffile`
+-- callback.
+callback.add_to_callback("finish_pdffile", function()
+    for type, dict in pairs(page_resources) do
+        local obj = resource_dict_objects[type]
+        pdf.immediateobj(obj, tostring(dict))
+    end
+end)
+--
+-- \medskip\secc[lua-colors] Handling of colors and transparency using attributes^^M
 --
 -- Because \LuaTeX/ doesn't do anything with attributes, we have to add meaning
 -- to them. We do this by intercepting \TeX/ just before it ships out a page and
@@ -447,10 +514,10 @@ local insertbefore = direct.insert_before
 local copy = direct.copy
 local traverse = direct.traverse
 local one_bp = tex.sp("1bp")
-local string_format = string.format
 --
 -- The attribute for coloring is allocated in `colors.opm`
 local color_attribute = registernumber("_colorattr")
+local transp_attribute = registernumber("_transpattr")
 --
 -- Now we define function which creates whatsit nodes with PDF literals. We do
 -- this by creating a base literal, which we then copy and customize.
@@ -464,16 +531,17 @@ local function pdfliteral(str)
 end
 optex.directpdfliteral = pdfliteral
 --
--- The function {\Red`colorize`}`(head, current, current_stroke)` goes through
--- a node list and injects PDF literals according to attributes.
+-- The function {\Red`colorize`}`(head, current, current_stroke, current_tr)`
+-- goes through a node list and injects PDF literals according to attributes.
 -- Its arguments are the head of the list to be colored and the current color
--- for fills and strokes. It is a recursive function – nested
+-- for fills and strokes and the current trasparency attribute.
+-- It is a recursive function – nested
 -- horizontal and vertical lists are handled in the same way. Only the
 -- attributes of “content” nodes (glyphs, rules, etc.) matter. Users drawing
 -- with PDF literals have to set color themselves.
 --
--- Whatsit node with color setting PDF literal is injected only when a
--- different color is needed. Our injection does not care about boxing levels,
+-- Whatsit node with color setting PDF literal is injected only when a different
+-- color or transparency is needed. Our injection does not care about boxing levels,
 -- but this isn't a problem, since PDF literal whatsits just instruct the
 -- `\shipout` related procedures to emit the literal.
 --
@@ -499,21 +567,13 @@ optex.directpdfliteral = pdfliteral
 -- We use the `node.direct` way of working with nodes. This is less safe, and
 -- certainly not idiomatic Lua, but faster and codewise more close to the way
 -- \TeX/ works with nodes.
-local function is_color_needed(head, n, id, subtype) -- returns non-stroke, stroke color needed
+local function is_color_needed(head, n, id, subtype) -- returns fill, stroke color needed
     if id == glyph_id then
         return true, false
     elseif id == glue_id then
         n = getleader(n)
         if n then
-            id = getid(n)
-            if id == hlist_id or id == vlist_id then
-                -- leaders with hlist/vlist get single color
-                return true, false
-            else -- rule
-                -- stretchy leaders with rules are tricky,
-                -- just set both colors for safety
-                return true, true
-            end
+            return true, true
         end
     elseif id == rule_id then
         local width, height, depth = getwhd(n)
@@ -530,45 +590,56 @@ local function is_color_needed(head, n, id, subtype) -- returns non-stroke, stro
     return false, false
 end
 
-local function colorize(head, current, current_stroke)
+local function colorize(head, current, current_stroke, current_tr)
     for n, id, subtype in traverse(head) do
         if id == hlist_id or id == vlist_id then
             -- nested list, just recurse
             local list = getlist(n)
-            list, current, current_stroke = colorize(list, current, current_stroke)
+            list, current, current_stroke, current_tr =
+               colorize(list, current, current_stroke, current_tr)
             setlist(n, list)
         elseif id == disc_id then
             -- at this point only no-break (replace) list is of any interest
             local replace = getfield(n, "replace")
             if replace then
-                replace, current, current_stroke = colorize(replace, current, current_stroke)
+                replace, current, current_stroke, current_tr =
+                    colorize(replace, current, current_stroke, current_tr)
                 setfield(n, "replace", replace)
             end
         else
-            local nonstroke_needed, stroke_needed = is_color_needed(head, n, id, subtype)
+            local fill_needed, stroke_needed = is_color_needed(head, n, id, subtype)
             local new = getattribute(n, color_attribute) or 0
-            local newcolor = nil
-            if current ~= new and nonstroke_needed then
-                newcolor = token_getmacro("_color:"..new)
+            local newtr = getattribute(n, transp_attribute) or 0
+            local newliteral = nil
+            if current ~= new and fill_needed then
+                newliteral = token_getmacro("_color:"..new)
                 current = new
             end
             if current_stroke ~= new and stroke_needed then
                 local stroke_color = token_getmacro("_color-s:"..current)
                 if stroke_color then
-                    if newcolor then
-                        newcolor = string_format("%s %s", newcolor, stroke_color)
+                    if newliteral then
+                        newliteral = fmt("%s %s", newliteral, stroke_color)
                     else
-                        newcolor = stroke_color
+                        newliteral = stroke_color
                     end
                     current_stroke = new
                 end
             end
-            if newcolor then
-                head = insertbefore(head, n, pdfliteral(newcolor))
+            if newtr ~= current_tr and fill_needed then -- (fill_ or stroke_needed) = fill_neded
+                if newliteral ~= nil then
+                    newliteral = fmt("%s /tr%d gs", newliteral, newtr)
+                else
+                    newliteral = fmt("/tr%d gs", newtr)
+                end
+                current_tr = newtr
+            end
+            if newliteral then
+                head = insertbefore(head, n, pdfliteral(newliteral))
             end
         end
     end
-    return head, current, current_stroke
+    return head, current, current_stroke, current_tr
 end
 --
 -- Colorization should be run just before shipout. We use our custom callback
@@ -578,7 +649,7 @@ callback.add_to_callback("pre_shipout_filter", function(list)
     -- By setting initial color to -1 we force initial setting of color on
     -- every page. This is useful for transparently supporting other default
     -- colors than black (although it has a price for each normal document).
-    local list = colorize(todirect(list), -1, -1)
+    local list = colorize(todirect(list), -1, -1, 0)
     return tonode(list)
 end, "_colors")
 --
@@ -609,5 +680,7 @@ function optex_hook_into_luaotfload()
 end
 
    -- History:
+   -- 2022-03-07 transparency in the colorize() function, current_tr added 
+   -- 2022-03-05 resources management added
    -- 2021-07-16 support for colors via attributes added
    -- 2020-11-11 optex.lua released

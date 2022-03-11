@@ -1,0 +1,100 @@
+%% This is part of the OpTeX project, see http://petr.olsak.net/optex
+
+\_codedecl \_langdata {Language dependent data <2022-02-19>} % only en, cs preloaded in format
+
+\_langdata en {English} % -----------------------------------------------
+\_langw en  Chapter      Table       Figure       Subject
+\_langb en  {, and }  { et al.} { ed.} {cit.~} {Vol.~} {No.~} {pp.~} {~p.} {,~ed.} {,~eds.}
+            {Available from } {Available also from }
+            {Bachelor's Thesis} {Master's Thesis} {Ph.D. Thesis}
+\_monthw en January February March April May June
+            July August September October November December
+\_sdef{_mt:today:en}{\_mtext{m\_the\_month} \_the\_day, \_the\_year}
+\_quotationmarks en {“”‘’}
+
+\_let \_sortingdataen = \_sortingdatacs  % it can be shared with Czech
+\_let \_ignoredcharsen = \_ignoredcharscs
+\_def \_compoundcharsen {}
+
+\_langdata cs {Czech}   % ------------------------------------------------
+%           Chapter      Table       Figure       Subject
+\_langw cs  Kapitola     Tabulka     Obrázek      Věc
+%           {, and }  { et al.} { ed.} {cit.~} {Vol.~} {No.~} {pp.~} {~p.} {,~ed.} {,~eds.}
+%           {Available from } {Available also from }
+%           {Bachelor's Thesis} {Master's Thesis} {Ph.D. Thesis}
+\_langb cs  { a } { a~kol.} { vyd.} {vid.~} {ročník~} {č.~} {s.~} {~s.} {,~editor} {,~editoři}
+            {Dostupné na } {Dostupné též na }
+            {Bakalářská práce} {Diplomová práce} {Disertační práce}
+%           January February March April May June
+%           July August September October November December
+\_monthw cs ledna února března dubna května června
+            července srpna září října listopadu prosince
+\_sdef{_mt:today:cs}{\_the\_day.~\_mtext{m\_the\_month} \_the\_year} % date format
+\_quotationmarks cs {„“‚‘}
+
+%\_def\_sortingdatacs   {...} % all these macros are preloaded in the format,
+%\_def\_compoundcharscs {...} % see section 2.33 or file makeindex.tex.
+%\_def\_ignoredcharscs  {...}
+
+\_langdata de {German}  % ------------------------------------------------
+\_langw de  Kapitel      Tabelle     Abbildung    Betreff
+\_quotationmarks de {„“‚‘}
+% todo
+
+\_langdata it {Italian} % ------------------------------------------------
+\_langw it  Capitolo     Tabella     Fig.         Oggetto
+\_monthw it gennaio febbraio marzo aprile maggio giugno
+            luglio agosto settembre ottobre novembre dicembre
+\_quotationmarks it {“”«»}
+% todo
+
+\_langdata es {Spanish} % ------------------------------------------------
+\_langw es  Capítulo     Tabla       Figura       Sujeto
+\_quotationmarks es {“”«»}
+% todo
+
+\_langdata fr {French}  % ------------------------------------------------
+\_langw fr  Chapitre     Tableau     Figure       Matière
+\_quotationmarks fr {“”«»}
+% toto
+
+\_langdata pl {Polish}  % ------------------------------------------------
+\_langw pl  Rozdział     Tabela      Ilustracja   Temat
+\_quotationmarks pl {“”«»}
+% todo
+
+\_langdata el {Greek}   % ------------------------------------------------
+\_langw el  Κεφάλαιο     Πίνακας     Σχήμα        θέμα
+\_quotationmarks el {“”«»}
+% todo
+
+\_langdata ru {Russian} % ------------------------------------------------
+\_langw ru  Глава        Таблица     Рисунок      Предмет
+\_quotationmarks ru {“”«»}
+% todo
+
+\_langdata sk {Slovak}  % ------------------------------------------------
+\_langw sk  Kapitola     Tabuľka     Obrázok      Vec
+\_langb sk  { a } { a~kol.} { vyd.} {vid.~} {ročník~} {č.~} {s.~} {~s.} {,~editor} {,~editori}
+            {Dostupné na } {Dostupné tiež na }
+            {Bakalárska práca} {Diplomová práca} {Dizertačná práca}
+\_monthw sk januára februára marca apríla mája júna
+            júla augusta septembra októbra novembra decembra
+\_sdef{_mt:today:sk}{\_the\_day.~\_mtext{m\_the\_month} \_the\_year} % date format
+\_quotationmarks sk {„“‚‘}
+
+\_let \_sortingdatask = \_sortingdatacs     % it can be shared with Czech
+\_let \_compoundcharssk = \_compoundcharscs
+\_let \_ignoredcharssk = \_ignoredcharscs
+
+\_langdata pt {Portuguese} % ------------------------------------------------
+\_langw pt  Capítulo     Tabela      Figura       Assunto
+\_monthw pt janeiro fevereiro março abril maio junho julho agosto
+            setembro outubro novembro dezembro 
+\_sdef{_mt:today:pt}{\_the\_day~de \_mtext{m\_the\_month}~ de \_the\_year}
+% todo
+
+\_endcode
+
+2022-02-19: concept finalized, but data still far of competness
+2022-02-04: released

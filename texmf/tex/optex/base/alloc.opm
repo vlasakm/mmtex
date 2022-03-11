@@ -1,6 +1,6 @@
 %% This is part of the OpTeX project, see http://petr.olsak.net/optex
 
-\_codedecl \newdimen {Allocators for registers <2021-02-15>} % preloaded in format
+\_codedecl \newdimen {Allocators for registers <2022-03-07>} % preloaded in format
 
    \_doc -----------------------------
    The limits are set first.
@@ -15,20 +15,22 @@
 \_chardef\_mairead  = 15
 \_chardef\_maiwrite = 15
 \_chardef\_maifam   = 255
+\_chardef\_mailanguage = 16380 % In fact 16383, but we reserve next numbers for dummy patterns
 
    \_doc -----------------------------
    Each allocation macro needs its own counter.
    \_cod -----------------------------
 
-\_countdef\_countalloc=10  \_countalloc=255
-\_countdef\_dimenalloc=11  \_dimenalloc=255
-\_countdef\_skipalloc=12   \_skipalloc=255
-\_countdef\_muskipalloc=13 \_muskipalloc=255
-\_countdef\_boxalloc=14    \_boxalloc=255
-\_countdef\_toksalloc=15   \_toksalloc=255
-\_countdef\_readalloc=16   \_readalloc=-1
-\_countdef\_writealloc=17  \_writealloc=-1
-\_countdef\_famalloc=18    \_famalloc=3
+\_countdef\_countalloc=10     \_countalloc=255
+\_countdef\_dimenalloc=11     \_dimenalloc=255
+\_countdef\_skipalloc=12      \_skipalloc=255
+\_countdef\_muskipalloc=13    \_muskipalloc=255
+\_countdef\_boxalloc=14       \_boxalloc=255
+\_countdef\_toksalloc=15      \_toksalloc=255
+\_countdef\_readalloc=16      \_readalloc=-1
+\_countdef\_writealloc=17     \_writealloc=0 % should be -1 but there is bug in new luatex
+\_countdef\_famalloc=18       \_famalloc=3
+\_countdef\_languagealloc=19  \_languagealloc=0
 
    \_doc -----------------------------
    The common allocation macro
@@ -51,7 +53,7 @@
    \_doc -----------------------------
    The allocation macros
    \`\newcount`, \`\newdimen`, \`\newskip`, \`\newmuskip`, \`\newbox`,
-   \`\newtoks`, \`\newread`, \`\newwrite` and \`\newfam`
+   \`\newtoks`, \`\newread`, \`\newwrite`, \`\newfam`, and \`\newlanguage`
    are defined here.
    \_cod -----------------------------
 
@@ -64,8 +66,10 @@
 \_def\_newread #1{\_allocator #1{read}\_chardef}
 \_def\_newwrite #1{\_allocator #1{write}\_chardef}
 \_def\_newfam #1{\_allocator #1{fam}\_chardef}
+\_def\_newlanguage #1{\_allocator #1{language}\_chardef}
 
-\_public \newcount \newdimen \newskip \newmuskip \newbox \newtoks \newread \newwrite \newfam ;
+\_public \newcount \newdimen \newskip \newmuskip \newbox \newtoks
+         \newread \newwrite \newfam \newlanguage ;
 
    \_doc -----------------------------
    The \`\newinsert` macro is defined differently than others.
@@ -86,19 +90,25 @@
 \_public \newinsert ;
 
    \_doc -----------------------------
-   Other allocation macros \`\newattribute` and \`\newcatcodetable`
+   Other allocation macros \`\newmarks`. \`\newattribute` and \`\newcatcodetable`
    have their counter allocated by the `\newcount` macro.
+   \`\_noattr` is constant `-"7FFFFFFF`, i.e. unused attribute
    \_cod -----------------------------
 
+\_newcount \_marksalloc \_marksalloc=0 % start at 1, 0 is \mark
+\_chardef\_maimarks=\_maicount
+\_def\_newmarks #1{\_allocator #1{marks}\_chardef}
+
 \_newcount \_attributealloc  \_attributealloc=0
-\_chardef\_maiattribute=\_maicount
+\_chardef\_maiattribute=\_numexpr\_maicount -1\_relax
+\_attributedef\_noattr \_maicount
 \_def\_newattribute #1{\_allocator #1{attribute}\_attributedef}
 
 \_newcount \_catcodetablealloc  \_catcodetablealloc=10
 \_chardef\_maicatcodetable=32767
 \_def\_newcatcodetable #1{\_allocator #1{catcodetable}\_chardef}
 
-\_public \newattribute \newcatcodetable ;
+\_public \newmarks \newattribute \newcatcodetable ;
 
    \_doc -----------------------------
    We declare public and private versions of `\tmpnum` and `\tmpdim`
@@ -168,6 +178,8 @@ the array-like declarator of counters.
 
 \_endinput
 
+2022-03-07  \_noattr allocated
+2022-02-19  \_newlanguage introduced
 2021-02-15  \_advance -> \_incr, \_decr
 2020-05-12  \newmath -> \newfam  bug fixing
 2020-01-23  released
