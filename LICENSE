@@ -55,3 +55,7 @@ author!").
 Files in the "minim" directory come from "minim", "minim-mp", "minim-pdf" and
 "minim-xmp" packages (https://www.ctan.org/pkg/minim, Esger Renkema, under EUPL
 v1.2 or later).
+
+Files in the "pgf" directory come from "pgf" package
+(https://www.ctan.org/pkg/pgf, Till Tantau, Henri Menke, The PGF/TikZ Team,
+under GPLv2 or LPPLv1.3).

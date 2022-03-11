@@ -30,6 +30,9 @@ https://mirrors.ctan.org/macros/luatex/generic/minim-pdf.zip
 https://mirrors.ctan.org/macros/luatex/generic/minim-xmp.zip
 https://mirrors.ctan.org/graphics/minim-hatching.zip
 
+# PGF
+http://mirrors.ctan.org/graphics/pgf/base.zip
+
 # Fonts
 http://mirrors.ctan.org/fonts/rsfs.zip # rsfs font
 
