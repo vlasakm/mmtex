@@ -136,4 +136,12 @@ install mp-base/*.mp -t "$TEXMF/metapost/base"
 # install our files
 install mmoptex.ini -t "$TEXMF/tex/mmoptex"
 
+# create ls-R database
+(
+	cd "$TEXMF";
+	ls -LAR ./ > ls-R
+	# the format file will be added at built time
+	printf '%s\n' "" "./web2c:" "mmoptex.fmt" >> ls-R
+)
+
 printf '\n%s\n' "Done, "$pkgname" created succesfully."
