@@ -119,6 +119,9 @@ install "$optexdir/pkg/"*  -t "$TEXMF/tex/optex/pkg"
 # install optex extra
 install pdfextra/pdfextra.opm -t "$TEXMF/tex/pdfextra"
 
+# install minim
+install minim*/*.tex minim*/*.lua minim*/*.ini minim*/*.mp -t "$TEXMF/tex/minim"
+
 # install our files
 install mmoptex.ini -t "$TEXMF/tex/mmoptex"
 

@@ -51,3 +51,7 @@ Files in the "rsfs" directory come from "rsfs" package
 following conditions: "You are welcome to use and distribute these files; if
 you modify them, please change the name but give credit to the original
 author!").
+
+Files in the "minim" directory come from "minim", "minim-mp", "minim-pdf" and
+"minim-xmp" packages (https://www.ctan.org/pkg/minim, Esger Renkema, under EUPL
+v1.2 or later).

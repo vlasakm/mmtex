@@ -23,6 +23,13 @@ mmoptex.ini
 # OpTeX extra
 https://mirrors.ctan.org/macros/luatex/generic/pdfextra.zip
 
+# Minim
+https://mirrors.ctan.org/macros/luatex/generic/minim.zip
+https://mirrors.ctan.org/macros/luatex/generic/minim-mp.zip
+https://mirrors.ctan.org/macros/luatex/generic/minim-pdf.zip
+https://mirrors.ctan.org/macros/luatex/generic/minim-xmp.zip
+https://mirrors.ctan.org/graphics/minim-hatching.zip
+
 # Fonts
 http://mirrors.ctan.org/fonts/rsfs.zip # rsfs font
 
