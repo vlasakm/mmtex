@@ -1,7 +1,7 @@
 diff --git a/src/lua/src/luaconf.h b/src/lua/src/luaconf.h
 index 9eeeea6..7f70fa3 100644
---- a/src/lua/src/luaconf.h
-+++ b/src/lua/src/luaconf.h
+--- a/src/luaconf.h
++++ b/src/luaconf.h
 @@ -200,7 +200,7 @@
  
  #else			/* }{ */
