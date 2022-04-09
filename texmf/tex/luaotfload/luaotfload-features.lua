@@ -5,8 +5,8 @@
 
 assert(luaotfload_module, "This is a part of luaotfload and should not be loaded independently") { 
     name          = "luaotfload-features",
-    version       = "3.20",       --TAGVERSION
-    date          = "2022-02-27", --TAGDATE
+    version       = "3.21",       --TAGVERSION
+    date          = "2022-03-18", --TAGDATE
     description   = "luaotfload submodule / features",
     license       = "GPL v2.0",
     author        = "Hans Hagen, Khaled Hosny, Elie Roux, Philipp Gesang, Marcel Krüger",
@@ -840,7 +840,7 @@ local normalize_lookup = setmetatable({}, {__index = function(t, f)
     local function result(head)
         return normalize_func(head, f, characters, true)
     end
-    t[fontdir] = result
+    t[f] = result
     return result
 end})
 -- When this is loaded as part of luaotfload-tool, then we can't access nodes

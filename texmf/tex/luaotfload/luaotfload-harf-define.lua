@@ -5,8 +5,8 @@
 do -- block to avoid to many local variables error
  assert(luaotfload_module, "This is a part of luaotfload and should not be loaded independently") { 
      name          = "luaotfload-harf-define",
-     version       = "3.20",       --TAGVERSION
-     date          = "2022-02-27", --TAGDATE
+     version       = "3.21",       --TAGVERSION
+     date          = "2022-03-18", --TAGDATE
      description   = "luaotfload submodule / HarfBuzz font loading",
      license       = "GPL v2.0",
      author        = "Khaled Hosny, Marcel Krüger",
@@ -541,8 +541,11 @@ luatexbase.add_to_callback('glyph_stream_provider', function(fid, cid, kind, oci
   elseif extents_hbfont then
     glyph_stream_mapping[ocid] = cid
     glyph_stream_mapping_inverse[cid] = ocid
+    local h_advance = extents_hbfont:get_glyph_h_advance(ocid)
+    local v_advance = extents_hbfont:get_glyph_v_advance(ocid)
+    assert(h_advance and v_advance)
     local extents = extents_hbfont:get_glyph_extents(ocid)
-    return extents.width, extents.x_bearing, extents.height, extents.y_bearing
+    return h_advance, extents and extents.x_bearing or 0, v_advance, 0 -- The last value should be get_glyph_v_origin(ocid).y - extents.y_bearing
   else
     return cb(fid, cid, kind, ocid)
   end
