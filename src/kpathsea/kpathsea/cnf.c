@@ -248,7 +248,7 @@ read_all_cnf (kpathsea kpse)
     hash_insert(&(kpse->cnf_hash), tmp1, tmp2); \
   } while (0)
 
-  /* it shouldn't be possible to enable shell escape config files */
+  /* We don't allow enabling of shell escape through config files. */
   SET_VAR("shell_escape", "f");
 
   cnf_files = kpathsea_all_path_search (kpse, cnf_path, CNF_NAME);
@@ -316,11 +316,11 @@ read_all_cnf (kpathsea kpse)
   SET_VAR("max_strings", "500000");
   /*SET_VAR("strings_free", "100");*/
   SET_VAR("buf_size", "200000");
-  SET_VAR("nest_size", "500");
+  SET_VAR("nest_size", "1000");
   /*SET_VAR("max_in_open", "15");*/
-  SET_VAR("param_size", "10000");
+  SET_VAR("param_size", "20000");
   SET_VAR("save_size", "200000");
-  SET_VAR("stack_size", "5000");
+  SET_VAR("stack_size", "10000");
   /*SET_VAR("dvi_buf_size", "16384");*/
   /*SET_VAR("error_line", "79");*/
   /*SET_VAR("half_error_line", "50");*/

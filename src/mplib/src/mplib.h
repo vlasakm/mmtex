@@ -8,7 +8,7 @@ typedef int boolean;
 #endif
 /*2:*/
 
-#define metapost_version "2.01"
+#define metapost_version "2.02"
 
 /*:2*/
 

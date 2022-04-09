@@ -87,7 +87,7 @@ extern int mp_svg_gr_ship_out(mp_edge_object*hh,int prologues,int standalone);
 /*:6*//*7:*/
 
 extern font_number mp_read_font_info(MP mp,char*fname);
-#define default_banner "This is MetaPost, Version 2.01"
+#define default_banner "This is MetaPost, Version 2.02"
 #define true 1
 #define false 0 \
 

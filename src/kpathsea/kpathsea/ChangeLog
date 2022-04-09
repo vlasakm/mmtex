@@ -1,3 +1,27 @@
+2022-03-21  Karl Berry  <karl@tug.org>
+
+	* TL'22 release.
+
+2022-03-05  Karl Berry  <karl@freefriends.org>
+
+	* texmf.cnf (TEXINPUTS.hi*tex): new entries.
+
+2022-02-27  Karl Berry  <karl@tug.org>
+
+	* texmf.cnf (nest_size): 500 -> 1000.
+	(param_size): 10000 -> 20000.
+	(stack_size): 5000 -> 10000.
+	For stex (ctan.org/pkg/stex), although they also double main_memory
+	to 12M (despite the supposed limit of 8M)?
+
+2022-01-18  Karl Berry  <karl@freefriends.org>
+
+	* version.ac (kpse_dev): no more /dev.
+	* NEWS,
+	* doc/kpathsea.texi,
+	* kpsewhich.c,
+	* texmf.cnf: copyright 2022.
+
 2021-11-01  Marcel Fabian Krueger  <tex@2krueger.de>
 
 	* str-list.c (str_list_uniqify): compare each input element
