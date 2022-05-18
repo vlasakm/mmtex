@@ -51,9 +51,9 @@
 +  SET_VAR("save_size", "200000");
 +  SET_VAR("stack_size", "10000");
 +  /*SET_VAR("dvi_buf_size", "16384");*/
-+  /*SET_VAR("error_line", "79");*/
-+  /*SET_VAR("half_error_line", "50");*/
-+  /*SET_VAR("max_print_line", "79");*/
++  SET_VAR("error_line", "250");
++  SET_VAR("half_error_line", "125");
++  SET_VAR("max_print_line", "10000");
 +  SET_VAR("hash_extra", "600000");
 +  /*SET_VAR("expand_depth", "10000");*/
  }
