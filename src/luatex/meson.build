@@ -249,11 +249,11 @@ if get_option('luahbtex')
     'src/luaharfbuzz/src/luaharfbuzz/font.c',
     'src/luaharfbuzz/src/luaharfbuzz/language.c',
     'src/luaharfbuzz/src/luaharfbuzz/luaharfbuzz.c',
-    'src/luaharfbuzz/src/luaharfbuzz/luaharfbuzz.h',
     'src/luaharfbuzz/src/luaharfbuzz/ot.c',
     'src/luaharfbuzz/src/luaharfbuzz/script.c',
     'src/luaharfbuzz/src/luaharfbuzz/tag.c',
     'src/luaharfbuzz/src/luaharfbuzz/unicode.c',
+    'src/luaharfbuzz/src/luaharfbuzz/variation.c',
   )
 
   harfbuzz_dep = dependency('harfbuzz')
