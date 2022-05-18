@@ -566,23 +566,6 @@ tikzlibrarytrees.code.tex
 tikzlibraryturtle.code.tex
 tikzlibraryviews.code.tex
 tikz.tex
-t-pgfbim.tex
-t-pgfbla.tex
-t-pgfbma.tex
-t-pgfbpl.tex
-t-pgfbpt.tex
-t-pgfbsh.tex
-t-pgfbsn.tex
-t-pgfcal.tex
-t-pgfcor.tex
-t-pgffor.tex
-t-pgfkey.tex
-t-pgfmat.tex
-t-pgfmod.tex
-t-pgfrcs.tex
-t-pgfsys.tex
-t-pgf.tex
-t-tikz.tex
 
 ./tex/unicode-data:
 CaseFolding.txt

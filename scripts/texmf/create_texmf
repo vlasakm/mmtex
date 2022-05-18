@@ -127,7 +127,7 @@ rm -f "$TEXMF/tex/minim/minim-lamp.ini" "$TEXMF/metapost/minim/minim-hatching-do
 
 # install PGF/TikZ
 install base/tex/* -t "$TEXMF/tex/pgf"
-(cd "$TEXMF/tex/pgf"; rm -rf pgfsys-*.def pgfutil-*.def *.sty LUA_CODING_STYLE example_graph_for_ascii_displayer.txt)
+(cd "$TEXMF/tex/pgf"; rm -rf pgfsys-*.def pgfutil-*.def *.sty LUA_CODING_STYLE example_graph_for_ascii_displayer.txt t-*.tex)
 install base/tex/pgfsys-common-pdf.def base/tex/pgfsys-luatex.def base/tex/pgfutil-plain.def -t "$TEXMF/tex/pgf"
 
 # install metapost base files
