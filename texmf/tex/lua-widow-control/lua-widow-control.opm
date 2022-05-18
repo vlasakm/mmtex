@@ -1,0 +1,79 @@
+% lua-widow-control
+% https://github.com/gucci-on-fleek/lua-widow-control
+% SPDX-License-Identifier: MPL-2.0+
+% SPDX-FileCopyrightText: 2022 Max Chernoff
+
+\_codedecl\lwcenable{lua-widow-control <v2.1.0>} %%version
+\_namespace{lwc}
+
+\_clubpenalty=1
+\_widowpenalty=1
+\_displaywidowpenalty=1
+\_brokenpenalty=1
+
+\_newdimen\lwcemergencystretch
+\lwcemergencystretch=3em
+
+\_newcount\lwcmaxcost
+\lwcmaxcost=2147483647
+
+\_directlua{require "lua-widow-control"}
+
+% Enable \lwc/ by default when the package is loaded.
+\.enable
+
+% Expansion of some parts of the document, such as section headings, is quite
+% undesirable, so we'll disable \lwc/ for certain commands.
+
+% We should only reenable \lwc/ at the end if it was already enabled.
+\_newcount\.disable_count
+
+\_def\.patch_pre{%
+    \.if_enabled%
+        \_advance\.disable_count by 1%
+        \.disable%
+    \_fi%
+}
+
+\_def\.patch_post{
+    \_ifnum\.disable_count>0%
+        \.enable%
+        \_advance\.disable_count by -1%
+    \_fi
+}
+
+\_def\.extractcomponents #1:#2->#3\STOP{%
+    \_def\.params{#2}%
+    \_def\.body{#3}%
+}
+
+\def\.disable_cmd#1{%
+    \_ifdefined#1%
+        \_ea\.extractcomponents\_meaning#1\STOP%
+        \_begingroup%
+            \_catcode`_=11%
+            \_expanded{%
+                \_noexpand\_scantokens{%
+                    \_gdef\_noexpand#1\.params{%
+                        \_noexpand\.patch_pre\.body\_noexpand\.patch_post%
+                    }%
+                }%
+            }%
+        \_endgroup%
+    \_fi%
+}
+
+\.disable_cmd{\_printchap}
+\.disable_cmd{\_printsec}
+\.disable_cmd{\_printsecc}
+
+% Make the commands public
+\_let\lwcenable=\.enable
+\_let\lwcdisable=\.disable
+\_let\lwcdisablecmd=\.disable_cmd
+\_let\lwcdebug=\.debug
+\_let\iflwc=\.if_enabled
+\_let\lwcnobreak=\.nobreak
+
+\_endnamespace
+\_endcode

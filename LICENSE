@@ -66,3 +66,8 @@ v1.2 or later).
 Files in the "pgf" directory come from "pgf" package
 (https://www.ctan.org/pkg/pgf, Till Tantau, Henri Menke, The PGF/TikZ Team,
 under GPLv2 or LPPLv1.3).
+
+Files in the "lua-widow-control" directory come from "lua-widow-control"
+package (https://ctan.org/pkg/lua-widow-control, Max Chernoff, under Mozilla
+Public License, version 2.0 or greater - see MPL-2.0.txt or
+https://www.mozilla.org/en-US/MPL/2.0/).

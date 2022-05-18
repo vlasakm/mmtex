@@ -51,6 +51,7 @@ lualibs
 luaotfload
 lua-uni-algos
 luavlna
+lua-widow-control
 minim
 mmoptex
 optex
@@ -219,6 +220,10 @@ luavlna-predegrees.lua
 luavlna-presi.lua
 luavlna-si.lua
 luavlna-sufdegrees.lua
+
+./tex/lua-widow-control:
+lua-widow-control.lua
+lua-widow-control.opm
 
 ./tex/minim:
 minim-alloc.lua

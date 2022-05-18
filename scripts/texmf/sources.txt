@@ -23,6 +23,7 @@ mmoptex.ini
 
 # OpTeX extra
 https://mirrors.ctan.org/macros/luatex/generic/pdfextra.zip
+https://mirrors.ctan.org/macros/luatex/generic/lua-widow-control.zip
 
 # Minim
 https://mirrors.ctan.org/macros/luatex/generic/minim.zip
