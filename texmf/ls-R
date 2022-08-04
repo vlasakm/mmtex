@@ -170,9 +170,10 @@ lualibs-extended-merged.lua
 lualibs.lua
 
 ./tex/luaotfload:
-fontloader-2022-02-24.lua
+fontloader-2022-06-15.lua
 fontloader-basics-gen.lua
 luaotfload-auxiliary.lua
+luaotfload-bcp47.lua
 luaotfload-case.lua
 luaotfload-colors.lua
 luaotfload-configuration.lua
@@ -189,6 +190,7 @@ luaotfload-harf-plug.lua
 luaotfload-harf-var-cff2.lua
 luaotfload-harf-var-t2-writer.lua
 luaotfload-harf-var-ttf.lua
+luaotfload-hashing.lua
 luaotfload-init.lua
 luaotfload-letterspace.lua
 luaotfload-loaders.lua
@@ -203,6 +205,7 @@ luaotfload-scripts.lua
 luaotfload-status.lua
 luaotfload-suppress.lua
 luaotfload-szss.lua
+luaotfload-t3.lua
 luaotfload-tool.lua
 luaotfload-tounicode.lua
 luaotfload-unicode.lua
