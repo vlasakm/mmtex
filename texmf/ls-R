@@ -288,6 +288,7 @@ f-librecaslon.opm
 f-lido.opm
 f-lmfonts.opm
 f-merriweather.opm
+f-montserrat.opm
 f-newcm.opm
 fnotes.opm
 fonts-catalog.opm
@@ -295,14 +296,18 @@ fonts-opmac.opm
 fonts-preload.opm
 fonts-resize.opm
 fonts-select.opm
+f-overlock.opm
 f-pagella.opm
 f-poltawski.opm
 f-roboto.opm
 f-schola.opm
 f-sourcepro.opm
+f-stix.opm
+f-stixtwo.opm
 f-technika.opm
 f-termes.opm
 f-xcharter.opm
+f-xits.opm
 graphics.opm
 hisyntax-c.opm
 hisyntax-html.opm

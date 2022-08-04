@@ -56,6 +56,19 @@
      \caps: {\rm\bf} \book\caps: {\rm} }
 \_famalias [NewCM] \_famalias [NewCMfonts]
 
+\_famfrom{STI Pub group, MicroPress Inc., Coen Hoffman}
+\_faminfo [STIX] {Scientific and Technical Information Exchange fonts} {f-stix}
+   { -: {\rm\bf\it\bi} }
+
+\_faminfo [XITS] {A fork of STIX with Bold Math variant} {f-xits}
+   { -: {\rm\bf\it\bi} \caps: {\rm} }
+
+\_famfrom{Tiro Typeworks Ltd., R. Mills, J. Hudson, P. Hanslow, C. Hoffman}
+\_faminfo [STIXTwo] {Second version of STIX} {f-stixtwo}
+   { -,\caps: {\rm\it} \medium,\caps\medium: {\rm\it} \bolder,\caps\bolder: {\rm\it}
+     -,\caps: {\bf\bi} }
+\_famalias [STIX2]
+
 \_famfrom {Philipp H. Poll}
 \_faminfo [Linux Libertine] {Free fonts typically installed on systems} {f-libertine}
    { -: {\rm\bf\it\bi} \semibold: {\bf\bi}
@@ -139,6 +152,10 @@
 \_faminfo [ComicNeue] {Comic Neue sans serif} {f-comicneue}
    { -,\angular: {\lf\li\rm\it\bf\bi} }
 
+\_famfrom {tipo, Dario Manuel Muhafara}
+\_faminfo [Overlock] {fonts simulate Overlock sewing technique} {f-overlock}
+   { -: {\rm\it\bf\bi\kf\ki} }
+
 \_famfrom {Eben Sorkin}
 \_faminfo [Merriweather] {Modern shapes, sharp serifs} {f-merriweather}
    { -,\sans: {\lf\li\rm\it\bf\bi\kf\ki} \caps,\sans\caps: {\rm\it} }
@@ -151,6 +168,11 @@
      \ttset: {\tf\lf\rm\bf}
      \caps, \caps\cond: {\rm\bf\it\bi} \caps\ttset: {\rm\bf}
    }
+
+\_famfrom {Julieta Ulanovsky, http://www.zkysky.com.ar}
+\_faminfo [Montserrat] {Inspired from old posters in Montserat in Buenos Aires} {f-montserrat}
+   { -,\caps,\alter: {\rm\bf\it\bi} \xlight,\elight,\light,-,\medium,\semibold: {\rm\it}
+     -,\medium,\semibold: {\bf\bi} }
 
 \_famfrom {CTU in Prague, Roman Cernohous}
 \_faminfo [Technika] {Fonts from visual style of CTU in Prague} {f-technika}
