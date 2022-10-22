@@ -150,7 +150,7 @@ cff_index *cff_get_index_header(cff_font * cff)
     cff_index *idx;
     card16 i, count;
     idx = xcalloc(1, sizeof(cff_index));
-    if (cff->header_major == 2) {
+    if (cff->header.major == 2) {
         idx->count = count = get_card32(cff);
     } else {
         idx->count = count = get_card16(cff);
@@ -222,7 +222,7 @@ static cff_index *cff_get_index2(cff_font * cff)
     cff_index *idx;
     size_t length;
     idx = xcalloc(1, sizeof(cff_index));
-    length = (size_t) cff->header_offsize;
+    length = (size_t) cff->header.offsize;
     idx->offsize = 2;
     idx->count = 1;
     idx->offset = xmalloc((unsigned) (((unsigned) 2) * sizeof(l_offset)));
@@ -481,16 +481,16 @@ long cff_put_header(cff_font * cff, card8 * dest, long destlen)
 {
     if (destlen < 4)
         normal_error("cff","not enough space available");
-    /*tex cff->header_major */
+    /*tex cff->header.major */
     *(dest++) = 1;
-    *(dest++) = cff->header_minor;
+    *(dest++) = cff->header.minor;
     *(dest++) = 4;
     /*tex
         Additional data in between header and Name INDEX is ignored. We will set
         all offset (0) to a four-byte integer.
     */
     *(dest++) = 4;
-    cff->header_offsize = 4;
+    cff->header.offsize = 4;
     return 4;
 }
 
@@ -1027,28 +1027,28 @@ cff_font *read_cff(unsigned char *buf, long buflength, int n)
     cff->stream = buf;
     cff->stream_size = (l_offset) buflength;
     cff->index = n;
-    cff->header_major = get_card8(cff);
-    cff->header_minor = get_card8(cff);
-    cff->header_hdr_size = get_card8(cff);
-    if (cff->header_major == 2) {
+    cff->header.major = get_card8(cff);
+    cff->header.minor = get_card8(cff);
+    cff->header.hdr_size = get_card8(cff);
+    if (cff->header.major == 2) {
         /*tex We have only one top dictionary. */
-        cff->header_offsize = get_card16(cff);
+        cff->header.offsize = get_card16(cff);
     } else {
-        cff->header_offsize = get_card8(cff);
-        if (cff->header_offsize < 1 || cff->header_offsize > 4) {
+        cff->header.offsize = get_card8(cff);
+        if (cff->header.offsize < 1 || cff->header.offsize > 4) {
             normal_warning("cff","invalid offsize data (4)");
             cff_close(cff);
             return NULL;
         }
     }
-    if (cff->header_major > 2) {
-        formatted_warning("cff","major version %u not supported", cff->header_major);
+    if (cff->header.major > 2) {
+        formatted_warning("cff","major version %u not supported", cff->header.major);
         cff_close(cff);
         return NULL;
     }
-    cff->offset = cff->header_hdr_size;
+    cff->offset = cff->header.hdr_size;
     /*tex The name index. */
-    if (cff->header_major == 2) {
+    if (cff->header.major == 2) {
         cff->name = cff_empty_index(cff);
     } else {
         idx = cff_get_index(cff);
@@ -1061,7 +1061,7 @@ cff_font *read_cff(unsigned char *buf, long buflength, int n)
         cff->fontname = cff_get_name(cff);
     }
     /*tex The top dict index. */
-    if (cff->header_major == 2) {
+    if (cff->header.major == 2) {
         /*tex we fake an index (just one entry) */
         idx = cff_get_index2(cff);
     } else {
@@ -1091,7 +1091,7 @@ cff_font *read_cff(unsigned char *buf, long buflength, int n)
         return NULL;
     }
     /*tex The string index. */
-    if (cff->header_major == 2) {
+    if (cff->header.major == 2) {
         /*tex do nothing */
     } else {
         cff->string = cff_get_index(cff);
@@ -2729,13 +2729,13 @@ void write_cff(PDF pdf, cff_font * cffont, fd_entry * fd)
             }
         }
         cffont->charsets = charset;
-        if (cffont->header_major == 2) {
+        if (cffont->header.major == 2) {
             cff_dict_add(cffont->topdict, "charset", 1);
         }
     }
     cff_dict_add(cffont->topdict, "CIDCount", 1);
     cff_dict_set(cffont->topdict, "CIDCount", 0, last_cid + 1);
-    if (cffont->header_major == 2) {
+    if (cffont->header.major == 2) {
         cff_dict_add(cffont->topdict, "FullName", 1);
         cff_dict_set(cffont->topdict, "FullName", 0, (double) cff_add_string(cffont, fontname));
         cff_dict_add(cffont->topdict, "FontBBox", 4);
@@ -2823,7 +2823,7 @@ void write_cff(PDF pdf, cff_font * cffont, fd_entry * fd)
                         data, size,
                         cffont->gsubr, (cffont->subrs)[0],
                         default_width, nominal_width, NULL,
-                        cffont->header_major == 2
+                        cffont->header.major == 2
                     );
                 }
                 gid++;
@@ -2886,7 +2886,7 @@ void write_cff(PDF pdf, cff_font * cffont, fd_entry * fd)
     cff_dict_update(cffont->topdict, cffont);
     cff_add_string(cffont, "Adobe");
     cff_add_string(cffont, "Identity");
-    if (cffont->header_major == 2) {
+    if (cffont->header.major == 2) {
         /*tex A crash. */
     } else if (cffont->private && (cffont->private)[0]) {
         cff_dict_update(cffont->private[0], cffont);
@@ -2938,7 +2938,7 @@ void write_cid_cff(PDF pdf, cff_font * cffont, fd_entry * fd)
     } else {
         cid_count = CFF_CIDCOUNT_DEFAULT;
     }
-    if (cffont->header_major == 2) {
+    if (cffont->header.major == 2) {
         /*tex hm */
     } else {
         cff_read_charsets(cffont);
@@ -2964,7 +2964,7 @@ void write_cid_cff(PDF pdf, cff_font * cffont, fd_entry * fd)
             num_glyphs++;
         }
     }
-    if (cffont->header_major == 2) {
+    if (cffont->header.major == 2) {
         /*tex hm */
     } else if (last_cid >= cffont->num_glyphs) {
         formatted_error("cff font","bad glyph index %i",last_cid);
@@ -3063,7 +3063,7 @@ void write_cid_cff(PDF pdf, cff_font * cffont, fd_entry * fd)
                 data, size,
                 cffont->gsubr, (cffont->subrs)[fdsel],
                 0, 0, NULL,
-                cffont->header_major == 2
+                cffont->header.major == 2
             );
         }
         if (cid > 0 && gid_org > 0) {
