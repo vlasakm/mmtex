@@ -201,6 +201,11 @@ luatex_src = files(
   'src/luatex.c',
   '../mplib/src/lmplib.c',
   '../libmd5/src/md5.c',
+
+  'src/font/t1_load.c',
+  'src/font/t1_char.c',
+  'src/font/pst.c',
+  'src/font/pst_obj.c',
 )
 
 luatex_inc = include_directories(

@@ -23,6 +23,8 @@
 #ifndef _CFF_LIMITS_H_
 #  define _CFF_LIMITS_H_
 
+#include "ptexlib.h"
+
 #  include <limits.h>
 
 #  define CFF_INT_MAX 0x7fffffff
@@ -271,7 +273,6 @@ extern long cff_read_fdarray(cff_font * cff);
 extern long cff_read_private(cff_font * cff);
 
 /* String */
-extern int cff_match_string(cff_font * cff, const char *str, s_SID sid);
 extern char *cff_get_string(cff_font * cff, s_SID id);
 extern long cff_get_sid(cff_font * cff, const char *str);
 extern s_SID cff_add_string(cff_font * cff, const char *str);
@@ -328,5 +329,8 @@ typedef struct {
 
 extern cff_font *read_cff(unsigned char *buf, long buflength, int subf);
 
-extern void write_cff(PDF pdf, cff_font * cff, fd_entry * fd);
+#include "pdf/pdftypes.h"
+#include "font/luatexfont.h"
+
+extern void write_cff(PDF pdf, cff_font * cff, fd_entry * fd, int t1);
 extern void write_cid_cff(PDF pdf, cff_font * cffont, fd_entry * fd);

@@ -20,18 +20,13 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
-
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <ctype.h>
 
-#include "system.h"
-#include "mem.h"
-#include "error.h"
-#include "dpxutil.h"
+#include "dvipdfmx-util.h"
+
 #include "pst.h"
 #include "pst_obj.h"
 

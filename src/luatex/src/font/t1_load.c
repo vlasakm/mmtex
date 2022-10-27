@@ -20,34 +20,16 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
-
+#include "ptexlib.h"
 #include <string.h>
 #include <math.h>
 
-#include "system.h"
-#include "mfileio.h"
-#include "mem.h"
-#include "error.h"
-#include "numbers.h"
+#include <stdio.h>
 
-#include "pdfobj.h"
-#include "pdffont.h"
-
-#include "pdfencoding.h"
-#include "unicode.h"
-
-#include "dpxutil.h"
-
+#include "dvipdfmx-util.h"
+#include "writecff.h"
 #include "pst_obj.h"
 #include "pst.h"
-
-#include "cff_limits.h"
-#include "cff_types.h"
-#include "cff_dict.h"
-#include "cff.h"
 
 #include "t1_load.h"
 
@@ -789,7 +771,7 @@ parse_charstrings (cff_font *font,
     }
 
     if (gid > 0)
-      charset->data.glyphs[gid-1] = cff_add_string(font, glyph_name, 0);
+      charset->data.glyphs[gid-1] = cff_add_string(font, glyph_name);
     /*
      * We don't care about duplicate strings here since
      * later a subset font of this font will be generated.
@@ -1065,7 +1047,7 @@ parse_part1 (cff_font *font, char **enc_vec,
 
         cff_dict_add(font->topdict, key, 1);
         if ((sid = cff_get_sid(font, strval)) == CFF_STRING_NOTDEF)
-          sid = cff_add_string(font, strval, 0); /* FIXME */
+          sid = cff_add_string(font, strval); /* FIXME */
         /*
          * We don't care about duplicate strings here since
          * later a subset font of this font will be generated.
@@ -1239,7 +1221,6 @@ static void
 init_cff_font (cff_font *cff)
 {
   cff->stream = NULL;
-  cff->filter = 0;
   cff->fontname = NULL;
   cff->index    = 0;
   cff->flag = FONTTYPE_FONT;

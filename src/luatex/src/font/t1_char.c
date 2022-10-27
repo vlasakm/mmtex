@@ -20,35 +20,23 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
 */
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
+#include "ptexlib.h"
 
 #include <string.h>
 #include <math.h>
 
-#include "system.h"
-#include "mem.h"
-#include "error.h"
-#include "numbers.h"
-
-#include "pdfobj.h"
-#include "pdffont.h"
-
-#include "pdfencoding.h"
-#include "unicode.h"
-
-#include "dpxutil.h"
+#include "dvipdfmx-util.h"
 
 #include "pst_obj.h"
 #include "pst.h"
 
-#include "cff_limits.h"
-#include "cff_types.h"
-#include "cff_dict.h"
-#include "cff.h"
+#include "writecff.h"
 
 #include "t1_char.h"
+
+#undef b0
+#undef b1
+#undef b2
 
 /*
  * Type 1 -> Type 1C
@@ -76,7 +64,7 @@ static int status = CS_PARSE_ERROR;
 #define T1_CS_PHASE_FLEX 3
 
 static int phase = -1;
-static int nest  = -1;
+static int t1_nest  = -1;
 
 #ifndef CS_STEM_ZONE_MAX
 #define CS_STEM_ZONE_MAX 96
@@ -1062,10 +1050,10 @@ t1char_build_charpath (t1_chardesc *cd,
   card8 b0 = 0, *subr;
   int len;
 
-  if (nest > CS_SUBR_NEST_MAX)
+  if (t1_nest > CS_SUBR_NEST_MAX)
     ERROR("Subroutine nested too deeply.");
 
-  nest++;
+  t1_nest++;
   while (*data < endptr && status == CS_PARSE_OK) {
     b0 = **data;
     if (b0 == 255) {
@@ -1106,7 +1094,7 @@ t1char_build_charpath (t1_chardesc *cd,
     ERROR("Parsing charstring failed: (status=%d, stack=%d)", status, cs_stack_top);
   }
 
-  nest--;
+  t1_nest--;
 
   return;
 }
@@ -1316,7 +1304,7 @@ do_postproc (t1_chardesc *cd)
 #define RESET_STATE() do {\
   status = CS_PARSE_OK;\
   phase  = T1_CS_PHASE_INIT;\
-  nest   = 0;\
+  t1_nest   = 0;\
   ps_stack_top = 0;\
 } while (0)
 

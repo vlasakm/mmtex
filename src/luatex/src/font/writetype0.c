@@ -107,7 +107,7 @@ void writetype0(PDF pdf, fd_entry * fd)
             if (cff_is_cidfont(cff)) {
                 write_cid_cff(pdf, cff, fd_cur);
             } else {
-                write_cff(pdf, cff, fd_cur);
+                write_cff(pdf, cff, fd_cur, 0);
             }
         } else {
             /*tex Just copy: */
