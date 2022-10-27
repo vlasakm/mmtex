@@ -36,6 +36,7 @@ with LuaTeX; if not, see <http://www.gnu.org/licenses/>.
 #include <string.h>
 
 #include "font/sfnt.h"
+#include "font/dvipdfmx-util.h"
 
 /*tex
 
