@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# copy with `rsync -r scripts/texmf/texmf/ texmf/ -ic`
+
 set -e
 
 pkgname="texmf"
