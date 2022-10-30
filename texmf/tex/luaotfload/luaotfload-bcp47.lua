@@ -55,7 +55,7 @@ local normalize_case, language_tag do
     + l.P'sgn-CH-DE' * l.Cc{language = 'sgg'}
   local regular =
       l.P'art-lojban' * l.Cc{language = 'jbo'}
-    + l.P'cel-gaulish' * l.Cc{language = '...'}
+    + l.P'cel-gaulish' * l.Cc{language = 'cel-gaulish'} -- Might be xcg, xga or xtg
     + l.P'no-bok' * l.Cc{language = 'nb'}
     + l.P'no-nyn' * l.Cc{language = 'nn'}
     + l.P'zh-guoyu' * l.Cc{language = 'cmn'}
@@ -69,17 +69,18 @@ local normalize_case, language_tag do
                            * ('-' * variant)^0
                            * (#('-' * singleton * '-') * l.Cg(l.Cf(l.Ct'' * ('-' * extension)^0, rawset), 'extension'))^-1
                            * ('-' * privateuse)^-1
-  language_tag = (grandfathered + l.Ct(langtag + privateuse)) * l.Cp()--* -1
+  language_tag = (grandfathered + l.Ct(langtag + privateuse)) * -1
 end
 local function parse(tag)
   tag = normalize_case:match(tag)
   if not tag then return end
-  local parsed, pos = language_tag:match(tag)
-  print(require'inspect'{parsed, pos})
-  -- if not parsed then return parsed end
-  return tag, parsed
+  return language_tag:match(tag), tag
 end
-for l in io.lines() do
-  print(parse(l))
-  -- io.stdout:write(parse(l), '\n')
-end
+-- for l in io.lines() do
+--   print(parse(l))
+--   -- io.stdout:write(parse(l), '\n')
+-- end
+return {
+  normalize_case = function(n) return normalize_case:match(tag) end,
+  parse = parse,
+}
