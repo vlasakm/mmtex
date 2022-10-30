@@ -237,7 +237,12 @@ boolean make_tt_subset(PDF pdf, fd_entry * fd, unsigned char *buff, int buflen)
     cidtogidmap = NULL;
     sfont = sfnt_open(buff, buflen);
     if (sfont->type == SFNT_TYPE_TTC) {
-        i = fd->fm->subfont > 0 ? (fd->fm->subfont - 1) : ff_get_ttc_index(fd->fm->ff_name, fd->fm->ps_name);
+        i = fd->fm->subfont;
+        if (fd->fm->subfont == 0) {
+            normal_error("type 2","not explicitly setting subfont index is not supported, using 0");
+        } else {
+            i -= 1;
+        }
         error = sfnt_read_table_directory(sfont, ttc_read_offset(sfont, (int) i, fd));
     } else {
         error = sfnt_read_table_directory(sfont, 0);

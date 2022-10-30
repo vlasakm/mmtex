@@ -73,8 +73,14 @@ void writetype0(PDF pdf, fd_entry * fd)
     }
     fd_cur->ff_found = true;
     sfont = sfnt_open(ttf_buffer, ttf_size);
-    if (sfont->type == SFNT_TYPE_TTC)
-        i = fd->fm->subfont > 0 ? (fd->fm->subfont - 1): ff_get_ttc_index(fd->fm->ff_name, fd->fm->ps_name);
+    if (sfont->type == SFNT_TYPE_TTC) {
+        i = fd->fm->subfont;
+        if (fd->fm->subfont == 0) {
+            normal_error("type 0","not explicitly setting subfont index is not supported, using 0");
+        } else {
+            i -= 1;
+        }
+    }
     if (is_subsetted(fd_cur->fm)) {
         report_start_file(filetype_subset, cur_file_name);
     } else {
