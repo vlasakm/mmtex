@@ -2,23 +2,23 @@
 luaotfload.patch # patch luaotfload font resolution
 
 # Build dependencies
-http://mirrors.ctan.org/macros/latex/base/docstrip.dtx # docstrip (also l3docstrip)
+https://mirrors.ctan.org/macros/latex/base/docstrip.dtx # docstrip (also l3docstrip)
 
 # "Generic"
-http://mirrors.ctan.org/language/hyph-utf8.zip # hyph-utf8
+https://mirrors.ctan.org/language/hyph-utf8.zip # hyph-utf8
 https://unicode.org/Public/zipped/latest/UCD.zip # unicode-data
-http://mirrors.ctan.org/macros/luatex/generic/lualibs.zip # lualibs
-http://mirrors.ctan.org/macros/luatex/generic/luaotfload.zip # luaotfload
+https://mirrors.ctan.org/macros/luatex/generic/lualibs.zip # lualibs
+https://mirrors.ctan.org/macros/luatex/generic/luaotfload.zip # luaotfload
 https://mirrors.ctan.org/macros/luatex/generic/lua-uni-algos.zip # for luaotfload NFC normalization
 
 # For OpTeX
 #git+https://github.com/olsak/optex@master
-http://mirrors.ctan.org/macros/optex.zip # optex
-http://mirrors.ctan.org/systems/knuth/dist/lib/hyphen.tex # Knuth's hyphen.tex
-http://mirrors.ctan.org/macros/latex/contrib/lipsum.zip # optex needs lipsum.ltd.tex
-http://mirrors.ctan.org/macros/generic/librarian/tex/generic/librarian/librarian.tex # for optex bibliography
-http://mirrors.ctan.org/macros/luatex/latex/emoji/emoji-table.def # for optex emoji pkg
-http://mirrors.ctan.org/macros/luatex/generic/luavlna.zip # for optex vlna pkg
+https://mirrors.ctan.org/macros/optex.zip # optex
+https://mirrors.ctan.org/systems/knuth/dist/lib/hyphen.tex # Knuth's hyphen.tex
+https://mirrors.ctan.org/macros/latex/contrib/lipsum.zip # optex needs lipsum.ltd.tex
+https://mirrors.ctan.org/macros/generic/librarian/tex/generic/librarian/librarian.tex # for optex bibliography
+https://mirrors.ctan.org/macros/luatex/latex/emoji/emoji-table.def # for optex emoji pkg
+https://mirrors.ctan.org/macros/luatex/generic/luavlna.zip # for optex vlna pkg
 mmoptex.ini
 
 # OpTeX extra
@@ -33,13 +33,13 @@ https://mirrors.ctan.org/macros/luatex/generic/minim-xmp.zip
 https://mirrors.ctan.org/graphics/minim-hatching.zip
 
 # PGF
-http://mirrors.ctan.org/graphics/pgf/base.zip
+https://mirrors.ctan.org/graphics/pgf/base.zip
 
 # Metapost (mainly for minim)
 svn+https://serveur-svn.lri.fr/svn/modhel/metapost/trunk/texmf/metapost/base mp-base
 
 # Fonts
-http://mirrors.ctan.org/fonts/rsfs.zip # rsfs font
+https://mirrors.ctan.org/fonts/rsfs.zip # rsfs font
 
 # Our files
 mmoptex.ini
