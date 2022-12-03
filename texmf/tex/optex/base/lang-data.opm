@@ -1,10 +1,10 @@
 %% This is part of the OpTeX project, see http://petr.olsak.net/optex
 
-\_codedecl \_langdata {Language dependent data <2022-06-28>} % only en, cs preloaded in format
+\_codedecl \_langdata {Language dependent data <2022-10-11>} % only en, cs preloaded in format
 
 \_langdata en {English} % -----------------------------------------------
 \_langw en  Chapter      Table       Figure       Subject
-\_langb en  {, and }  { et al.} { ed.} {cit.~} {Vol.~} {No.~} {pp.~} {~p.} {,~ed.} {,~eds.}
+\_langb en  {, and }  { et al.} {\,ed.} {cit.~} {Vol.~} {No.~} {pp.~} {~p.} {,~ed.} {,~eds.}
             {Available from } {Available also from }
             {Bachelor's Thesis} {Master's Thesis} {Ph.D. Thesis}
 \_monthw en January February March April May June
@@ -19,10 +19,10 @@
 \_langdata cs {Czech}   % ------------------------------------------------
 %           Chapter      Table       Figure       Subject
 \_langw cs  Kapitola     Tabulka     Obrázek      Věc
-%           {, and }  { et al.} { ed.} {cit.~} {Vol.~} {No.~} {pp.~} {~p.} {,~ed.} {,~eds.}
+%           {, and }  { et al.} {\,ed.} {cit.~} {Vol.~} {No.~} {pp.~} {~p.} {,~ed.} {,~eds.}
 %           {Available from } {Available also from }
 %           {Bachelor's Thesis} {Master's Thesis} {Ph.D. Thesis}
-\_langb cs  { a } { a~kol.} { vyd.} {vid.~} {ročník~} {č.~} {s.~} {~s.} {,~editor} {,~editoři}
+\_langb cs  { a } { a~kol.} {\,vyd.} {vid.~} {ročník~} {č.~} {s.~} {~s.} {,~editor} {,~editoři}
             {Dostupné na } {Dostupné též na }
             {Bakalářská práce} {Diplomová práce} {Disertační práce}
 %           January February March April May June
@@ -31,6 +31,8 @@
             července srpna září října listopadu prosince
 \_sdef{_mt:today:cs}{\_the\_day.~\_mtext{m\_the\_month} \_the\_year} % date format
 \_quotationmarks cs {„“‚‘}
+\_preplangmore   cs {\_frenchspacing \_postexhyphenchar=`\-
+                     \_def\_langreset{\_postexhyphenchar=0 }}
 
 \_let \_sortingdatacs  = \_sortingdatalatin
 \_let \_ignoredcharscs = \_ignoredcharsgeneric
@@ -101,7 +103,12 @@
 \_langw hu  Fejezet      Táblázat    Ábra        Téma
 \_quotationmarks hu {„”»«}
 %todo
-\_let \_sortingdatahu  = \_sortingdatalatin
+\_def \_sortingdatahu {%
+  /,{ },-,&,@,%
+  aAáÁ,bB,cC,dD,eEéÉ,fF,gG,hH,iIíÍ,jJ,kK,lL,mM,nN,oOóÓ,öÖőŐ,%
+  pP,qQ,rR,sS,tT,uUúÚ,üÜűŰ,vV,wW,xX,yY,zZ,^^Z,%
+  0,1,2,3,4,5,6,7,8,9,'%
+}
 \_let \_ignoredcharshu = \_ignoredcharsgeneric
 \_def \_compoundcharshu {cs:c^^Z Cs:C^^Z CS:C^^Z
    dzz:d^^Z^^Z Dzz:D^^Z^^Z DZZ:D^^Z^^Z dz:d^^Z Dz:D^^Z DZ:D^^Z
@@ -128,13 +135,15 @@
 
 \_langdata sk {Slovak}  % ------------------------------------------------
 \_langw sk  Kapitola     Tabuľka     Obrázok      Vec
-\_langb sk  { a } { a~kol.} { vyd.} {vid.~} {ročník~} {č.~} {s.~} {~s.} {,~editor} {,~editori}
+\_langb sk  { a } { a~kol.} {\,vyd.} {vid.~} {ročník~} {č.~} {s.~} {~s.} {,~editor} {,~editori}
             {Dostupné na } {Dostupné tiež na }
             {Bakalárska práca} {Diplomová práca} {Dizertačná práca}
 \_monthw sk januára februára marca apríla mája júna
             júla augusta septembra októbra novembra decembra
 \_sdef{_mt:today:sk}{\_the\_day.~\_mtext{m\_the\_month} \_the\_year} % date format
 \_quotationmarks sk {„“‚‘}
+\_preplangmore   sk {\_frenchspacing \_postexhyphenchar=`\-
+                     \_def\_langreset{\_postexhyphenchar=0 }}
 
 \_let \_sortingdatask = \_sortingdatalatin
 \_let \_ignoredcharssk = \_ignoredcharsgeneric
@@ -150,6 +159,9 @@
 
 \_endcode
 
+2022-10-11: \postexhyphenchar setting added to cs and sk languages
+2022-10-10: { ed.} changed to {\,ed.}
+2022-08-31: \_sortingdatahu corrected
 2022-06-28: Spanish, Polish, French, Swedish, Hungarian sorting rules added
 2022-06-28: German sorting rules added
 2022-02-19: concept finalized, but data still far of completness

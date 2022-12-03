@@ -1,6 +1,6 @@
 %% This is part of the OpTeX project, see http://petr.olsak.net/optex
 
-\_codedecl \fontfam {Fonts selection system <2022-02-22>} % preloaded in format
+\_codedecl \fontfam {Fonts selection system <2022-12-01>} % preloaded in format
 
    \_doc -----------------------------
    The main principle of the Font Selection System is: run one or more
@@ -161,7 +161,7 @@
    runs <what> only if the `\_<key>V` is defined as `<value-a>` or
    `<value-b>` or ... or `<value-z>`.
    \nl
-   \`\_prepcommalist` `ab,{},cd,\_end,` expands to `ab,,cd,` (auxiliary macro
+   \`\_prepcommalist` `ab,{},cd,\_fin,` expands to `ab,,cd,` (auxiliary macro
    used in `\_onlyif`).\nl
    \`\_ffonum` is a shortcut for oldstyle digits font features used in
    font family files. You can do `\let\_ffonum=\ignoreit` if you don't want
@@ -184,10 +184,10 @@
    \_ifx,#1\_else\_sdef{_#1V}{#2}\_ea\_ea\_ea\_fsetVa\_fi\_fi
 }
 \_def \_onlyif #1=#2:#3{%
-    \_edef\_act{\_noexpand\_isinlist{,\_prepcommalist #2,\_end,}{,\_cs{_#1V},}}\_act
+    \_edef\_act{\_noexpand\_isinlist{,\_prepcommalist #2,\_fin,}{,\_cs{_#1V},}}\_act
     \_iftrue #3\_fi
 }
-\_def\_prepcommalist#1,{\_ifx\_end#1\_empty\_else #1,\_ea\_prepcommalist\_fi}
+\_def\_prepcommalist#1,{\_ifx\_fin#1\_empty\_else #1,\_ea\_prepcommalist\_fi}
 \_def\_ffonum {+onum;+pnum}
 
    \_doc -----------------------------
@@ -258,7 +258,7 @@
    They have precedence when \^`\fontsel` constructs the <font switch> name.
    \_cod -----------------------------
 
-\_def\_fontdef #1#2{\_begingroup
+\_protected\_def \_fontdef #1#2{\_begingroup
    \_edef\_xfamv{\_csstring#1}\_let\_ttfamv\_xfamv #2%
    \_ea\_endgroup\_ea \_let\_ea #1\_the\_font
 }
@@ -278,7 +278,7 @@
    the same meaning.
    \_cod -----------------------------
 
-\_def\_famvardef#1#2{%
+\_protected\_def \_famvardef #1#2{%
    \_sdef{_f:\_currfamily:\_csstring#1}%
       {{\_edef\_xfamv{\_csstring#1}\_let\_ttfamv\_xfamv #2\_ea}\_the\_font \_def\_currvar{#1}}%
    \_protected\_edef\_tmpa {%
@@ -307,7 +307,7 @@
    terminal and to the log file.
    \_cod -----------------------------
 
-\_def\_fontfam[#1]{%
+\_protected\_def \_fontfam [#1]{%
    \_lowercase{\_edef\_famname{\_ea\_removespaces #1 {} }}%
    \_isfile {f-\_famname.opm}\_iftrue \_opinput {f-\_famname.opm}%
    \_else
@@ -349,8 +349,9 @@
    \`\_famtext` does nothing or prints the text on the terminal.
    \nl
    \`\_faminfo` `[<Family Name>] {<comments>} {<file-name>} {<mod-plus-vars>}`
-   does\nl `\_def \_famf:<familyname> {<file-name>}` or prints information on
-   the terminal.
+   does\nl `\_def \_famf:<familyname> {<file-name>}` (only if <file-name> differs
+   from `f-<familyname>`) or prints information on the terminal. The
+   <mod-plus-vars> data are used when printing the font catalog.
    \nl
    \`\_famalias` `[<Family Alias>]` does `\def \_famf:<familyalias> {<file-name>}`
    where `<file-name>` is stored from the previous `\_faminfo` command. Or
@@ -364,8 +365,8 @@
 \_def\_famtext #1{}
 \_def\_faminfo [#1]#2#3#4{%
    \_lowercase{\_edef\_tmp{\_ea\_removespaces #1 {} }}%
-   \_sdef{_famf:\_tmp}{#3}%
-   \_def\_famfile{#3}%
+   \_edef\_tmpa{f-\_tmp}\_def\_famfile{#3}%
+   \_unless\_ifx\_tmpa\_famfile \_sdef{_famf:\_tmp}{#3}\_fi
 }
 \_def\_famalias [#1]{%
    \_lowercase{\_edef\_tmpa{\_ea\_removespaces #1 {} }}%
@@ -898,6 +899,8 @@ with Unicode fonts loaded by \^`\fontfam`.
 
 \endinput
 
+2022-12-01  \faminfo saves f-<filename> to the format only when needed
+2022-11-08  \protected: \fontdef, \famvardef, \fontfam
 2022-02-22  Font Selection System reimplemented, \fontsel introduced
 2021-09-24  \_unichars used in \initunifonts
 2021-07-16  \initunifonts: optex_hook_into_luaotfload added.

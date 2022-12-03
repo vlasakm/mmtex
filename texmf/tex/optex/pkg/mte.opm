@@ -2,7 +2,8 @@
 % mte.opm, Petr Olšák <petr@olsak.net>, 2021
 % See end of the file for more information
 
-\_codedecl \enablemte {MicroTypographic Extension <2021-05-23>}
+\_def \_mte_version {0.1, 2021-05-23}
+\_codedecl \enablemte {MicroTypographic Extension <\_mte_version>}
 \_namespace{mte}
 
     \_doc -------------------
@@ -608,6 +609,7 @@
 \_endcode
 
 \tit MicroTypographic Extensions for \OpTeX/
+\hfill v. \_mte_version
 
 \centerline{\it Petr Olšák, 2021}
 \bigskip
@@ -680,6 +682,30 @@ that a specific font family needs different microtypographic data, please
 let me know. I can add extra definitions to appropriate font family
 file.
 
-\_endinput
+\_doc
+   % Run  optex -jobname mte-doc '\docgen mte'
+   % (two times) to generate documentation including references and the index.
 
-Use "optex mte-doc.tex" (twice) to generate documentation from this file.
+   \load [doc]
+
+   \def\elink[#1]#2{%
+      \ulink[http://petr.olsak.net/ftp/olsak/optex/tex-nutshell.pdf\#cs:#1]%
+      {\tt\string#2}%
+   }
+   \def\olink[#1]#2{%
+      \ulink[http://petr.olsak.net/ftp/olsak/optex/optex-doc.pdf\#cs:#1]%
+      {\tt\string#2}%
+   }
+
+   \printdoctail mte.opm
+   \printdoc     mte.opm
+
+   \nonum\sec Index
+   \begmulti 3
+   \tt \makeindex
+   \endmulti
+
+   \bye
+\_cod
+
+\_endinput

@@ -277,8 +277,11 @@ f-erewhon.opm
 f-garamondl.opm
 f-gfsbodoni.opm
 f-heros.opm
+f-iwona.opm
 f-kerkis.opm
 f-kpfonts.opm
+f-kurier.opm
+f-lato.opm
 f-libertine.opm
 f-libertine-s.opm
 f-libertinus.opm
@@ -328,7 +331,6 @@ margins.opm
 mathclass.opm
 math-macros.opm
 math-preload.opm
-math-unicode.opm
 more-macros.opm
 multicolumns.opm
 optex.ini
@@ -349,12 +351,14 @@ styles.opm
 table.opm
 uni-lcuc.opm
 unimath-codes.opm
+unimath-macros.opm
 unimath-table.opm
 usebib.opm
 verbatim.opm
 
 ./tex/optex/pkg:
 emoji.opm
+math.opm
 minim-mp.opm
 minim.opm
 minim-pdf.opm

@@ -1,6 +1,6 @@
 %% This is part of the OpTeX project, see http://petr.olsak.net/optex
 
-\_codedecl \eoldef {OpTeX useful macros <2022-05-24>} % preloaded in format
+\_codedecl \eoldef {OpTeX useful macros <2022-11-24>} % preloaded in format
 
    \_doc -----------------------------
    We define \`\opinput` `{<file name>}` macro which
@@ -89,7 +89,7 @@
    loaded file is forgotten after the `\opinput`.
    \_cod -----------------------------
 
-\_def \_load [#1]{\_loadA #1,,,\_end}
+\_def \_load [#1]{\_savemathsb \_loadA #1,,,\_end \_restoremathsb}
 \_def \_loadA #1#2,{\_ifx,#1 \_ea \_loadE \_else \_loadB{#1#2}\_ea\_loadA\_fi}
 \_def \_loadB #1{%
    \_ifcsname _load:#1\_endcsname \_else
@@ -105,25 +105,29 @@
    The declarator \`\optdef``\macro [<opt default>] <params>{<replacement text>}` 
    defines the `\macro` with the optional parameter followed by normal parameters
    declared in `<params>`. The optional parameter must be used as the first
-   first parameter in brackets `[...]`. If it isn't used then <opt default>
+   parameter in brackets `[...]`. If it isn't used then <opt default>
    is taken into account. The `<replacement text>` can use `\the\opt`
    because optional parameter is saved to the \`\opt` tokens register.
    Note the difference from \LaTeX/ concept where the optional parameter is
    in `#1`. \OpTeX/ uses `#1` as the first normal parameter (if declared).
 
-   The \`\_nospaceafter` ignores the following optional space at expand
+   The \`\nospaceafter` ignores the following optional space at expand
    processor level using the negative `\romannumeral` trick.
+   The \`\nospacefuturelet` bahaves like `\futurelet` primitive, but it
+   ignores the following optional space and works at expand processor level.
    \_cod -----------------------------
 
+\_newtoks\_opt
 \_def\_optdef#1[#2]{%
    \_def#1{\_opt={#2}\_isnextchar[{\_cs{_oA:\_csstring#1}}{\_cs{_oB:\_csstring#1}}}%
    \_sdef{_oA:\_csstring#1}[##1]{\_opt={##1}\_cs{_oB:\_csstring#1\_nospaceafter}}%
    \_sdef{_oB:\_csstring#1\_nospaceafter}%
 }
-\_def\_nospaceafter#1{\_ea#1\_romannumeral-`\.}
-\_newtoks\_opt
+\_def\_nospaceafter#1{\_ea#1\_romannumeral-`\.\_noexpand}
+\_def\_nospacefuturelet#1#2{\_ea\_immediateassignment
+   \_ea\_futurelet\_ea#1\_ea#2\_romannumeral-`\.\_noexpand}
 
-\_public \opt \optdef ; 
+\_public \opt \optdef \nospaceafter \nospacefuturelet ;
 
    \_doc -----------------------------
    The declarator \`\eoldef``\macro #1{<replacement text>}` defines a `\macro`
@@ -150,8 +154,8 @@
 \_eoldef\_skiptoeol#1{}
 \_def\_bracedparam#1{\_ifcsname _\_csstring #1:M\_endcsname
     \_csname _\_csstring #1:M\_ea \_endcsname
-    \_else \_csname __in\_csstring #1:M\_ea \_endcsname \_fi
-} 
+    \_else \_csname _in\_csstring #1\_ea \_endcsname \_fi
+}
 \_public \eoldef \skiptoeol \bracedparam ;
 
    \_doc -----------------------------
@@ -170,10 +174,10 @@
    the next line continues.
    \_cod -----------------------------
 
-\_def\_scantoeol#1{\def\_tmp{#1}\_begingroup \_setscancatcodes \_scantoeolA}
+\_def\_scantoeol#1{\_begingroup \_setscancatcodes \_scantoeolA #1}
 \_def\_setscancatcodes{\_setverb \_catcode`\^^M=12\_catcode`\^=7\_catcode`\ =10\_catcode`\^^J=14 }
 \_catcode`\^^M=12 %
-\_def\_scantoeolA#1^^M{\_endgroup \_tmp{#1}}%
+\_def\_scantoeolA#1#2^^M{\_endgroup #1{#2}}%
 \_normalcatcodes %
 
 \_public \scantoeol ;
@@ -194,13 +198,20 @@
    It finishes processing or appends the next part to `\_tmptoks` separated by
    <textB> and continues loop. The final part of the macro removes the last `?`
    from resulting `\_tmptoks` and defines a new version of the `\foo`.
+
+   The \^`\replstring` macro is not expandable, but you can create your
+   expandable macro, for example:
+   \begtt
+   \def\replAB#1{\immediateassigned{\def\tmp{#1}\replstring\tmp{A}{B}}\the\_tmptoks}
+   \replAB {text A \and A} % expands to "text B \and B"
+   \endtt
    \_cod -----------------------------
 
 \_newtoks\_tmptoks
 \_catcode`!=3 \_catcode`?=3
 \_def\_replstring #1#2#3{%  \replstring #1{stringA}{stringB}
    \_long\_def\_replacestringsA##1#2{\_tmptoks{##1}\_replacestringsB}%
-   \_long\_def\_replacestringsB##1#2{\_ifx!##1\_relax \_else \_toksapp\_tmptoks{#3##1}%
+   \_long\_def\_replacestringsB##1#2{\_ifx!##1\_relax \_else \_tmptoks\_ea{\_the\_tmptoks#3##1}%
                                      \_ea\_replacestringsB\_fi}%
    \_ea\_replacestringsA #1?#2!#2%
    \_long\_def\_replacestringsA##1?{\_tmptoks{##1}\_edef#1{\_the\_tmptoks}}%
@@ -232,7 +243,22 @@
 \_def\_removespaces #1 {\_isempty{#1}\_iffalse #1\_ea\_removespaces\_fi}
 \_ea\_def \_ea\_ignorept \_ea#\_ea1\_detokenize{pt}{#1}
 
-\public \removespaces \ignorept ;
+\_public \removespaces \ignorept ;
+
+   \_doc -----------------------------
+   If you do `\let\foo=a` then it is not simple to return from `\foo` to the original
+   character code of `a`. You can write \code{`a} but you cannot write \code{`\\foo}.
+   The macro \`\cstochar``<sequence>` solves this problem. If the sequence
+   is equal to a character then it expands to this character (always with
+   catcode 12). If it isn't equal to a character then it expands to nothing.
+   You can say \code{\\expanded{`\\cstochar\\foo}} if you want to extract
+   the character code.
+   \_cod -----------------------------
+
+\_def\_cstochar#1{\_ea\_cstocharA\_meaning#1 {} {} \_fin}
+\_def\_cstocharA#1 #2 #3 #4\_fin{\_isinlist{#1#2}-\_iffalse #3\_fi}
+
+\_public \cstochar ;
 
    \_doc -----------------------------
    You can use expandable \`\bp``{<dimen>}` convertor from
@@ -262,6 +288,53 @@
 \_public \expr \bp ;
 
    \_doc ------------------
+   You can write \^`\setpos``[<label>]` somewhere and the position of such
+   \^`\setpos``[<label>]` can be referenced by \^`\posx``[<label>]`,
+   \^`\posy``[<label>]` and \^`\pospg``[<label>]`. The first two macros
+   expand to $x$ and $y$ position measured from left-bottom corner of the page
+   (dimen values) and \^`\pospg[<label>]` expands to the <gpageno>, i.e.\ to
+   the page number counted from one at beginning of the document.
+   These values are available in the second (and more) \TeX/ run, because the
+   information is saved to `.ref` file and restored from it at the beginning of
+   the \TeX/ job. If these values are not known then mentioned macros expand to
+   0sp, 0sp and 0. The following example implements `\linefrom[<label>]` and
+   `\lineto[<label>]` macros. The line connecting these two points is drawn
+   (after second \TeX/ run):
+   \begtt
+   \def\linefrom[#1]{\setpos[#1:f]\drawlinefromto[#1]}
+   \def\lineto  [#1]{\setpos[#1:t]}
+   \def\drawlinefromto[#1]{\ifnum\pospg[#1:f]>0 \ifnum\pospg[#1:f]=\pospg[#1:t]
+      \pdfliteral{q 0 0 m   1 0 0 RG % << red color
+         \expr{\bp{\posx[#1:t]}-\bp{\posx[#1:f]}}
+         \expr{\bp{\posy[#1:t]}-\bp{\posy[#1:f]}} l S Q}\fi\fi
+   }
+   This is a text.\linefrom[A]\par
+   This is second paragraph with a text.\lineto[A]
+   Try to reverse from-to and watch the changes.
+   \endtt
+   The coordinates are saved to the `.ref` file in the format
+   \`\_Xpos``{<label>}{<x-pos>}{<y-pos>}`. The \^`\_Xpos` macro defines
+   `\_pos:<label>` as `{<x-pos>}{<y-pos>}{<total-pg>}{<rel-pg>}`.
+   We need to read only given parameter by `\_posi`, `\_posii` or `\_posiii`
+   auxiliary macros. The implementation of
+   \`\setpos`, \`\posx` and \`\posy` macros are based on `\padsavepos`
+   `\pdflastxpos` and `\pdflastypos` pdf\TeX/ primitives. The \`\pospg`
+   simply reads the data from the \~`\_currpage` macro.
+   \_cod ------------------
+
+\_def\_Xpos#1#2#3{\_sxdef{_pos:#1}{{#2}{#3}\_currpage}}
+\_def\_setpos[#1]{\_openref\_pdfsavepos
+   \_ewref\_Xpos{{#1}\_unexpanded{{\_the\_pdflastxpos}{\_the\_pdflastypos}}}}
+
+\_def\_posx [#1]{\_ea \_posi   \_expanded {\_trycs{_pos:#1}{{0}{}{}{}}sp}}
+\_def\_posy [#1]{\_ea \_posii  \_expanded {\_trycs{_pos:#1}{{}{0}{}{}}sp}}
+\_def\_pospg[#1]{\_ea \_posiii \_expanded {\_trycs{_pos:#1}{{}{}{0}{}}}}
+
+\_def\_posi #1#2#3#4{#1}  \_def\_posii #1#2#3#4{#2}  \_def\_posiii #1#2#3#4{#3}
+
+\_public \setpos \posx \posy \pospg ;
+
+   \_doc ------------------
    The pair {\`\_doc` ... \`\_cod`} is used for documenting macros and to
    printing the technical documentation of the \OpTeX/. The syntax is:
    {\begtt \catcode`\<=13
@@ -276,8 +349,28 @@
 
 \_long\_def\_doc #1\_cod {\_skiptoeol}
 
+   \_doc ------------------
+   \`\docgen` processes lines before `\_codedecl` because the version text
+   in the macro `\_<pkg>_version` can be defined here. The package
+   documentation can print it. \^`\docgen` prints banner to log because TeX doesn't do it
+   when command line doesn't begin with the main file name after parameters.
+   \_cod ------------------
+
+\_def\_docgen #1 {\_ea \_docgenA \_input{#1.opm}}
+\_long \_def\_docgenA #1\_codedecl#2\_endcode #3\_doc {#1\_wlog{\_banner}\_skiptoeol}
+
+\_public \docgen ;
+
 \_endcode % -------------------------------------
 
+2022-11-24 \setpos, \posx, \posy moved from OpTeX trick here
+2022-11-22 \docgen writes banner to log
+2022-11-20 \docgen reads lines before \_codedecl in order to define pkg. version
+2022-11-18 \cstochar introduced
+2022-11-13 \docgen introduced, \bracedparam corrected, \scantoeol modified
+2022-11-05 \replstring can be expandable using \immediateassigned: \toksapp replaced
+2022-11-03 \nospacefuturelet added.
+2022-10-27 \_savemathsb ...\_restoremathsb added to \load (eg. \load[xstring])
 2022-05-24 \optdef: used \csstring instead \string, bug fixed.
 2021-04-25 \normalcatcodes: typo fixed
 2021-04-22 \the\_currctable replaced by \the\_catcodetable, bug fixed.
