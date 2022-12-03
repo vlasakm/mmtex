@@ -3,7 +3,7 @@
 % SPDX-License-Identifier: MPL-2.0+
 % SPDX-FileCopyrightText: 2022 Max Chernoff
 
-\_codedecl\lwcenable{lua-widow-control <v2.2.2>} %%version
+\_codedecl\lwcenable{lua-widow-control <v3.0.0>} %%version
 \_namespace{lwc}
 
 \_clubpenalty=1
@@ -13,6 +13,9 @@
 
 \_newdimen\lwcemergencystretch
 \lwcemergencystretch=3em
+
+\_newdimen\lwcdraftoffset
+\lwcdraftoffset=1in
 
 \_newcount\lwcmaxcost
 \lwcmaxcost=2147483647
@@ -72,7 +75,12 @@
 \_let\lwcdisable=\.disable
 \_let\lwcdisablecmd=\.disable_cmd
 \_let\lwcdebug=\.debug
-\_let\lwcdraft=\.draft
+\_def\lwcdraft#1{%
+    \.show_costs{#1}%
+    \.show_colours{#1}%
+}
+\_let\lwcshowcosts=\.show_costs
+\_let\lwcshowcolours=\.show_colours
 \_let\iflwc=\.if_enabled
 \_let\lwcnobreak=\.nobreak
 
