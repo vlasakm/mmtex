@@ -36,7 +36,7 @@ https://mirrors.ctan.org/graphics/minim-hatching.zip
 https://mirrors.ctan.org/graphics/pgf/base.zip
 
 # Metapost (mainly for minim)
-svn+https://serveur-svn.lri.fr/svn/modhel/metapost/trunk/texmf/metapost/base mp-base
+svn+svn://tug.org/historic-metapost/trunk/texmf/metapost/base mp-base
 
 # Fonts
 https://mirrors.ctan.org/fonts/rsfs.zip # rsfs font
