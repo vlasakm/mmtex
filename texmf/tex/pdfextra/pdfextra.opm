@@ -1,5 +1,9 @@
-% vim: tw=80
-\_def\_pdfextra_version{0.2}
+% pdfextra package
+% Michal Vlasák <lahcim8@gmail.com>
+% https://github.com/vlasakm/pdfextra
+% Zero-Clause BSD license
+
+\_def\_pdfextra_version{0.3}
 \_codedecl \RM {Extra PDF features (v\_pdfextra_version)}
 \_namespace{pdfextra}
 
@@ -739,7 +743,7 @@
 
 % file attachment
 \_def\.embeddedfiles{}
-\_def\.attach[#1]{\.isfiledefined{\.name}\_iftrue
+\_def\.attach[#1]{\.isfiledefined{#1}\_iftrue
    \.xaddto\.embeddedfiles{(#1) \.cs{filespec:#1} }\_fi
 }
 \_nspublic \attach ;
@@ -1723,6 +1727,16 @@
 \.mimetype{avi}{video/x-msvideo}
 \.mimetype{mp4}{video/mp4}
 \.mimetype{webm}{video/webm}
+
+\.mimetype{tex}{application/x-tex}
+
+
+% more or less legacy formats
+\.mimetype{au}{audio/basic}
+\.mimetype{aiff}{audio/x-aiff}
+\.mimetype{mov}{video/quicktime}
+\.mimetype{mpg}{video/mpeg}
+\.mimetype{wmv}{video/x-ms-wmv}
 
 \_endnamespace
 \_endcode
