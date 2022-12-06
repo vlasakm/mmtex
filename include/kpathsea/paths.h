@@ -11,11 +11,12 @@
 	"$TEXMFDOTDIR:{$TEXMF,$_TEXMFMMTEX}/fonts/opentype//"
 
 /* Hopefully these will die someday. */
-#define DEFAULT_AFMFONTS    "$TEXMFDOTDIR:{$TEXMF,$_TEXMFMMTEX}/fonts/afm//"
-#define DEFAULT_TEXFONTMAPS "$TEXMFDOTDIR:{$TEXMF,$_TEXMFMMTEX}/fonts/map//"
-#define DEFAULT_TFMFONTS    "$TEXMFDOTDIR:{$TEXMF,$_TEXMFMMTEX}/fonts/tfm//"
-#define DEFAULT_T1FONTS     "$TEXMFDOTDIR:{$TEXMF,$_TEXMFMMTEX}/fonts/type1//"
-#define DEFAULT_ENCFONTS    "$TEXMFDOTDIR:{$TEXMF,$_TEXMFMMTEX}/fonts/enc//"
+#define DEFAULT_AFMFONTS     "$TEXMFDOTDIR:{$TEXMF,$_TEXMFMMTEX}/fonts/afm//"
+#define DEFAULT_TEXFONTMAPS  "$TEXMFDOTDIR:{$TEXMF,$_TEXMFMMTEX}/fonts/map//"
+#define DEFAULT_TFMFONTS     "$TEXMFDOTDIR:{$TEXMF,$_TEXMFMMTEX}/fonts/tfm//"
+#define DEFAULT_T1FONTS      "$TEXMFDOTDIR:{$TEXMF,$_TEXMFMMTEX}/fonts/type1//"
+#define DEFAULT_ENCFONTS     "$TEXMFDOTDIR:{$TEXMF,$_TEXMFMMTEX}/fonts/enc//"
+#define DEFAULT_TEXPSHEADERS "$TEXMFDOTDIR:{$TEXMF,$_TEXMFMMTEX}//"
 
 /* Shouldn't be used. */
 #define DEFAULT_GFFONTS      "/none"
@@ -35,7 +36,6 @@
 #define DEFAULT_OTPINPUTS    "/none"
 #define DEFAULT_OVFFONTS     "/none"
 #define DEFAULT_OVPFONTS     "/none"
-#define DEFAULT_TEXPSHEADERS "/none"
 #define DEFAULT_TEXDOCS      "/none"
 #define DEFAULT_TEXPOOL      "/none"
 #define DEFAULT_TEXSOURCES   "/none"
