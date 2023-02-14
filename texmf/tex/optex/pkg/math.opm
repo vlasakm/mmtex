@@ -3,9 +3,34 @@
 % This file can serve as an template for other package files
 % See end of the file for more information
 
-\_def\_math_version {0.02, 2022-11-26}
-\_codedecl \replacemissingchars {Doing math more comfortable <\_math_version>}
+\_def\_math_version {0.08, 2023-01-28}
+\_codedecl \replacemissingchars {Doing math more comfortably <\_math_version>}
 \_namespace{math}
+
+   \_doc
+   The `math` package provides options, they can be declared using
+   the \`\mathset``{<options>}` macro. For example `\mathset {vert, dots}`.
+   If you create your own package with options, provide a similar
+   `\<pkg>set` macro. The \`\.kv` macro is similar to \OpTeX's `\kv`, but
+   with specific `pkg:math` dictionary.
+   \_cod
+
+\_def\.mathset #1{%
+   \_edef\.restorekvdict{\_kvdict{\_the\_kvdict}}%
+   \_kvdict{pkg:math}%
+      \_nokvx {\_opwarning{\_the\_kvdict: unknown option "##1", ignored}}%
+      \_kvx {vert}     {\.smartvert}%     sets | as math active, to do better |x| or ||x||
+      \_kvx {dots}     {\.smartdots}%     \dots behaves like \ldots or \cdots
+      \_kvx {bfserif}  {\.bfserif}%       \bf, \bi select fonts with serifs
+      \_kvx {rmchars}  {\.rmchars{##1}}%  does \.rmchars{<list>}
+      \_kvx {vargreek} {\.vargreek{##1}}% does \.vargreek{<list>}
+      \_kvx {text}     {\.dotext{##1}}%   does \.dotext{<list>}
+      \_readkv{#1}%
+   \.restorekvdict
+}
+\_def\.kv #1{\_trycs{_kv:pkg:math:#1}{\_kvunknown}}% for accessing values given by \mathset
+
+\_nspublic \mathset ;
 
    \_doc
    \`\bigp`, \`\Bigp`, \`\biggp`, \`\Biggp`, \`\autop`, \`\normalp` are inspired from
@@ -22,11 +47,12 @@
    \_isequal .{#1}\_iffalse #1\_fi
    \_let\.bigleft=#2\_let\.bigright=#3\_nospacefuturelet\.next\.fparamA}
 \_def\.fparamA{%
-   \_ifx\.next(\.afterrelax{\.fparamB()}\_fi
-   \_ifx\.next[\.afterrelax{\.fparamB[]}\_fi
-   \_ifx\.next\{\.afterrelax{\.fparamB\{\}}\_fi
-   \_ifx\.next\_bgroup \_def\.lparen{\{}\_def\.rparen{\}}\.afterrelax{\.fparamC}\_fi
-   \_relax
+   \_casesof \.next
+   (        {\.fparamB()}%
+   [        {\.fparamB[]}%
+   \{       {\.fparamB\{\}}%
+   \_bgroup {\_def\.lparen{\{}\_def\.rparen{\}}\.fparamC}%
+   \_finc   {}%
 }
 \_def\.fparamB#1#2{%
    \_def\.lparen{#1}\_def\.rparen{#2}%
@@ -34,16 +60,14 @@
    \.next
 }
 \_def\.fparamC#1{%
-   \_ifx\.bigleft\_left \_mathopen{}\_fi
+   \_ifx\.bigleft\_left \_mathopen{}\_bgroup\_fi
    \.bigleft\.lparen{#1}\.bigright\.rparen
-   \_ifx\.bigright\_right \_mathclose{}\_fi
+   \_ifx\.bigright\_right \_egroup\_fi
 }
-\_def\.afterrelax#1#2\_relax{\_fi#1}
-
 \_nspublic \bigp \Bigp \biggp \Biggp \autop \normalp ;
 
    \_doc
-   We need macro \`\.ensurebalanced` for balancing nested parentheses from
+   We need macro \`\.ensurebalanced``<open-b><close-b><macro>` for balancing nested parentheses from
    \tricklink[balancing]{0043}. We use `trick` namespace for these macros.
    \_cod
 
@@ -97,7 +121,7 @@
 \_nspublic \smartdots ;
 
    \_doc
-   \`\smartvert` sets `|` as math-active charcter and declares it
+   \`\smartvert` sets `|` as math-active character and declares it
    equal to `\.autovert` macro. This macro checks two variants: there
    is single `|` or there is double `||`. It runs \`\.autovertA` or
    \`\.autoVertA`. These macros find the closing `|` or `||` and use
@@ -105,7 +129,7 @@
    is declared here if a user want to use a single vertical bar.
    \_cod
 
-\_newpublic \_mathchardef \_singlevert=\_mathcode`|
+\_newpublic\_mathchardef \singlevert=\_mathcode`|
 \_def\.autovert {\_isnextchar|{\.autoVertA}{\.autovertA}}
 \_def\.autovertA #1|{\_mathopen{}\_mathclose{\_left|#1\_right|}}
 \_def\.autoVertA|#1||{\_mathopen{}\_mathclose{\_left‖#1\_right‖}}
@@ -117,37 +141,68 @@
    \_doc
    The control sequences \`\N`, \`\Z`, \`\Q`, \`\R`, \`\C`
    \`\sgn`, \`\argmin`, \`\argmax`, \`\grad`, \`\rank`, \`\tr`, \`\diag`, \`\Span`,
-   \`\Rng`, \`\Null`, \`\Ker`, \`\Res`, \`\tg`, \`\arctg`,
+   \`\Rng`, \`\Null`, \`\Ker`, \`\Res`, \`\tg`, \`\cotg`, \`\arctg`, \`\arccotg`,
    \`\frac`, \`\dfrac`, \`\tfrac`, \`\.`
    are defined directly in the user space by \o`\_newpublic`.
+   The \`\.pdef` is a shortcut for `\protected\def`.
    \_cod
 
-\_newpublic\_def \N {{\_bbchar N}}
-\_newpublic\_def \Z {{\_bbchar Z}}
-\_newpublic\_def \Q {{\_bbchar Q}}
-\_newpublic\_def \R {{\_bbchar R}}
-\_newpublic\_def \C {{\_bbchar C}}
+\_def\.pdef{\_protected\_def}
 
-\_newpublic\_def \sgn    {\_mathop{\_rm sgn}\_nolimits}
-\_newpublic\_def \argmin {\_mathop{\_rm argmin}}
-\_newpublic\_def \argmax {\_mathop{\_rm argmax}}
-\_newpublic\_def \grad   {\_mathop{\_rm grad}\_nolimits}
-\_newpublic\_def \rank   {\_mathop{\_rm rank}\_nolimits}
-\_newpublic\_def \tr     {\_mathop{\_rm tr}\_nolimits}
-\_newpublic\_def \diag   {\_mathop{\_rm diag}\_nolimits}
-\_newpublic\_def \Span   {\_mathop{\_rm Span}\_nolimits}
-\_newpublic\_def \Rng    {\_mathop{\_rm Rng}\_nolimits}
-\_newpublic\_def \Null   {\_mathop{\_rm Null}\_nolimits}
-\_newpublic\_def \Ker    {\_mathop{\_rm Ker}\_nolimits}
-\_newpublic\_def \Res    {\_mathop{\_rm Res}\_nolimits}
-\_newpublic\_def \tg     {\_mathop{\_rm tg}\_nolimits}
-\_newpublic\_def \arctg  {\_mathop{\_rm arctg}\_nolimits}
+\_newpublic\.pdef \N {{\_bbchar N}}
+\_newpublic\.pdef \Z {{\_bbchar Z}}
+\_newpublic\.pdef \Q {{\_bbchar Q}}
+\_newpublic\.pdef \R {{\_bbchar R}}
+\_newpublic\.pdef \C {{\_bbchar C}}
 
-\_newpublic\_def \frac  #1#2{{{#1}\_over#2}}
-\_newpublic\_def \dfrac #1#2{{\_displaystyle{{#1}\_over#2}}}
-\_newpublic\_def \tfrac #1#2{{\_textstyle{{#1}\_over#2}}}
+\_newpublic\.pdef \sgn     {\_mathop{\_rm sgn}\_nolimits}
+\_newpublic\.pdef \argmin  {\_mathop{\_rm argmin}}
+\_newpublic\.pdef \argmax  {\_mathop{\_rm argmax}}
+\_newpublic\.pdef \grad    {\_mathop{\_rm grad}\_nolimits}
+\_newpublic\.pdef \rank    {\_mathop{\_rm rank}\_nolimits}
+\_newpublic\.pdef \tr      {\_mathop{\_rm tr}\_nolimits}
+\_newpublic\.pdef \diag    {\_mathop{\_rm diag}\_nolimits}
+\_newpublic\.pdef \Span    {\_mathop{\_rm Span}\_nolimits}
+\_newpublic\.pdef \Rng     {\_mathop{\_rm Rng}\_nolimits}
+\_newpublic\.pdef \Null    {\_mathop{\_rm Null}\_nolimits}
+\_newpublic\.pdef \Ker     {\_mathop{\_rm Ker}\_nolimits}
+\_newpublic\.pdef \Res     {\_mathop{\_rm Res}\_nolimits}
+\_newpublic\.pdef \tg      {\_mathop{\_rm tg}\_nolimits}
+\_newpublic\.pdef \cotg    {\_mathop{\_rm cotg}\_nolimits}
+\_newpublic\.pdef \arctg   {\_mathop{\_rm arctg}\_nolimits}
+\_newpublic\.pdef \arccotg {\_mathop{\_rm arccotg}\_nolimits}
 
-\_newpublic\_def \.#1{{\_bf#1}}
+\_newpublic\.pdef \frac  #1#2{{{#1}\_over#2}}
+\_newpublic\.pdef \dfrac #1#2{{\_displaystyle{{#1}\_over#2}}}
+\_newpublic\.pdef \tfrac #1#2{{\_textstyle{{#1}\_over#2}}}
+
+\_newpublic\.pdef \.#1{{\_bf#1}}
+
+   \_doc
+   \`\eqsystem``{<equations>}` saves its parameter to `\.tmpb`
+   and does a collection of `\_replstring`s. It replaces all spaces by `&`
+   (but ignores the optional first and last space), it removes spaces before `\cr`,
+   it precedes `\mathord` before all `-`
+   (but not if the minus is alone in the column) and runs `\halign`.
+   The \n`\baselineskip` is enlarged by \O`\openup`\`\eqskip`.
+   Each item adds 0.5\`\eqsep` around it and \`\eqfil` to the left side and
+   `\hfil` to the right side.
+   \_cod
+
+\_protected \_optdef\.eqsystem[]#1{\_vcenter{%
+   \_def\.tmpb{\.bb#1\.bb}\_replstring\.tmpb{ }{&}%
+   \_replstring\.tmpb{\.bb&}{}\_replstring\.tmpb{&\.bb}{}\_replstring\.tmpb{&\cr}{\cr}%
+   \_replstring\.tmpb{-}{\_mathord-}\_replstring\.tmpb{&\_mathord-&}{&-&}%
+   \_let ~=\_relax
+   \_the\_opt \_relax \_openup\.eqskip
+   \_halign{&\_the\.eqfil\_kern.5\.eqsep$\_displaystyle{{}##{}}$\_kern.5\.eqsep\_hfil\_cr
+            \.tmpb\_crcr}%
+}}
+\_let\.bb=\_empty
+\_newdimen\.eqskip
+\_newdimen\.eqsep
+\_newtoks\.eqfil   \.eqfil={\_hfill}
+\_nspublic \eqsystem \eqskip \eqsep \eqfil ;
 
    \_doc
    The \`\toright` and  \`\toleft` macros are based on the
@@ -168,7 +223,7 @@
    \_doc
    The \`\subeqmark` works because the internal \O`\_thednum`
    is re-defined. The \`\.dnumpost` is added here. If you want to use another format
-   for \O`\_thednum` then you have to add the \`\.dnumpost` to it too.
+   for \O`\_thednum` then you have to add the \^`\.dnumpost` to it too.
    \_cod
 
 \_def \_thednum    {(\_the\_dnum \.dnumpost)}
@@ -178,12 +233,43 @@
 \_nspublic \subeqmark ;
 
    \_doc
+   \`\bfserif` re-defines internal \OpTeX/ \O`\_mabf` and \O`\_mabi` macros.
+   \_cod
+
+\_def\bfserif{%
+   \_protected\_def\_mabf {\_inmath{\_bfvariables\_bfgreek\_bfGreek\_bfdigits}}%
+   \_protected\_def\_mabi {\_inmath{\_bivariables\_bigreek\_bfGreek\_bfdigits}}%
+}
+
+   \_doc
+   \`\rmchars``{<list>}` is implemented using \O`\foreach`. The list is
+   expanded first because we want to expand control sequences like `\alpha`
+   to a real character $\_rmgreek \alpha$.\nl
+   \`\vargreek``{<list>}` is implemented using \O`\foreach`. The
+   parameter is not expanded because we want to keep control sequences like
+   `\alpha` unchanged.
+   \_cod
+
+\_def\.rmchars#1{\_ea\_foreach \_expanded{#1}\_do{\_ifx,##1\_else\.rmchar##1\_fi}}
+\_def\.rmchar#1{\_Umathcode`#1=0 1 `#1 }
+
+\_def\.vargreek#1{\_foreach#1\_do{\_ifx,##1\_else \.vargreekchar##1\_fi}}
+\_def\.vargreekchar#1{%
+   \_ifcsname var\_csstring#1\_endcsname \_slet{\_csstring#1}{var\_csstring#1}%
+   \_else \_opwarning{\_string\vargreek: the \_bslash var\_csstring#1\_space doesn't exists}%
+   \_fi
+}
+\_nspublic \rmchars \vargreek ;
+
+   \_doc
    \`\textvariables`, \`\textdigits`, \`\textmoremath` initialize
    new two families 5, 6 using `\.textmathini` and sets `\mathcode`s
    of given characters to these families.
    Moreover, `\textvariables` adds `\fam` register setting to `\rm` and `\it`
    selectors and re-set Greek variables to use only math font (because we
-   are not sure if Greek letters are in the current text fonts).
+   are not sure if Greek letters are in the current text fonts).\nl
+   \`\.dotext``{<list of words>}` runs `\.text<word>` for each <word> in the list.
+   It is used when the option `text={<list of words>}` is used.
    \_cod
 
 \_def\.textmathini{%
@@ -204,8 +290,8 @@
    \_addto\_marm {\_fam5 }\_addto\_mait{\_fam6 }%
    \_protected\_def\_itgreek    {\_umathrangegreek01\_greekita}%
    \_protected\_def\_rmgreek    {\_umathrangegreek01\_greekrma}%
-   \_protected\_def\_itGreek    {\_umathrangeGREEK01\_greekitA \_setnablait}
-   \_protected\_def\_rmGreek    {\_umathrangeGREEK01\_greekrmA \_setnablarm}
+   \_protected\_def\_itGreek    {\_umathrangeGREEK01\_greekitA}
+   \_protected\_def\_rmGreek    {\_umathrangeGREEK01\_greekrmA}
    \_itgreek \_rmGreek
 }
 \_def\.textdigits    {\.textmathini \_mathcodes 5 {7{\_Urange 0-9}}}
@@ -213,6 +299,9 @@
    \_mathcodes 5 {5{!?} 2{*+-} 3{=<>} 6{,:;} 0{./|} 4{([\{} 5{\})]}}%
    \_Umathcode `- = 2 5 "2212  % hyphen behaves like minus in math mode
 }
+\_def\.dotext#1{\_foreach #1 \_do
+   ##1 {\_trycs{_math_text##1}{\_opwarning{text option: "##1" unknown}}}}
+
 \_nspublic \textvariables \textdigits \textmoremath ;
 
    \_doc
@@ -226,7 +315,7 @@
    replaced again if a new `\replacemissingchars` is used.
    \_cod
 
-\_def\.rlist{}
+\_def\.rlist{\sqrt\cuberoot\fourthroot} % they cannot be replaced by \mathchars
 \_def\.replacemissingchars#1{%
    \_def\.alist{}\_def\.clist{}
    \_def\UnicodeMathSymbol##1##2##3##4{%
@@ -242,9 +331,9 @@
    }
    \_input unimath-table.opm
    \_wlog{^^J\_string\replacemissingchars: From \_string\fam=\_string#1 is printed now:^^J%
-         CHARACTERS: \.clist^^JACCENTS: \.alist^^J}%
-   \_ea\_mathchars \_expanded{\_noexpand#1{\.clist}}%
-   \_edef\.rlist{\.rlist\.clist\.alist}%
+         CHARACTERS: \_unexpanded\_ea{\.clist}^^JACCENTS: \_unexpanded\_ea{\.alist}^^J}%
+   \_def\.tmp{\_mathchars #1}\_ea\.tmp\_ea{\.clist}%
+   \_ea\_addto \_ea\.rlist \_ea{\.clist}\_ea\_addto \_ea\.rlist \_ea{\.alist}%
    \_def\.alist{}\_def\.clist{}\_let\UnicodeMathSymbol=\_undefined
 }
 \_nspublic \replacemissingchars ;
@@ -258,20 +347,28 @@
 \_def\.scriptspaces #1#2#3#4{%
    \_Umathordrelspacing\_scriptstyle=\.orzeromu{#1}\_relax
    \_Umathrelordspacing\_scriptstyle=\.orzeromu{#1}\_relax
+   \_Umathrelopspacing \_scriptstyle=\.orzeromu{#1}\_relax
    \_Umathordrelspacing\_crampedscriptstyle=\.orzeromu{#1}\_relax
    \_Umathrelordspacing\_crampedscriptstyle=\.orzeromu{#1}\_relax
+   \_Umathrelopspacing \_crampedscriptstyle=\.orzeromu{#1}\_relax
    \_Umathordbinspacing\_scriptstyle=\.orzeromu{#2}\_relax
    \_Umathbinordspacing\_scriptstyle=\.orzeromu{#2}\_relax
+   \_Umathbinopspacing \_scriptstyle=\.orzeromu{#2}\_relax
    \_Umathordbinspacing\_crampedscriptstyle=\.orzeromu{#2}\_relax
    \_Umathbinordspacing\_crampedscriptstyle=\.orzeromu{#2}\_relax
+   \_Umathbinopspacing \_crampedscriptstyle=\.orzeromu{#2}\_relax
    \_Umathordrelspacing\_scriptscriptstyle=\.orzeromu{#3}\_relax
    \_Umathrelordspacing\_scriptscriptstyle=\.orzeromu{#3}\_relax
+   \_Umathrelopspacing \_scriptscriptstyle=\.orzeromu{#3}\_relax
    \_Umathordrelspacing\_crampedscriptscriptstyle=\.orzeromu{#3}\_relax
    \_Umathrelordspacing\_crampedscriptscriptstyle=\.orzeromu{#3}\_relax
+   \_Umathrelopspacing \_crampedscriptscriptstyle=\.orzeromu{#3}\_relax
    \_Umathordbinspacing\_scriptscriptstyle=\.orzeromu{#4}\_relax
    \_Umathbinordspacing\_scriptscriptstyle=\.orzeromu{#4}\_relax
+   \_Umathbinopspacing \_scriptscriptstyle=\.orzeromu{#4}\_relax
    \_Umathordbinspacing\_crampedscriptscriptstyle=\.orzeromu{#4}\_relax
    \_Umathbinordspacing\_crampedscriptscriptstyle=\.orzeromu{#4}\_relax
+   \_Umathbinopspacing \_crampedscriptscriptstyle=\.orzeromu{#4}\_relax
 }
 \_def\.orzeromu#1{\_ifx^#1^0mu\_else#1\_fi}
 
@@ -294,14 +391,33 @@ The following macros are defined in this package:
   \~`\smartvert` declares \"`|`" for better spacing.
 * There are many common math macros for sets or for operators, for example
   \~`\R` or \~`\sgn`.
+* \~`\eqsystem` enables to write systems of equations comfortably,
 * \~`\toright`, \~`\toleft` puts the \o`\eqmark` to desired position,
   \~`\subeqmark` prints the given suffix as a part of the equation mark.
 * \~`\scriptspaces` sets more spaces around rel, bin in script and scripscript styles.
+* \~`\bfserif` sets `\bf` and `\bi` for math typesetting as for bold-serif, bold-italic-serif.
+* \~`\rmchars` sets selected characters printed as `\rm`,
+  \~`\vargreek` sets Greek leters to their variants.
 * \~`\textvariables`, \~`\textdigits`, \~`\textmoremath`
   enables characters from used text font in math mode
   (variables, digits, more characters).
 * \~`\replacemissingchars` allows to re-declare all characters missing in math font
   for printing them from additional math font.
+\enditems
+
+Six options are provided by the `math` package. You can set them by
+\^`\mathset``{<options>}` after `\load[math]`, for example
+`\mathset{dots, vert, vargreek={\epsilon,\rho}}`. The options are:
+\begitems
+* `dots` sets more inteligent `\dots`, the same as \~`\smartdots`.
+* `vert` sets more inteligent `|`, the same as \~`\smartvert`.
+* `bfserif` sets bold-serif, bold-italic-serif, the same as \~`\bfserif`.
+* `rmchars={<list>}` sets `\rm` for selected characters, the same as \~`\rmchars`,
+   see section~\ref[rmchars].
+* `vargreek={<list>}` sets variants for Greek letetters, the same as \~`\vargreek`,
+   see section~\ref[rmchars].
+* `text={<list>}` sets \~`\textvariables`, \~`\textdigits`, or \~`\textmoremath`,
+  see section~\ref[textvars].
 \enditems
 
 This package is not definitive. I plan to add more features in new versions
@@ -387,27 +503,67 @@ $$
   }
 $$
 
+
 \sec Basic and typical macros for sets, functions etc.
 
 These typical macros are defined in `math.opm`:
 \^`\N` for $\N$, \^`\Z` for $\Z$, \^`\Q` for $\Q$, \^`\R` for $\R$, \^`\C` for $\C$,
 \^`\sgn`, \^`\argmin`, \^`\argmax`, \^`\grad`, \^`\rank`, \^`\tr`, \^`\diag`, \^`\Span`, \^`\Rng`,
-\^`\Null`, \^`\Ker`, \^`\Res`, \^`\tg`, \^`\arctg`.
+\^`\Null`, \^`\Ker`, \^`\Res`, \^`\tg`, \^`\cotg`, \^`\arctg`, \^`\arccotg`.
 
 I hate the \^`\frac`, \^`\dfrac` and \^`\tfrac` macros defined in \LaTeX/
 but someone may want to use them. This package defines them.
 But I note: usage of `$1\over2$` for $1\over2$
 is much more understandable than \LaTeX's `$\frac12$`.
 
-The vectors and matrices are ususally printed by `{\bf A}{\bf x}`.
+The vectors and matrices are usually printed by `{\bf A}{\bf x}`.
 The package provides a shortcut `\.<letter>` to do the same, so user can write
 `\.A\.x` for multiplication of a matrix $\.A$ by a vector $\.x$.
 We strictly don't recommend usage of `\.`, `\v`, `\=`, etc.\ for accents, so
 `math.opm` can define `\.` differently than the classical meaning \"dotaccent".
 
+
+\sec System of equations printed by `\eqsystem`
+
+The \^`\eqsystem``{<equations>}` enables to write systems of equations more
+comfortably. The equations are separated by `\cr` and the aligned columns
+are separated by space. For example:
+\begtt
+$$
+  \eqsystem{  x +  y - 2z = 10 \cr
+             2x - 7y +  z = 13 \cr
+             -x +  y ~  ~ = -5 }
+$$
+\endtt
+prints
+$$
+  \eqsystem{  x +  y - 2z = 10 \cr
+             2x - 7y +  z = 13 \cr
+             -x +  y ~  ~ = -5 }
+$$
+Note that empty columns have to be filled by `~` mark.
+There are columns for variables (possibly multiplied by a constant) and for
+binary operators `+` and `-` or relations `=`, `>` etc. or constants. Each column
+is aligned to right. The number of columns is unlimited (we have 7 columns in
+the example above). All given equations are packed to the `\vcenter` box.
+
+The spaces between lines are enlarged by the value of \^`\eqskip`
+and the horizontal spaces between columns are enlaged by \^`\eqsep`.
+Both registers are set to 0\,pt by default.
+
+The \^`\eqfil` register is \"left filler" applied to each item in the \^`\eqsystem` columns.
+Its default is `\eqfil={\hfill}`. The right filler is hardwired and it is `\hfil`.
+This makes columns aligned to right by default. For example, when you set
+`\eqfil={\hfil}` then you have columns centered.
+
+The \^`\eqsystem` macro allows optional parameter which is processed inside
+group before printing equations. You can do local settings here, for example
+`\eqsystem[\eqskip=2pt \eqsep=5pt]{...}`.
+
+
 \sec Equation marks in atypical cases
 
-We want to put equation marks `\eqmark` in more lines in display mode when we
+We may want to put equation marks `\eqmark` in more lines in display mode when we
 are using macros not designed for such case. For example in the lines of
 the `\cases` macro:
 
@@ -425,7 +581,7 @@ The \^`\toright`\o`\eqmark` is used here. Analogically,
 The position of these marks are correct after second or more \TeX/ run
 because \TeX/ needs to read data from its previous run in this case.
 
-Sometime we want to declare a bunch of equations with the same numeric
+Sometimes we want to declare a bunch of equations with the same numeric
 equation marks but with different suffixes, for example (1.1a), (1.1b). We
 provide the macro \^`\subeqmark``<suffix>` here.
 If `<suffix>` is `a` or `A` then \^`\subeqmark` starts a new bunch of
@@ -435,12 +591,10 @@ You can put `[<label>]` after `<suffix>` for referencing purposes.
 Example:
 
 \begtt
-$$\adef~{\kern.5em }
-  \eqalignno{
-     x + 2y + 3z &= 600 & \subeqmark a \cr
-   12x + ~y - 3z &= -7  & \subeqmark b[label] \cr
-    4x - ~y + 5z &= ~5  & \subeqmark c \cr
-  }
+$$ \eqsystem[\eqskip=3pt]{
+     x + 2y + 3z = 600 \toright{\subeqmark a}\cr
+   12x +  y - 3z = -7  \toright{\subeqmark b[label]}\cr
+    4x -  y + 5z =  5  \toright{\subeqmark c}\cr }
 $$
 The equation~\ref[label] has negative right side. Moreover, it applies
 $$
@@ -448,11 +602,10 @@ $$
 $$
 \endtt
 prints
-$$\adef~{\kern.5em }
-   \eqalignno{
-     x + 2y + 3z &= 600 & \subeqmark a \cr
-   12x + ~y - 3z &= -7  & \subeqmark b[label] \cr
-    4x - ~y + 5z &= ~5  & \subeqmark c \cr
+$$ \eqsystem[\eqskip=3pt]{
+     x + 2y + 3z = 600 \toright{\subeqmark a}\cr
+   12x +  y - 3z = -7  \toright{\subeqmark b[label]}\cr
+    4x -  y + 5z =  5  \toright{\subeqmark c}\cr
   }
 $$
 The equation~\ref[label] has negative right side. Moreover, it applies
@@ -484,7 +637,57 @@ $$
 $$
 It looks better, doesn't it?
 
-\sec Variables and digits from currently used text font
+\sec `\bf` and `\bi` can do shapes with serifs
+
+\OpTeX/ sets `\bf` and `\bi` math selectors as sans serif, because this
+follows the old traditional math typesetting of vectors and matrices.
+But Knuth's \TeX/ has another default behavior:`\bf` and `\bi` select serifed
+shaped. So, many people consider it as a standard. You can declare \^`\bfserif` if
+you want serifed `\bf` and `\bi` math letters.
+
+\sec[rmchars] Selected upright letters and variants for Greek letters
+
+Some mathematicians claim that the letters $e$, $i$ and $\pi$ in meaning
+\"a constant" should be printed in upright form. \TeX/ prints all variables in
+math italic, but this package enables to set exceptions for some letters.
+For example after \^`\rmchars``{e, i, \pi}`, all occurrences of these three letters
+in math mode will be set in upright shape. If you set this, then the
+well-known math identity `$e^{i\pi}=-1$` looks like this:
+$$
+  {\rm e}^{\rm i\muppi} = -1, \qquad \hbox{compare with:}\quad e^{i\pi} = -1.
+$$
+The syntax is \^`\rmchars``{<list>}`, where <list> is a list of characters
+separated by (optional) commas. The character is `a` to `z` or `A` to `Z` or
+`\alpha` to `\omega`.
+
+If you set a character by `\rmchars` globally and you want to print it in italic
+locally then use `\mit`, for example `{\mit e}` prints $e$.
+
+Several Greek letters have their variant shape:
+`\epsilon`~$\epsilon$, `\varepsilon`~$\varepsilon$,
+`\sigma`~$\sigma$, `\varsigma`~$\varsigma$,
+`\phi`~$\phi$, `\varphi`~$\varphi$,
+`\theta`~$\theta$, `\vartheta`~$\vartheta$,
+`\pi`~$\pi$, `\varpi`~$\varpi$,
+`\kappa`~$\kappa$, `\varkappa`~$\varkappa$,
+`\rho`~$\rho$, `\varrho`~$\varrho$,
+`\Theta`~$\Theta$, `\varTheta`~$\varTheta$.
+Maybe, there is a tradition of usage variant shapes instead of standard ones
+in your mathematics field. Then you can use
+\^`\vargreek``{<list>}`, where <list> includes the list of no-var control
+sequences for these letters (separated by optional comma).
+For example `\vargreek{\epsilon \phi \rho}` causes that `\epsilon` is
+printed as $\varepsilon$, `\phi` as $\varphi$ and `\rho` as $\varrho$.
+
+If you want to declare a Greek letter by both `\vargreek` and `\rmchars`,
+use `\rmchars` first.
+
+The package provides two options `rmchars` and `vargreek`. The equation
+sign must follow and then the `{<list>}` with syntax mentioned above. For example
+`\mathset{vargreek={\epsilon,\rho}}`.
+
+
+\sec[textvars] Variables and digits from currently used text font
 
 When Unicode math font is loaded then all variables and digits are printed
 from it in math mode. If you are using text fonts with another visual
@@ -506,6 +709,12 @@ Note that we cannot avoid a visual incompatibility of parentheses when they
 are use in the context \n`\left`, \n`\right`. These parentheses must be printed
 from math font always because text font is unable to create bigger versions of
 them.
+
+The package provides the option `text={<list of words>}`, each <word> from the
+<list> can be `digits` or `variables` or `moremath`. It runs corresponding macro(s)
+described above. For example `\mathset{text=digits variables}` is equal to the
+declaration of `\textdigits` `\textvariables`.
+
 
 \sec Replacing all missing math characters from another font
 
@@ -541,7 +750,7 @@ This section has nothing common with the subject of this package but this packag
 can serve as inspiration for another package writers. It should be a template
 for another `<pkg>.opm` files. We emphasize several principles here.
 The basic information can be found in
-\ulink[https://petr.olsak.net/ftp/olsak/optex/optex-doc.pdf\#ref:prefixed]
+\ulink[https://petr.olsak.net/ftp/olsak/optex/optex-doc.pdf\#ref:basic-code]
 {section 2.2} of the \OpTeX/ manual.
 Try to run\fnote{Run it three times because Table of contents and Index are created.}
 \begtt
@@ -573,7 +782,7 @@ The `\_<pkg>_version` macro should be declared here. The macro should expand
 to version number followed by version date. User can check
 the package version simply by expanding this macro after the package is
 loaded. And we want to have this data only at single place of the file.
-You may check the log file if the text given by `\_codedecl` isn't too long
+You may check the log file if the text given by \o`\_codedecl` isn't too long
 and isn't broken to more lines. Keeping single line is better because users can
 `grep @:` on log file in order to get information of all loaded packages
 and their version numbers.
@@ -586,20 +795,25 @@ transformed to `\_<pkg>_foo` and by \o`\_endcode` which does \n`\endinput` when
 the macros are load. Final part of the file after \o`\_endcode` can include
 more detailed documentation.
 
+If your package requires other packages then insert
+\o`\load``[<package1>,<package2>]` after \o`\_codedecl` and before the the
+\o`\_namespace` command. Each package uses its own namespace, so it is
+important to load these packages before your \o`\_namespace` is opened.
+
 If you have any idea of creating a macro package, you probably start with
-experimental macros in user name space. It means that there are
+experimental macros in the public namespace. It means that there are
 `\def\mymacro` etc. Once such a code is working, you can include it to the
 macro package introduced by \o`\_namespace``{<pkg>}`. You have to go through
 your code carefully sequence per sequence and insert `_` or `.` in front of
-their name. The \"`_`" have to be used if the sequence is a primitive or
-\OpTeX/ macro and the \"`.`" if it is your macro. So, the code fragment
+their names. The \"`_`" prefix have to be used if the sequence is a primitive or
+an \OpTeX/ macro and the \"`.`" prefix if it is your macro. So, the code fragment
 `\def\mymacro` have to be rewritten to `\_def\.mymacro`. If the macro
-`\mymacro` is intended for usage in the user space, then append
-`\_nspublic \mymacro ;` too.
+`\mymacro` is intended for end users, then export it to the
+public name space after it is defined by the \o`\_nspublic` `\mymacro ;` command.
 
-Sometimes you may want to define a macro only for user space. Then
-use prefix \O`\_newpublic` before your declaration, see declaration of
- \^`\sgn` in this package as an exampe. The reason is: if
+Sometimes you may want to define a macro only in public namespace. Then
+use prefix \o`\_newpublic` before your declaration, see declaration of
+ \^`\sgn` in this package as an example. The reason is: if
 a user has defined such a macro already then the warning is printed.
 The user can read this warning and declare the macro after
 `\load[<pkg>]` in this case.
@@ -616,9 +830,9 @@ The user can read this warning and declare the macro after
    \def\n`#1`{\exlink#1{\tnurl\#cs:}}
    \outlines 0
 
-   \tit Macros for doing math more comfortable
+   \tit Macros for doing math more comfortably
    \hfill Version: \_math_version \par
-   \centerline{\it Petr Olšák\/\fnotemark1, 2022}
+   \centerline{\it Petr Olšák\/\fnotemark1, 2022, 2023}
    \fnotetext{\url{https://petr.olsak.net}}
 
    \notoc\nonum\sec Table of contents
@@ -635,5 +849,15 @@ The user can read this warning and declare the macro after
 
 \endinput
 
+0.08  2023-01-28: \eqsystem introduced, \eqfil added.
+0.07  2023-01-23: \sgn etc. defined as \protected\def.
+      2023-01-15: \replacemissingchars: bug fixed
+0.06, 2023-01-14: \rmchars, \vargreek, \bfserif introduced
+0.05, 2023-01-07: \mathset introduced
+0.04, 2022-12-26: \casesof used in \.fparamA
+                  \singlevert declared instead \_singlevert (bug fix)
+0.03, 2022-12-19: \cotg, \arccotg defined,
+                  \autop: \mathclose{} replaced by \bgroup...\egroup,
+                  \scriptspaces: Rel-Op, Bin-Op spacing added.
 0.02, 2022-11-26: \smartvert introduced
 0.01, 2022-11-25: released
