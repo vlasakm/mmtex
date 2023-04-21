@@ -50,8 +50,8 @@ local function pdf_hex_string(text)
             insert_formatted(str, '%04x', i)
         else
             i = i - 0x10000
-            m = math.floor(i/0x400) + 0xd800
-            n = ( i % 0x400 ) + 0xdc00
+            local m = math.floor(i/0x400) + 0xd800
+            local n = ( i % 0x400 ) + 0xdc00
             insert_formatted(str, '%04x%04x', m, n)
         end
     end
@@ -177,7 +177,7 @@ end
 function M.table_to_text (tbl)
     local r = { }
     for i,t in pairs(tbl) do
-        local l = ''
+        local l
         if type(i) == 'string' then
             l = string.format('[%q] = ', i)
         else
@@ -282,13 +282,19 @@ M.luadef('minim:currentfile', function()
 end)
 
 -- make pdf_string() available as \pdfstring{...}
-M.luadef('pdfstring', function() M.pdf_string(token.scan_string()) end)
+M.luadef('pdfstring', function() tex.sprint(M.pdf_string(token.scan_string())) end)
 
 -- uselanguage hook callback
 cb.new_callback('uselanguage', 'simple')
 M.luadef('minim:uselanguagecallback', function()
     local langname = token.scan_string()
     cb.call_callback('uselanguage', langname)
+end)
+
+-- copy of \Ucharcat from xetex
+M.luadef('Ucharcat', function()
+    local chr, cat = token.scan_int(), token.scan_int()
+    token.put_next(token.new(chr, cat))
 end)
 
 --1 dumping information to the format file
@@ -302,7 +308,7 @@ token.set_macro('minim:restoremodules', '\\luabytecodecall'..saved_tables_byteco
 local function dump_saved_tables()
     M.msg('pre_dump: save modules and tables to format file')
     -- save modules
-    for i,name in ipairs (modules) do
+    for _, name in ipairs (modules) do
         if not modules[name] then
             M.msg('saving module '..name)
             -- reserve (if necessary) a bytecode register
@@ -313,7 +319,7 @@ local function dump_saved_tables()
     end
     -- save tables (and restore modules)
     local saved_tables = [[
-        
+
         -- include all saved tables in this bytecode register
         local t = ]]..M.table_to_text(tables)..[[
 

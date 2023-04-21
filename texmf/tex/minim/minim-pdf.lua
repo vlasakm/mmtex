@@ -1,5 +1,5 @@
 
-local M = { } 
+local M = { }
 local alloc = require('minim-alloc')
 local cb = require('minim-callbacks')
 alloc.remember('minim-hooks')
@@ -56,7 +56,7 @@ local function full_traverse(head)
 end
 
 local function pdf_err(n, msg)
-    local m = node.new(8,16) -- pdf_literal
+    local m = node.new('whatsit', 'pdf_literal')
     m.mode, m.token = 2, '%% Warning: '..msg
     node.insert_after(n, n, m)
 end
@@ -95,7 +95,7 @@ end
 local marker_whatsit = alloc.new_whatsit('tagged pdf marker')
 
 local function make_whatsit(t, se, order)
-    local n = node.new(8, 8); -- user_defined
+    local n = node.new('whatsit', 'user_defined');
     n.user_id, n.type = marker_whatsit, 108
     n[current_struct] = se or tex.attribute['tagging:current:se']
     n[current_order] = order or tex.attribute['tagging:element:order']
@@ -247,7 +247,7 @@ end, 'protected')
 local function stable_sort_on_order_field(unsorted)
     -- n.b. ‘unsorted’ is likely to closely resemble two concatenated
     -- monotonously increasing lists.
-    local sorted, oldsorted = { unsorted[1] }, nil
+    local sorted, oldsorted = { unsorted[1] }
     local i, next, c = 2, unsorted[2], nil
     while next do
         oldsorted, sorted = sorted, { }
@@ -336,6 +336,7 @@ local function write_structure()
     if #structure == 1 then return end
     -- reserve object numbers, prepare for writing
     local root_obj, parent_tree_obj = pdf.reserveobj(), pdf.reserveobj()
+    local id_tree, id_tree_obj = { }, pdf.reserveobj()
     structure[1].parent = { objnum = root_obj }
     for _, se in ipairs(structure) do
         if not se.hidden then se.objnum = pdf.reserveobj() end
@@ -345,13 +346,14 @@ local function write_structure()
     add_to_catalog('/StructTreeRoot %s 0 R', root_obj)
     -- write the structure tree root
     pdf.immediateobj(root_obj, string.format(
-        '<< /Type/StructTreeRoot /K %d 0 R /ParentTree %d 0 R%s%s >>',
-            structure[1].objnum, parent_tree_obj, make_rolemap(), make_classmap()))
+        '<< /Type/StructTreeRoot /K %d 0 R /ParentTree %d 0 R /IDTree %d 0 R%s%s >>',
+            structure[1].objnum, parent_tree_obj, id_tree_obj, make_rolemap(), make_classmap()))
     -- write structure elements
     for _, se in ipairs(structure) do
         if not se.hidden then
             local res = { '<<' }
             insert_formatted(res, '/Type/StructElem /S%s /P %d 0 R', pdf_name(se.struct), se.parent.objnum)
+            if se.id then id_tree[se.id] = se.objnum; insert_formatted(res, '/ID %s', pdf_string(se.id)) end
             if se.lang and se.lang ~= se.parent.lang then insert_formatted(res, '/Lang (%s)', se.lang) end
             if se.alt then insert_formatted(res, '/Alt %s', pdf_string(se.alt)) end
             if se.actual then insert_formatted(res, '/ActualText %s', pdf_string(se.actual)) end
@@ -380,7 +382,7 @@ local function write_structure()
             pdf.immediateobj(se.objnum, table.concat(res, ' '))
         end
     end
-    -- write the parent tree
+    -- write the parent tree (a number tree)
     local res = { '<< /Nums [' }
     for i, parents in ipairs(parent_tree) do
         -- i, parents = StructParents index + 1, list of structure elems
@@ -398,6 +400,19 @@ local function write_structure()
     end
     table.insert(res, '] >>')
     pdf.immediateobj(parent_tree_obj, table.concat(res, '\n'))
+    -- write the id tree (a name tree)
+    local ids = { }
+    for k, _ in pairs(id_tree) do
+        -- luatex uses the C locale,
+        table.insert(ids, k)
+    end
+    table.sort(ids)
+    res = { '<< /Names ['}
+    for _, id in ipairs(ids) do
+        insert_formatted(res, '%s %d 0 R', pdf_string(id), id_tree[id])
+    end
+    table.insert(res, '] >>')
+    pdf.immediateobj(id_tree_obj, table.concat(res, '\n'))
 end
 
 -- 1 languages
@@ -466,7 +481,7 @@ end
 
 function M.close_structure_node(stype, raiseerror)
     local strict = tex.count['strictstructuretagging'] > 0
-    local current, open = current_structure_element(), false
+    local current, open = current_structure_element()
     if strict then
         open = current.struct == stype and current.parent
     else
@@ -490,42 +505,45 @@ alloc.luadef('tagging:ensurestopelement', function()
 end, 'protected')
 
 function M.open_structure_node(n)
+    -- retrieve defaults for the structure type
     local info = structure_types[n.struct]
     if not info then
         alloc.err('Unknown structure type %s replaced with NonStruct', n.struct)
         n.struct, info = 'NonStruct', structure_types.NonStruct
     end
     info.inuse = true
+    -- attributes: set default from se info
+    n.attributes = n.attr or { }; n.attr = nil
     if info.attributes then
-        n.attributes = n.attr or { }
-        for k1,v1 in pairs(info.attributes) do
-            n.attributes[k1] = n.attributes[k1] or { }
-            for k2, v2 in pairs(v1) do
-                n.attributes[k1][k2] = n.attributes[k1][k2] or v2
+        for o,kv in pairs(info.attributes) do
+            n.attributes[o] = n.attributes[o] or { }
+            for k, v in pairs(kv) do
+                n.attributes[o][k] = n.attributes[o][k] or v
             end
         end
-    else
-        n.attributes = n.attr
     end
+    -- bookkeeping: order and parent can be forced (needed for asynchronous elements)
     n.index = #structure + 1
     n.children = { }
-    -- order and parent can be forced (needed for asynchronous elements)
     n.order = n.order or tex.getattribute(current_order)
     n.parent = (n.parent and structure[n.parent])
         or determine_parent_node(current_structure_element(), n)
     table.insert(structure, n)
+    -- determine the proper language code
     if n.lang then
-        n.lang = get_language_code(n.lang)
+        n.lang = M.get_language_code(n.lang)
     else
         local lang = tex.getattribute(current_lang)
         n.lang = language_codes[lang]
     end
+    -- hacks for out-of-sync elements
     if not n.hidden then table.insert(n.parent.children, n) end
     if not n.async then tex.setattribute(current_struct, #structure) end
 end
 
 alloc.luadef('tagging:startelement', function()
     local s = options_scanner()
+        :string('id')
         :string('type') -- 'section', 'group', 'block' etc.
         :argument('alt')
         :argument('actual')
@@ -545,11 +563,35 @@ alloc.luadef('tagging:actual', function()
     current_structure_element().actual = token.scan_string()
 end)
 
+local function add_attribute(se, o, k, v)
+    se.attributes = se.attributes or { }
+    se.attributes[o] = se.attributes[o] or { }
+    se.attributes[o][k] = v
+end
+
+alloc.luadef('tagging:attribute', function()
+    add_attribute(current_structure_element(),
+        token.scan_string(), token.scan_string(), token.scan_string())
+end)
+
 alloc.luadef('newattributeclass', function()
     local s = options_scanner():subtable('attr')
     attribute_classes[token.scan_string()] = s:scan().attr
 end, 'protected')
 
+alloc.luadef('tagging:tagid', function()
+    current_structure_element().id = token.scan_string()
+end)
+
+alloc.luadef('tagging:getshowstructure', function()
+    local e, lst = current_structure_element(), { string.format ('%d',
+        tex.attribute[current_struct]) }
+    while e do
+        table.insert(lst, string.format('%s (%d)', e.struct, e.index))
+        e = e.parent
+    end
+    tex.toks['tagging:showtoks'] = table.concat(lst, ' < ')
+end, 'protected')
 
 -- 1 marking content items
 
@@ -583,13 +625,13 @@ end
 clear_page_tagging_parameters()
 
 local function new_open_mci_node(se, order)
-    local n = node.new(8,7) -- late_lua
+    local n = node.new('whatsit', 'late_lua')
     n.token = string.format('_open_mci_node_(%d, %d)', se, order)
     return n
 end
 
 local function pdf_literal(token)
-    local n = node.new(8,16) -- pdf_literal
+    local n = node.new('whatsit', 'pdf_literal')
     n.mode, n.token = 1, token
     return n
 end
@@ -613,7 +655,7 @@ end)
 function M.mark_content_items(box)
     local se, order, art, open
     local start_node, end_node, parent_node
-    local pageobj = pdf.getpageref(status.total_pages + 1)
+    local lastpageobj = pdf.getpageref(status.total_pages + 1)
     -- helper functions for inserting mci markers
     local insert_tags = function(end_parent)
         if not open then return end
@@ -639,7 +681,7 @@ function M.mark_content_items(box)
         elseif marker and marker.what == 'art_stop' then
             end_node = n
             insert_tags(b);
-            open_artifacts[art], art = nil, nil
+            if art then open_artifacts[art], art = nil, nil end
         elseif stat and stat >10 and stat ~=art then -- broken artifact
             insert_tags(b);
             start_content(n, b)
@@ -657,7 +699,7 @@ function M.mark_content_items(box)
             local _se, _order = n[current_struct], n[current_order]
             local link = structure[_se]
             if link.struct == 'Link' then
-                table.insert(link.children, { objnum = n.objnum, order = _order, pageobj = pageobj })
+                table.insert(link.children, { objnum = n.objnum, order = _order, lastpageobj = lastpageobj })
                 n.link_attr = string.format('%s /StructParent %d', n.link_attr, #parent_tree)
                 table.insert(parent_tree, _se)
             else
@@ -859,7 +901,7 @@ alloc.luadef('embedfile', function()
         :keyword('uncompressed')
         :scan()
     if not t.name then
-        t.name = t.file or aloc.err('No name specified for embedded file stream')
+        t.name = t.file or alloc.err('No name specified for embedded file stream')
     end
     t.name = pdf_string(t.name or '(unnamed)')
     local fs, ef = M.embed_file(t, t.global)
@@ -891,7 +933,7 @@ function M.mark_discretionaries(head, gc)
                 table.insert(actual, c.char)
             end
             -- special case: a single hyphen
-            if #actual == 0 and pre.char and pre.char == 0x2D then
+            if #actual == 0 and pre and pre.char and pre.char == 0x2D then
                 actual = '­' -- soft hyphen U+00AD
             elseif #actual > 0 then
                 actual = string.utfcharacter(table.unpack(actual))
@@ -903,7 +945,7 @@ function M.mark_discretionaries(head, gc)
                 struct = 'Span', parent = se, order = order, actual = actual }
             -- apply the new se to pre and post
             for n, _ in full_traverse(pre) do n[current_struct] = #structure end
-            for n, _ in full_traverse(past) do n[current_struct] = #structure end
+            for n, _ in full_traverse(post) do n[current_struct] = #structure end
         end
         ::continue::
     end
@@ -930,7 +972,7 @@ function M.mark_spaces(head, gc)
 end
 
 local function create_space(n)
-    local s = node.new(29) -- glyph
+    local s = node.new('glyph')
     s.char, s.font, s.attr = 0x20, n[space_attr], n.attr
     local b = node.hpack(s)
     b.width, b.height, b.depth = 0, 0, 0

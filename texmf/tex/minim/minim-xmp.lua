@@ -1,5 +1,5 @@
 
-local M = { } 
+local M = { }
 local alloc = require('minim-alloc')
 alloc.remember('minim-xmp')
 local cb = require('minim-callbacks')
@@ -82,14 +82,14 @@ function M.add_valuetype(prefix, name, t)
         for n, f in pairs(t.fields)  do
             fields[n] = { type = f.type or f[1], description = f.description or f[2] }
         end
-        M.getters[name] = function(t, k)
+        M.getters[name] = function(tt, k)
             if k then
                 return (fields[k] or alloc.err('Unknown field ‘%s’', k))
-                    and t and t[k] or 'not found'
+                    and tt and tt[k] or 'not found'
             else
                 local res = { }
-                for k, v in sorted_pairs(t) do
-                    table.insert(res, string.format('/{%s} {%s}', k, v))
+                for kk, v in sorted_pairs(tt) do
+                    table.insert(res, string.format('/{%s} {%s}', kk, v))
                 end
                 return table.concat(res, ' ')
             end
@@ -302,9 +302,9 @@ local function get_metadata_extensions()
                     add('                <pdfaType:description>%s</pdfaType:description>', vtype.description)
                     if vtype.fields then
                         add('                <pdfaType:field>\n                  <rdf:Seq>')
-                        for name, field in sorted_pairs(vtype.fields) do
+                        for fname, field in sorted_pairs(vtype.fields) do
                             add('                    <rdf:li rdf:parseType="Resource">')
-                            add('                      <pdfaField:name>%s</pdfaField:name>', name)
+                            add('                      <pdfaField:name>%s</pdfaField:name>', fname)
                             add('                      <pdfaField:valueType>%s</pdfaField:valueType>', field.type)
                             add('                      <pdfaField:description>%s</pdfaField:description>', field.description)
                             add('                    </rdf:li>')

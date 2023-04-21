@@ -73,7 +73,7 @@ if not M.self_destruct then
     pdf.add_page_resource = M.add_global_resource
 end
 
--- for nonglobal resources, every use must be markes with a late_lua node. from 
+-- for nonglobal resources, every use must be marked with a late_lua node. from 
 -- those, the M.use_resouce() function will be called automatically.
 --
 local page_resources = init_resources() -- name ↦ '/Key <value>'

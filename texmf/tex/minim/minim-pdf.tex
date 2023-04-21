@@ -118,6 +118,19 @@
 \protected\def\setactualtext{\iftagging:enabled
     \expandafter\tagging:actual\fi}
 
+% \tagattribute Owner Key /verbatim_value
+\protected\def\tagattribute{\iftagging:enabled
+    \expandafter\tagging:attribute\fi}
+
+% \settagid {name}
+\protected\def\settagid{\iftagging:enabled
+    \expandafter\tagging:tagid\fi}
+
+% \showstructure
+\newtoks\tagging:showtoks
+\protected\def\showstructure{%
+    \tagging:getshowstructure
+    \showthe\tagging:showtoks}
 
 % 1 auto-marking paragraphs
 
@@ -131,7 +144,95 @@
         \startelement{\the\nextpartag}\fi
     \nextpartag{P}\fi \fi}
 
+% 1 tagging tables
+
+% \marktable \halign {\marktablerow\marktablecell#&\marktablecell#\cr
+%    \marktableheader
+%       Header & cells \cr
+%    \marktablebody
+%       ... & ... \cr ...
+%    \marktablefooter
+%       ... & ... \cr ... }
+%
+% lots of variables and constants
+\newcount\tagging:tablec
+\newcount\tagging:tablerow
+\newcount\tagging:tablecol
+\newcount\tagging:tablecolspan \tagging:tablecolspan 1
+\newcount\tagging:tablerowspan \tagging:tablerowspan 1
+\newcount\tagging:i
+\def\tagging:TH{TH}
+\def\tagging:TD{TD}
+% initialising variables
+\def\marktable{\startelement{Table}%
+    \global\advance\tagging:tablec1
+    \global\tagging:tablerow0
+    \global\tagging:tablecol0
+    \global\def\tagging:tablecolheaders{}%
+    \global\def\tagging:tablerowheaders{}%
+    \global\let\tagging:cell\tagging:TD}
+% the header
+\def\marktableheader{%
+    \noalign{\global\let\tagging:cell\tagging:TH
+        \startelement{THead}%
+        \savecurrentelementto\tagging:tpart}}
+% the body
+\def\marktablebody{%
+    \noalign{\global\let\tagging:cell\tagging:TD
+        \startelement{TBody}%
+        \savecurrentelementto\tagging:tpart}}
+% the footer
+\def\marktablefooter{%
+    \noalign{\startelement{TFoot}%
+        \savecurrentelementto\tagging:tpart}}
+% rows
+\def\marktablerow{%
+    \global\advance\tagging:tablerow1
+    \global\tagging:tablecol0
+    \unless\ifdefined\tagging:tpart
+        \startelement{TBody}%
+        \savecurrentelementto\tagging:tpart\fi
+    \continueelementfrom\tagging:tpart
+    \startelement{TR}%
+    \savecurrentelementto\tagging:row}
+% cells
+\def\marktablecell{%
+    \global\advance\tagging:tablecol1
+    \continueelementfrom\tagging:row
+    \startelement{\tagging:cell}%
+    \tagging:assignheaders}
+% table headers
+\def\tagging:assignheaders{%
+    % TODO
+    }
+
+% \automarktable \halign ... { ... }
+\def\automarktable#1#{\marktable
+    \def\tagging:table{\tagging:mktrow{#1}}%
+    \afterassignment\tagging:table
+    \let\tagging:tmp= }
+\def\tagging:mktrow#1#2&#3\cr{\iftrue
+    \tagging:mktcell{#1\bgroup\marktablerow\marktablecell#2}\fi
+        #3&\tagging:mktrow&\cr}
+\def\tagging:mktcell#1#2\fi#3&{\fi
+    \ifx\tagging:mktrow#3\tagging:mkthdr{#1}\fi
+    \ifx\tagging:mktrow#3\tagging:mktrow
+        \tagging:mktcell{#1&}\else
+        \tagging:mktcell{#1&\marktablecell#3}\fi}
+\def\tagging:mkthdr#1#2\cr#3\cr{\fi#1\cr
+    \marktableheader#3\cr\marktablebody}
+
 % 1 tagging helper macros
+
+% \marktableaslist \halign ... { ... }
+\def\marktableaslist#1#{\startelement{L}%
+    \def\tagging:table{\tagging:mktlist{#1}}%
+    \afterassignment\tagging:table
+    \let\tagging:tmp= }
+\def\tagging:mktlist#1#2&{#1\bgroup
+    \startelement{LI}\savecurrentelementto\tagging:li
+    \startelement{Lbl}#2&\continueelementfrom\tagging:li
+    \startelement{LBody}\savecurrentelementto\tagging:lbody}
 
 % \marktocentry {destination}{label}{title}{filler}{page}
 \def\marktocentry#1#2#3#4#5{%
@@ -145,65 +246,7 @@
             \ifx\marktocentry#4\marktocentry\else
                 \markartifact{Layout}{#4}\fi#5}}}}
 
-% \marktable \halign {\marktablerow#&\marktablecell#\cr
-%    \marktableheader
-%       Header & cells \cr
-%    \marktablebody
-%       ... & ... \cr ...
-%    \marktablefooter
-%       ... & ... \cr ... }
-%
-\def\marktable{\startelement{Table}%
-    \def\tagging:cell{TD}}
-\def\marktableheader{%
-    \noalign{\gdef\tagging:cell{TH}%
-        \startelement{THead}%
-        \savecurrentelementto\tagging:tpart}}
-\def\marktablebody{%
-    \noalign{\gdef\tagging:cell{TD}%
-        \startelement{TBody}%
-        \savecurrentelementto\tagging:tpart}}
-\def\marktablefooter{%
-    \noalign{\startelement{TFoot}%
-        \savecurrentelementto\tagging:tpart}}
-\def\marktablerow{
-    \unless\ifdefined\tagging:tpart
-        \startelement{TBody}%
-        \savecurrentelementto\tagging:tpart\fi
-    \continueelementfrom\tagging:tpart
-    \startelement{TR}%
-    \savecurrentelementto\tagging:row
-    \startelement{\tagging:cell}}
-\def\marktablecell{%
-    \continueelementfrom\tagging:row
-    \startelement{\tagging:cell}}
-
-% \automarktable \halign ... { ... }
-\def\automarktable#1#{\marktable
-    \def\tagging:table{\tagging:mktrow{#1}}%
-    \afterassignment\tagging:table
-    \let\tagging:tmp= }
-\def\tagging:mktrow#1#2&#3\cr{\iftrue
-    \tagging:mktcell{#1\bgroup\marktablerow#2}\fi
-        #3&\tagging:mktrow&\cr}
-\def\tagging:mktcell#1#2\fi#3&{\fi
-    \ifx\tagging:mktrow#3\tagging:mkthdr{#1}\fi
-    \ifx\tagging:mktrow#3\tagging:mktrow
-        \tagging:mktcell{#1&}\else
-        \tagging:mktcell{#1&\marktablecell#3}\fi}
-\def\tagging:mkthdr#1#2\cr#3\cr{\fi#1\cr
-    \marktableheader#3\cr\marktablebody}
-\def\tagging:fi{\fi}
-
-% \marktableaslist \halign ... { ... }
-\def\marktableaslist#1#{\startelement{L}%
-    \def\tagging:table{\tagging:mktlist{#1}}%
-    \afterassignment\tagging:table
-    \let\tagging:tmp= }
-\def\tagging:mktlist#1#2&{#1\bgroup
-    \startelement{LI}\savecurrentelement
-    \startelement{Lbl}#2&\continueelement
-    \startelement{LBody}}
+% 1 tagging formulas
 
 % \autotagformulas
 % \stopformulatagging ... \startformulatagging
@@ -339,6 +382,7 @@
     \minim:default:rgb:profile
     \if#2A\writedocumentstructure1\fi
     \input minim-xmp
+    \pdfvariable omitcidset 1
     \setmetadata pdfaid:conformance{#2}%
     \setmetadata pdfaid:part{#3}}
 

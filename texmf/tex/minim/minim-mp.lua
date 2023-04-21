@@ -58,12 +58,12 @@ function A.save(append)
         stroke     = st.stroke,
         fill       = st.fill
     }
-    append:node(node.new(8, 30)) -- q
+    append:node(node.new('whatsit', 'pdf_save')) -- q
 end
 
 function A.restore(append)
     append.state[#append.state] = nil
-    append:node(node.new(8, 31)) -- Q
+    append:node(node.new('whatsit', 'pdf_restore')) -- Q
 end
 
 -- The following callback is executed just before the final step of surrounding 
@@ -138,7 +138,7 @@ function A.printobj(append, obj)
     if obj.pen then
         local x = obj.pen.type or 'not elliptical'
         append:literal('%%     pen: see below, form: %s', x)
-        local x = mplib.pen_info(obj)
+        x = mplib.pen_info(obj)
         append:literal('%%        | width: %s', tostring(x.width))
         append:literal('%%        |    sx: %s', tostring(x.sx))
         append:literal('%%        |    sy: %s', tostring(x.sy))
@@ -197,7 +197,7 @@ local function curve_fmt(...)
 end
 
 function A.literal(append, fmt, ...)
-    local lit = node.new(8,16) -- pdf_literal
+    local lit = node.new('whatsit', 'pdf_literal')
     lit.data = fmt:format(...)
     append:node(lit)
 end
@@ -484,9 +484,9 @@ M.postscripts = postscripts
 
 --2 choosing a parser
 
-local function split_specials(specials)
-    if not specials then return function() return end end
-    local l = specials:explode('\r')
+local function split_specials(thespecials)
+    if not thespecials then return function() return end end
+    local l = thespecials:explode('\r')
     local i, n = 0, #l
     return function()
         if i < n then i = i + 1 else return end
@@ -627,7 +627,7 @@ end
 postscripts.pdfcomment = prescripts.pdfcomment
 
 prescripts.latelua = function(append, str, object)
-    local n = node.new(8,7) -- late_lua
+    local n = node.new('whatsit', 'late_lua')
     n.data = str
     append:node(n)
 end
@@ -637,7 +637,7 @@ prescripts.OTYPE = function(append, str, object)
     append.object_info.otype = append.object_info.otype or str
 end
 
-specials.BASELINE = function(append, str, object)
+specials.BASELINE = function(append, _, object)
     -- object is a ‘fill’ statement with only a single point in its path (and 
     -- will thus not have to be transformed).
     append.baseline = object.path[1].y_coord
@@ -684,8 +684,8 @@ local function make_pattern_xform(head, bb)
     return string.format(' /Resources << /XObject << /PTempl %d 0 R >> >>', xform), '/PTempl Do'
 end
 
-local function definepattern(head, user, bb)
-    local bb = bbox_fmt(table.unpack(bb))
+local function definepattern(head, user, bbox)
+    local bb = bbox_fmt(table.unpack(bbox))
     local pat, literals, resources = { write = write_pattern_object }, { }
     -- pattern content
     for n in node.traverse(head) do
@@ -755,9 +755,9 @@ local function make_surrounding_box(nd_id, head)
 end
 
 local function wrap_picture(head, tx, ty)
-    local horizontal = make_surrounding_box(0, head)
-    local vertical   = make_surrounding_box(1, horizontal)
-    local outer      = make_surrounding_box(0, vertical)
+    local horizontal = make_surrounding_box('hlist', head)
+    local vertical   = make_surrounding_box('vlist', horizontal)
+    local outer      = make_surrounding_box('hlist', vertical)
     vertical.shift   = tex.sp('-'..ty..'bp')
     horizontal.shift = tex.sp(''..tx..'bp')
     return outer
@@ -765,7 +765,7 @@ end
 
 local function apply_transform(rect, box)
     local sx, rx, ry, sy, tx, ty = get_transform(rect)
-    local transform = node.new(8,29) -- pdf_setmatrix
+    local transform = node.new('whatsit', 'pdf_setmatrix')
     transform.next, box.prev = box, transform
     transform.data = string.format('%f %f %f %f', sx, rx, ry, sy)
     return wrap_picture(transform, tx, ty)
@@ -780,14 +780,14 @@ function A.box(append, object, box)
     append:restore()
 end
 
-specials.TEXBOX = function(append, box, object)
-    local box = tex.getbox(tonumber(box))
+specials.TEXBOX = function(append, boxnr, object)
+    local box = tex.getbox(tonumber(boxnr))
     append:box(object, node.copy_list(box))
 end
 
 specials.CHAR = function(append, data, object)
     local char, font, xo, yo = table.unpack(data:explode(' '))
-    local n = node.new(29) -- glyph
+    local n = node.new('glyph')
     n.char, n.font, n.xoffset, n.yoffset =
         tonumber(char), tonumber(font), tonumber(xo), tonumber(yo)
     append:box(object, node.hpack(n))
@@ -849,7 +849,7 @@ local function print_log (nr, res, why)
     -- write out the log
     log('┌ %smetapost instance %s (%d)', why or '', i.jobname, i.nr)
     for _,line in ipairs(report) do
-        log('│ '..line)
+        log('│ %s', line)
     end
     log('└ %s', print_status(res.status))
     -- generate error or warning if needed
@@ -1198,9 +1198,9 @@ function M.close (nr)
         local res = i.instance:finish()
         print_log(nr, res, 'closing ')
     end
-    for _, nr in ipairs(i.boxes) do
+    for _, b in ipairs(i.boxes) do
         -- remove allocated boxes
-        tex.box[nr] = nil
+        tex.box[b] = nil
     end
     instances[nr] = false
 end
@@ -1216,6 +1216,7 @@ local function retrieve(nr, name)
     else
         image = results.first
     end
+    if not image then return end
     results.count = results.count - 1
     if image.prev then
         if image.next then
@@ -1251,7 +1252,7 @@ function M.get_image(nr, name)
 end
 
 function M.shipout(nr)
-    local ox, oy = pdf.getorigin
+    local ox, oy  = pdf.getorigin()
     local ho, vo = tex.hoffset, tex.voffset
     pdf.setorigin()
     tex.hoffset = 0
@@ -1280,7 +1281,8 @@ alloc.luadef('runmetapost', function()
 end, 'protected')
 alloc.luadef('runmetapostimage', function()
     local i = scan_int()
-    M.run(i, 'beginfig(0); '..scan_string()..' endfig;')
+    local code = 'beginfig(0)'..scan_string()..';endfig;'
+    M.run(i, code)
     node.write(M.get_image(i))
 end, 'protected')
 

@@ -10,6 +10,21 @@
 \suppressoutererror = 1
 \frenchspacing
 
+% unicode space characters
+\def\hairspace{\kern .1em }
+\def\threeperemspace{\kern .33333em }
+\def\fourperemspace {\kern .25em }
+\catcode"00A0 = \active \letcharcode"00A0 = ~          % no-break
+\catcode"2002 = \active \letcharcode"2002 = \enskip
+\catcode"2003 = \active \letcharcode"2003 = \quad
+\catcode"2004 = \active \letcharcode"2004 = \threeperemspace
+\catcode"2005 = \active \letcharcode"2005 = \fourperemspace
+\catcode"2006 = \active \letcharcode"2006 = \thinspace % six-per-em
+\catcode"2008 = \active \letcharcode"2008 = \thinspace % punctuation
+\catcode"2009 = \active \letcharcode"2009 = \thinspace % thin
+\catcode"200A = \active \letcharcode"200A = \hairspace % hair
+\catcode"202F = \active \letcharcode"202F = \thinspace % narrow no-break
+
 % 1 programming macros
 
 \newbox\voidbox \setbox0=\box\voidbox

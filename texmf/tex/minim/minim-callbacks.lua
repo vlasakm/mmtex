@@ -217,7 +217,7 @@ end
 -- TODO: preserve return values
 local primitively_registered = { }
 function M.primitiveregister(cb, f)
-    local rv = false
+    local rv, _
     if f == nil then
         f = primitively_registered[cb]
         if f == nil then
@@ -307,7 +307,6 @@ for n,f in pairs(primitively_registered) do
     do_log('restore callback: %s', n)
     M.primitiveregister (n,f)
 end
-saved = nil
 
 --
 
@@ -317,7 +316,7 @@ callback.list     = M.list
 callback.register = M.primitiveregister
 
 log = do_log
-local function alog(msg, ...)
+alog = function(msg, ...)
     texio.write('log', string.format(msg, ...))
 end
 

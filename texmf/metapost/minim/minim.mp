@@ -1,13 +1,13 @@
 
 delimiters ();
 
+message "Loading the minim extension macros";
+
 % redefine some constants to work with the new numerical engines
 numeric mm, cm, pt, pc, dd, cc;
 pc = 12 pt; cc = 12 dd; cm = 10 mm;
 803 pt = 800; 127 mm = 360; 1157 dd = 1238 pt;
 eps := 1/2048; infinity := 64*64-epsilon;
-
-message "Loading the minim extension macros";
 
 % interaction with tex
 vardef baseline expr o =
@@ -114,6 +114,8 @@ def endpattern (expr xstep, ystep) =
 newinternal tilingtype; tilingtype:=1;
 _patterns_._last_ := 0;
 
+message "Loading additional definitions";
+
 % shorthands
 primarydef p xshifted x = p shifted (x,0) enddef;
 primarydef p yshifted y = p shifted (0,y) enddef;
@@ -141,4 +143,35 @@ key     = (0,0,0,1);
 % constants
 pi := 355/113;
 
+% shorthands
+def save_pair      text t = save t; pair      t; enddef;
+def save_path      text t = save t; path      t; enddef;
+def save_color     text t = save t; color     t; enddef;
+def save_cmykcolor text t = save t; cmykcolor t; enddef;
+def save_transform text t = save t; transform t; enddef;
+def save_boolean   text t = save t; boolean   t; enddef;
+def save_string    text t = save t; string    t; enddef;
+
+% missing trigonometric functions
+vardef tand    primary x = sind(x)/cosd(x) enddef;
+vardef arcsind primary x = angle((1+-+x, x)) enddef;
+vardef arccosd primary x = angle((x, 1+-+x)) enddef;
+vardef arctand primary x = angle(1, x) enddef;
+
+% segments of the circle (counterclockwise)
+vardef arc (expr thetafrom, thetalen) =
+    save n, d, l, theta; save_path a; save_pair p, c;
+    n = ceiling(thetalen / 45); % number of segments (45° is max segment length)
+    d = thetalen / n;           % angle of each segment
+    l = 4/3 * tand(d/4);        % length of control points
+    theta := thetafrom;
+    p := (cosd theta, sind theta);
+    c := l * (-sind theta, cosd theta);
+    a := p for _ = 1 upto n:
+        .. controls (p + c)
+        hide(theta := theta + d;
+            p := (cosd theta, sind theta);
+            c := l * (-sind theta, cosd theta);)
+        and (p - c) .. p
+    endfor; a enddef;
 
