@@ -300,7 +300,7 @@
    \_bprintb [url]        {\_preurl\_url{##1}. }{}%
 }
 \_slet{_print:booklet}{_print:generic}
-\_slet{_print:incolleciton}{_print:generic}
+\_slet{_print:incollection}{_print:generic}
 \_slet{_print:manual}{_print:generic}
 \_slet{_print:proceedings}{_print:generic}
 \_slet{_print:techreport}{_print:generic}
