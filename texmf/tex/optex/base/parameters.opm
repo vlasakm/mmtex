@@ -197,12 +197,16 @@
    parameters locally in the group where \^`\inspic` is used in order to not
    influence the dimensions of other images. But there exist many
    situations you need to put the same dimensions to more images,
-   so you can set this parameter only once before more \^`\inspic` macros.
+   so you can set this parameter only once before more \^`\inspic` macros.\nl
+   More parameters accepted by `\pdfximage` primitive can be set in the
+   \`\picparams` tokens list. For example `\picparams={page3}`
+   selects page 3 from included PDF file.
    \_cod -----------------------------
 
 \_newdimen\_picwidth   \_picwidth=0pt   \_let\picw=\_picwidth
 \_newdimen\_picheight  \_picheight=0pt
-\_public \picwidth \picheight ;
+\_newtoks\_picparams
+\_public \picwidth \picheight \picparams ;
 
    \_doc -----------------------------
    \`\kvdict` is dictionary name when \~`\readkv`, \~`\kvx`, \~`\kv`, and \~`\iskv` are
@@ -310,16 +314,25 @@
    \nl
    The \`\ilevel` keeps the value of the current nesting level of the items list.
    \nl
-   The \`\listskipamount` gives vertical skip above and below the items list
-   if `\ilevel=1`.
+   The \`\olistskipamount` is vertical skip above and below the items list
+   if `\ilevel=1`.\nl
+   The \`\ilistskipamount` is vertical skip above and below the items list
+   if `\ilevel>1`.\nl
+   The \`\itemskipamount` is vertical skip between list items, but not above the firts
+   and below the last.
    \_cod -----------------------------
 
-\_newtoks\_defaultitem  \_defaultitem={$\_bullet$\_enspace}
+\_newtoks\_defaultitem     \_defaultitem={$\_bullet$\_enspace}
 \_newtoks\_everyitem
 \_newtoks\_everylist
-\_newskip \_listskipamount  \_listskipamount=\_medskipamount
 \_newcount \_ilevel
-\_public \defaultitem \everyitem \everylist \listskipamount \ilevel ;
+\_newskip\_olistskipamount \_olistskipamount=\_medskipamount
+\_newskip\_ilistskipamount \_ilistskipamount=0pt plus.5\_smallskipamount
+\_newskip\_itemskipamount  \_itemskipamount=0pt
+
+\_public \defaultitem \everyitem \everylist \ilevel
+         \olistskipamount \ilistskipamount \itemskipamount ;
+\_let \listskipamount = \_olistskipamount  % for backward compatibility
 
    \_doc -----------------------------
    The \^`\tit` macro includes `\vglue`\`\titskip` above the title of the document.

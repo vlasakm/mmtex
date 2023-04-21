@@ -7,6 +7,7 @@
 \_faminfo [Catalogue] {Catalogue of all registered font families} {fonts-catalog} {}
 \_famalias [Catalog]
 
+\_famsrc {TeXlive}
 \_famtext {Computer Modern like family:}
 
 \_famfrom {GUST}
@@ -132,6 +133,12 @@
    { -,\onum: {\rm\bf\it\bi} }
 \_famalias [Caslon]
 
+\_famfrom {Pablo Impallari, Igino Marini}
+\_faminfo [Cabin] {Inspired by Gill's typefaces + touch of a modernism} {f-cabin}
+   { -,\caps: {\rm\bf\it\bi} \medium: {\rm\it} \semibold: {\bf\bi}
+     \cond: {\rm\bf\it\bi} \cond\medium: {\rm\it} \cond\semibold: {\bf\bi}
+   }
+
 \_famfrom {Adobe, Paul D. Hunt}
 \_faminfo [Source Pro] {Adobe SourceSerifPro, SourceSansPro, SourceCodePro} {f-sourcepro}
    { \elight,\light,-,\bolder: {\rm\it} -,\bolder: {\bf\bi}
@@ -192,10 +199,12 @@
      -,\medium,\semibold: {\bf\bi} }
 
 \_famfrom {CTU in Prague, Roman Cernohous}
+\_famsrc {non free font, used in CTU Style, see \url{https://www.cvut.cz/en/ctu-logo}}
 \_faminfo [Technika] {Fonts from visual style of CTU in Prague} {f-technika}
    { -,\light,\book, \caps, \caps\book: {\rm\bf\it\bi} -:{\stencil} }
 \_famalias [CTU Technika]
 
+\_famsrc {TeXlive}
 \_famfrom {Bitstream, Andrey V. Panov, Michael Sharpe}
 \_faminfo [XCharter] {An extension of Bitstream Charter} {f-xcharter}
    { -,\slant,\caps,\caps\slant: {\rm\bf\it\bi} }
@@ -203,6 +212,16 @@
 \_famfrom {George Matthiopoulos, Greek Font Society}
 \_faminfo [GFSBodoni] {Based on Bodoni with greek letters} {f-gfsbodoni}
    { -: {\rm\bf\it\bi} \caps: {\rm} }
+
+\_famfrom {bBox Type GmbH, Carrois Corporate GbR, Edenspiekermann AG}
+\_faminfo [Fira] {Humanist sans-serif, originally designed for Firefox OS} {f-fira}
+   { \thin,\light,\book,-,\medium,\mono,\mono\medium,%
+     \thin\caps,\light\caps,\book\caps,\caps,\medium\caps,%
+     \thin\allsc,\light\allsc,\book\allsc,\allsc,\medium\allsc: {\rm\bf\it\bi} }
+
+\_famfrom {Raph Levien}
+\_faminfo [Inconsolata] {A monospaced font for code listing} {f-inconsolata}
+   { -,\narrow: {\rm\bf} }
 
 \_endcode
 
