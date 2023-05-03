@@ -22,7 +22,6 @@ with LuaTeX; if not, see <http://www.gnu.org/licenses/>.
 #include "ptexlib.h"
 #include "lua/luatex-api.h"
 #include "font/writecff.h"
-#include "font/t1_load.h"
 
 extern int cidset;
 
@@ -151,7 +150,7 @@ cff_index *cff_get_index_header(cff_font * cff)
     cff_index *idx;
     card16 i, count;
     idx = xcalloc(1, sizeof(cff_index));
-    if (cff->header.major == 2) {
+    if (cff->header_major == 2) {
         idx->count = count = get_card32(cff);
     } else {
         idx->count = count = get_card16(cff);
@@ -223,7 +222,7 @@ static cff_index *cff_get_index2(cff_font * cff)
     cff_index *idx;
     size_t length;
     idx = xcalloc(1, sizeof(cff_index));
-    length = (size_t) cff->header.offsize;
+    length = (size_t) cff->header_offsize;
     idx->offsize = 2;
     idx->count = 1;
     idx->offset = xmalloc((unsigned) (((unsigned) 2) * sizeof(l_offset)));
@@ -482,16 +481,16 @@ long cff_put_header(cff_font * cff, card8 * dest, long destlen)
 {
     if (destlen < 4)
         normal_error("cff","not enough space available");
-    /*tex cff->header.major */
+    /*tex cff->header_major */
     *(dest++) = 1;
-    *(dest++) = cff->header.minor;
+    *(dest++) = cff->header_minor;
     *(dest++) = 4;
     /*tex
         Additional data in between header and Name INDEX is ignored. We will set
         all offset (0) to a four-byte integer.
     */
     *(dest++) = 4;
-    cff->header.offsize = 4;
+    cff->header_offsize = 4;
     return 4;
 }
 
@@ -1028,28 +1027,28 @@ cff_font *read_cff(unsigned char *buf, long buflength, int n)
     cff->stream = buf;
     cff->stream_size = (l_offset) buflength;
     cff->index = n;
-    cff->header.major = get_card8(cff);
-    cff->header.minor = get_card8(cff);
-    cff->header.hdr_size = get_card8(cff);
-    if (cff->header.major == 2) {
+    cff->header_major = get_card8(cff);
+    cff->header_minor = get_card8(cff);
+    cff->header_hdr_size = get_card8(cff);
+    if (cff->header_major == 2) {
         /*tex We have only one top dictionary. */
-        cff->header.offsize = get_card16(cff);
+        cff->header_offsize = get_card16(cff);
     } else {
-        cff->header.offsize = get_card8(cff);
-        if (cff->header.offsize < 1 || cff->header.offsize > 4) {
+        cff->header_offsize = get_card8(cff);
+        if (cff->header_offsize < 1 || cff->header_offsize > 4) {
             normal_warning("cff","invalid offsize data (4)");
             cff_close(cff);
             return NULL;
         }
     }
-    if (cff->header.major > 2) {
-        formatted_warning("cff","major version %u not supported", cff->header.major);
+    if (cff->header_major > 2) {
+        formatted_warning("cff","major version %u not supported", cff->header_major);
         cff_close(cff);
         return NULL;
     }
-    cff->offset = cff->header.hdr_size;
+    cff->offset = cff->header_hdr_size;
     /*tex The name index. */
-    if (cff->header.major == 2) {
+    if (cff->header_major == 2) {
         cff->name = cff_empty_index(cff);
     } else {
         idx = cff_get_index(cff);
@@ -1062,7 +1061,7 @@ cff_font *read_cff(unsigned char *buf, long buflength, int n)
         cff->fontname = cff_get_name(cff);
     }
     /*tex The top dict index. */
-    if (cff->header.major == 2) {
+    if (cff->header_major == 2) {
         /*tex we fake an index (just one entry) */
         idx = cff_get_index2(cff);
     } else {
@@ -1092,7 +1091,7 @@ cff_font *read_cff(unsigned char *buf, long buflength, int n)
         return NULL;
     }
     /*tex The string index. */
-    if (cff->header.major == 2) {
+    if (cff->header_major == 2) {
         /*tex do nothing */
     } else {
         cff->string = cff_get_index(cff);
@@ -1468,25 +1467,6 @@ long cff_get_sid(cff_font * cff, const char *str)
     return -1;
 }
 
-static int cff_match_string (cff_font *cff, const char *str, s_SID sid)
-{
-  card16 i;
-
-  if (sid < CFF_STDSTR_MAX) {
-    return ((!strcmp(str, cff_stdstr[sid])) ? 1 : 0);
-  } else {
-    i = sid - CFF_STDSTR_MAX;
-    if (cff == NULL || cff->string == NULL || i >= cff->string->count)
-      normal_error("cff","Invalid SID");
-    if (strlen(str) == (cff->string->offset)[i+1] - (cff->string->offset)[i])
-      return (!memcmp(str,
-                      (cff->string->data)+(cff->string->offset)[i]-1,
-                      strlen(str))) ? 1 : 0;
-  }
-
-  return 0;
-}
-
 void cff_update_string(cff_font * cff)
 {
     if (cff == NULL)
@@ -1704,66 +1684,6 @@ long cff_pack_charsets(cff_font * cff, card8 * dest, long destlen)
             break;
     }
     return len;
-}
-
-static card16 cff_glyph_lookup (cff_font *cff, const char *glyph)
-{
-  card16        gid;
-  cff_charsets *charset;
-  card16        i, n;
-
-  if (cff->flag & (CHARSETS_ISOADOBE|CHARSETS_EXPERT|CHARSETS_EXPSUB)) {
-    normal_error("cff","Predefined CFF charsets not supported yet");
-  } else if (cff->charsets == NULL) {
-    normal_error("cff","Charsets data not available");
-  }
-
-  /* .notdef always have glyph index 0 */
-  if (!glyph || !strcmp(glyph, ".notdef")) {
-    return 0;
-  }
-
-  charset = cff->charsets;
-
-  gid = 0;
-  switch (charset->format) {
-  case 0:
-    for (i = 0; i < charset->num_entries; i++) {
-      gid++;
-      if (cff_match_string(cff, glyph, charset->data.glyphs[i])) {
-        return gid;
-      }
-    }
-    break;
-  case 1:
-    for (i = 0; i < charset->num_entries; i++) {
-      for (n = 0;
-           n <= charset->data.range1[i].n_left; n++) {
-        gid++;
-        if (cff_match_string(cff, glyph,
-                             (s_SID)(charset->data.range1[i].first + n))) {
-          return gid;
-        }
-      }
-    }
-    break;
-  case 2:
-    for (i = 0; i <charset->num_entries; i++) {
-      for (n = 0;
-           n <= charset->data.range2[i].n_left; n++) {
-        gid++;
-        if (cff_match_string(cff, glyph,
-                             (s_SID)(charset->data.range2[i].first + n))) {
-          return gid;
-        }
-      }
-    }
-    break;
-  default:
-    normal_error("cff","Unknown Charset format");
-  }
-
-  return 0; /* not found, returns .notdef */
 }
 
 /*tex
@@ -2736,174 +2656,7 @@ static void write_fontfile(PDF pdf, cff_font * cffont, char *fullname)
     return;
 }
 
-/* Duplicate from type1.c */
-#define TYPE1_NAME_LEN_MAX   127
-
-#define FONT_FLAG_FIXEDPITCH (1 << 0)  /* Fixed-width font */
-#define FONT_FLAG_SERIF      (1 << 1)  /* Serif font */
-#define FONT_FLAG_SYMBOLIC   (1 << 2)  /* Symbolic font */
-#define FONT_FLAG_SCRIPT     (1 << 3)  /* Script font */
-#define FONT_FLAG_STANDARD   (1 << 5)  /* Adobe Standard Character Set */
-#define FONT_FLAG_ITALIC     (1 << 6)  /* Italic */
-#define FONT_FLAG_ALLCAP     (1 << 16) /* All-cap font */
-#define FONT_FLAG_SMALLCAP   (1 << 17) /* Small-cap font */
-#define FONT_FLAG_FORCEBOLD  (1 << 18) /* Force bold at small text sizes */
-
-#include "font/t1_char.h"
-
-static void
-get_font_attr (fd_entry *fd, cff_font *cffont)
-{
-  double capheight, ascent, descent;
-  double italicangle, stemv;
-  double defaultwidth, nominalwidth;
-  int    flags = 0;
-  int    gid;
-  int    i;
-  static const char *L_c[] = {
-    "H", "P", "Pi", "Rho", NULL
-  };
-  static const char *L_d[] = {
-    "p", "q", "mu", "eta", NULL
-  };
-  static const char *L_a[] = {
-    "b", "h", "lambda", NULL
-  };
-  t1_ginfo gm;
-
-  defaultwidth = 500.0;
-  nominalwidth = 0.0;
-
-  /*
-   * CapHeight, Ascent, and Descent is meaningfull only for Latin/Greek/Cyrillic.
-   * The BlueValues and OtherBlues also have those information.
-   */
-  if (cff_dict_known(cffont->topdict, "FontBBox")) {
-    /* Default values */
-    capheight = ascent = cff_dict_get(cffont->topdict, "FontBBox", 3);
-    descent = cff_dict_get(cffont->topdict, "FontBBox", 1);
-  } else {
-    capheight =  680.0;
-    ascent    =  690.0;
-    descent   = -190.0;
-  }
-  if (cff_dict_known(cffont->private[0], "StdVW")) {
-    stemv = cff_dict_get(cffont->private[0], "StdVW", 0);
-  } else {
-    /*
-     * We may use the following values for StemV:
-     *  Thin - ExtraLight: <= 50
-     *  Light: 71
-     *  Regular(Normal): 88
-     *  Medium: 109
-     *  SemiBold(DemiBold): 135
-     *  Bold - Heavy: >= 166
-     */
-    stemv = 88.0;
-  }
-  if (cff_dict_known(cffont->topdict, "ItalicAngle")) {
-    italicangle = cff_dict_get(cffont->topdict, "ItalicAngle", 0);
-    if (italicangle != 0.0)
-      flags |= FONT_FLAG_ITALIC;
-  } else {
-    italicangle = 0.0;
-  }
-
-  /*
-   * Use "space", "H", "p", and "b" for various values.
-   * Those characters should not "seac". (no accent)
-   */
-  gid = cff_glyph_lookup(cffont, "space");
-  if (gid >= 0 && gid < cffont->cstrings->count) {
-    t1char_get_metrics(cffont->cstrings->data + cffont->cstrings->offset[gid] - 1,
-                       cffont->cstrings->offset[gid+1] - cffont->cstrings->offset[gid],
-                       cffont->subrs[0], &gm);
-    defaultwidth = gm.wx;
-  }
-
-  for (i = 0; L_c[i] != NULL; i++) {
-    gid = cff_glyph_lookup(cffont, L_c[i]);
-    if (gid >= 0 && gid < cffont->cstrings->count) {
-      t1char_get_metrics(cffont->cstrings->data + cffont->cstrings->offset[gid] - 1,
-                         cffont->cstrings->offset[gid+1] - cffont->cstrings->offset[gid],
-                         cffont->subrs[0], &gm);
-      capheight = gm.bbox.ury;
-      break;
-    }
-  }
-
-  for (i = 0; L_d[i] != NULL; i++) {
-    gid = cff_glyph_lookup(cffont, L_d[i]);
-    if (gid >= 0 && gid < cffont->cstrings->count) {
-      t1char_get_metrics(cffont->cstrings->data + cffont->cstrings->offset[gid] - 1,
-                         cffont->cstrings->offset[gid+1] - cffont->cstrings->offset[gid],
-                         cffont->subrs[0], &gm);
-      descent = gm.bbox.lly;
-      break;
-    }
-  }
-
-  for (i = 0; L_a[i] != NULL; i++) {
-    gid = cff_glyph_lookup(cffont, L_a[i]);
-    if (gid >= 0 && gid < cffont->cstrings->count) {
-      t1char_get_metrics(cffont->cstrings->data + cffont->cstrings->offset[gid] - 1,
-                         cffont->cstrings->offset[gid+1] - cffont->cstrings->offset[gid],
-                         cffont->subrs[0], &gm);
-      ascent = gm.bbox.ury;
-      break;
-    }
-  }
-
-  if (defaultwidth != 0.0) {
-    cff_dict_add(cffont->private[0], "defaultWidthX", 1);
-    cff_dict_set(cffont->private[0], "defaultWidthX", 0, defaultwidth);
-  }
-  if (nominalwidth != 0.0) {
-    cff_dict_add(cffont->private[0], "nominalWidthX", 1);
-    cff_dict_set(cffont->private[0], "nominalWidthX", 0, nominalwidth);
-  }
-  if (cff_dict_known(cffont->private[0], "ForceBold") &&
-      cff_dict_get(cffont->private[0], "ForceBold", 0)) {
-    flags |= FONT_FLAG_FORCEBOLD;
-  }
-  if (cff_dict_known(cffont->private[0], "IsFixedPitch") &&
-      cff_dict_get(cffont->private[0], "IsFixedPitch", 0)) {
-    flags |= FONT_FLAG_FIXEDPITCH;
-  }
-  if (fd->fontname &&
-      !strstr(fd->fontname, "Sans")) {
-    flags |= FONT_FLAG_SERIF;
-  }
-  flags |= FONT_FLAG_SYMBOLIC;
-
-  fd->font_dim[CAPHEIGHT_CODE].val = capheight;
-  fd->font_dim[ASCENT_CODE].val = ascent;
-  fd->font_dim[DESCENT_CODE].val = descent;
-  fd->font_dim[ITALIC_ANGLE_CODE].val = italicangle;
-  fd->font_dim[STEMV_CODE].val = stemv;
-  fd->fm->fd_flags = flags;
-
-  /*
-   * The original FontBBox of the font is preserved, instead
-   * of replacing it with tight bounding box calculated from
-   * charstrings, to prevent Acrobat 4 from greeking text as
-   * much as possible.
-   */
-  if (!cff_dict_known(cffont->topdict, "FontBBox")) {
-    formatted_warning("cff","No FontBBox found: %s", fd->fontname);
-  } else {
-    fd->font_dim[FONTBBOX1_CODE].val = (int) cff_dict_get(cffont->topdict, "FontBBox", 0);
-    fd->font_dim[FONTBBOX2_CODE].val = (int) cff_dict_get(cffont->topdict, "FontBBox", 1);
-    fd->font_dim[FONTBBOX3_CODE].val = (int) cff_dict_get(cffont->topdict, "FontBBox", 2);
-    fd->font_dim[FONTBBOX4_CODE].val = (int) cff_dict_get(cffont->topdict, "FontBBox", 3);
-    fd->font_dim[FONTBBOX1_CODE].set = true;
-    fd->font_dim[FONTBBOX2_CODE].set = true;
-    fd->font_dim[FONTBBOX3_CODE].set = true;
-    fd->font_dim[FONTBBOX4_CODE].set = true;
-  }
-}
-
-void write_cff(PDF pdf, cff_font * cffont, fd_entry * fd, int t1)
+void write_cff(PDF pdf, cff_font * cffont, fd_entry * fd)
 {
     cff_index *charstrings, *cs_idx;
     long charstring_len, max_len;
@@ -2920,14 +2673,9 @@ void write_cff(PDF pdf, cff_font * cffont, fd_entry * fd, int t1)
     sprintf(fontname, "%s", fd->fontname);
     fullname = xcalloc((unsigned) (8 + strlen(fd->fontname)), 1);
     sprintf(fullname, "%s+%s", fd->subset_tag, fd->fontname);
-    if (!t1) {
-        /*tex Finish parsing the CFF. */
-        cff_read_private(cffont);
-        cff_read_subrs(cffont);
-    } else {
-        /* defaultWidthX, CapHeight, etc. */
-        get_font_attr(fd, cffont);
-    }
+    /*tex Finish parsing the CFF. */
+    cff_read_private(cffont);
+    cff_read_subrs(cffont);
     /*tex The |Width|s. */
     if (cffont->private[0] && cff_dict_known(cffont->private[0], "defaultWidthX")) {
         default_width = (double) cff_dict_get(cffont->private[0], "defaultWidthX", 0);
@@ -2981,13 +2729,13 @@ void write_cff(PDF pdf, cff_font * cffont, fd_entry * fd, int t1)
             }
         }
         cffont->charsets = charset;
-        if (cffont->header.major == 2) {
+        if (cffont->header_major == 2) {
             cff_dict_add(cffont->topdict, "charset", 1);
         }
     }
     cff_dict_add(cffont->topdict, "CIDCount", 1);
     cff_dict_set(cffont->topdict, "CIDCount", 0, last_cid + 1);
-    if (cffont->header.major == 2) {
+    if (cffont->header_major == 2) {
         cff_dict_add(cffont->topdict, "FullName", 1);
         cff_dict_set(cffont->topdict, "FullName", 0, (double) cff_add_string(cffont, fontname));
         cff_dict_add(cffont->topdict, "FontBBox", 4);
@@ -3010,35 +2758,22 @@ void write_cff(PDF pdf, cff_font * cffont, fd_entry * fd, int t1)
     /*tex |FDSelect| offset, not known yet */
     cff_dict_add(cffont->topdict, "FDSelect", 1);
     cff_dict_set(cffont->topdict, "FDSelect", 0, 0.0);
-
     cff_dict_remove(cffont->topdict, "UniqueID");
     cff_dict_remove(cffont->topdict, "XUID");
     cff_dict_remove(cffont->topdict, "Private");
     cff_dict_remove(cffont->topdict, "Encoding");
-
-
-    if (!t1) {
-        cffont->offset = (l_offset) cff_dict_get(cffont->topdict, "CharStrings", 0);
-        cs_idx = cff_get_index_header(cffont);
-        offset = (long) cffont->offset;
-        cs_count1 = cs_idx->count;
-        if (cs_count1 < 2) {
-            normal_error("cff","no valid charstring data found");
-        }
-    } else {
-        cff_dict_add(cffont->topdict, "charset", 1);
-        cff_dict_set(cffont->topdict, "charset", 0, 0.0);
-
-        cff_dict_add(cffont->topdict, "CharStrings", 1);
-        cff_dict_set(cffont->topdict, "CharStrings", 0, 0.0);
+    cffont->offset = (l_offset) cff_dict_get(cffont->topdict, "CharStrings", 0);
+    cs_idx = cff_get_index_header(cffont);
+    offset = (long) cffont->offset;
+    cs_count1 = cs_idx->count;
+    if (cs_count1 < 2) {
+        normal_error("cff","no valid charstring data found");
     }
-
     /*tex Build the new charstrings entry. */
-    charstrings = cff_new_index((card16) (num_glyphs + 1));
+    charstrings = cff_new_index((card16) (cs_count1==USHRT_MAX?cs_count1: cs_count1 + 1));
     max_len = 2 * CS_STR_LEN_MAX;
     charstrings->data = xcalloc((unsigned) max_len, sizeof(card8));
     charstring_len = 0;
-
     gid = 0;
     data = xcalloc(CS_STR_LEN_MAX, sizeof(card8));
     {
@@ -3046,17 +2781,16 @@ void write_cff(PDF pdf, cff_font * cffont, fd_entry * fd, int t1)
         int tex_font = fd->tex_font;
         int streamprovider = 0;
         int callback_id = 0 ;
-        t1_ginfo gm;
         if ((tex_font > 0) && (font_streamprovider(tex_font) == 1)) {
             streamprovider = font_streamprovider(tex_font);
             callback_id = callback_defined(glyph_stream_provider_callback);
         }
-        for (i = 0; i <= last_cid; i++) {
+        for (i = 0; i < cs_count1; i++) {
             code = (card16) i;
             glyph->id = code;
             if ((avl_find(fd->gl_tree,glyph) != NULL)) {
                 /*tex This code is the same as below, apart from small details */
-                if (!t1 && callback_id > 0) {
+                if (callback_id > 0) {
                     lstring * result;
                     run_callback(callback_id, "ddd->L", tex_font, i, streamprovider, &result); /* this call can be sped up */
                     size = (size_t) result->l ;
@@ -3071,7 +2805,7 @@ void write_cff(PDF pdf, cff_font * cffont, fd_entry * fd, int t1)
                         charstring_len += size;
                         xfree(result);
                     }
-                } else if (!t1) {
+                } else {
                     size = (long)(cs_idx->offset[code+1] - cs_idx->offset[code]);
                     if (size > CS_STR_LEN_MAX) {
                         formatted_error("cff","charstring too long: gid=%u, %ld bytes", code, size);
@@ -3089,28 +2823,8 @@ void write_cff(PDF pdf, cff_font * cffont, fd_entry * fd, int t1)
                         data, size,
                         cffont->gsubr, (cffont->subrs)[0],
                         default_width, nominal_width, NULL,
-                        cffont->header.major == 2
+                        cffont->header_major == 2
                     );
-                } else {
-                    if (charstring_len + CS_STR_LEN_MAX >= max_len) {
-                        max_len = (long)(charstring_len + 2 * CS_STR_LEN_MAX);
-                        charstrings->data = xrealloc(charstrings->data, (unsigned)((unsigned)max_len*sizeof(card8)));
-                    }
-
-                    charstrings->offset[gid] = (unsigned)(charstring_len + 1);
-
-                    charstring_len += t1char_convert_charstring(
-                        charstrings->data + charstrings->offset[gid] - 1,
-                        CS_STR_LEN_MAX,
-                        cffont->cstrings->data + cffont->cstrings->offset[code] - 1,
-                        cffont->cstrings->offset[code+1] - cffont->cstrings->offset[code],
-                        cffont->subrs[0],
-                        default_width, nominal_width, &gm
-                    );
-
-                    if (gm.use_seac) {
-                        formatted_warning("cff","The \"seac\" command for an accented character found: %s", fd->fontname);
-                    }
                 }
                 gid++;
             }
@@ -3152,9 +2866,7 @@ void write_cff(PDF pdf, cff_font * cffont, fd_entry * fd, int t1)
         num_glyphs = gid;
     }
     xfree(data);
-    if (!t1) {
-        cff_release_index(cs_idx);
-    }
+    cff_release_index(cs_idx);
     (charstrings->offset)[num_glyphs] = (l_offset) (charstring_len + 1);
     charstrings->count = num_glyphs;
     cffont->num_glyphs = num_glyphs;
@@ -3174,7 +2886,7 @@ void write_cff(PDF pdf, cff_font * cffont, fd_entry * fd, int t1)
     cff_dict_update(cffont->topdict, cffont);
     cff_add_string(cffont, "Adobe");
     cff_add_string(cffont, "Identity");
-    if (cffont->header.major == 2) {
+    if (cffont->header_major == 2) {
         /*tex A crash. */
     } else if (cffont->private && (cffont->private)[0]) {
         cff_dict_update(cffont->private[0], cffont);
@@ -3226,7 +2938,7 @@ void write_cid_cff(PDF pdf, cff_font * cffont, fd_entry * fd)
     } else {
         cid_count = CFF_CIDCOUNT_DEFAULT;
     }
-    if (cffont->header.major == 2) {
+    if (cffont->header_major == 2) {
         /*tex hm */
     } else {
         cff_read_charsets(cffont);
@@ -3252,7 +2964,7 @@ void write_cid_cff(PDF pdf, cff_font * cffont, fd_entry * fd)
             num_glyphs++;
         }
     }
-    if (cffont->header.major == 2) {
+    if (cffont->header_major == 2) {
         /*tex hm */
     } else if (last_cid >= cffont->num_glyphs) {
         formatted_error("cff font","bad glyph index %i",last_cid);
@@ -3351,7 +3063,7 @@ void write_cid_cff(PDF pdf, cff_font * cffont, fd_entry * fd)
                 data, size,
                 cffont->gsubr, (cffont->subrs)[fdsel],
                 0, 0, NULL,
-                cffont->header.major == 2
+                cffont->header_major == 2
             );
         }
         if (cid > 0 && gid_org > 0) {
@@ -3399,29 +3111,43 @@ void write_cid_cff(PDF pdf, cff_font * cffont, fd_entry * fd)
     cff_close(cffont);
 }
 
-#include "font/t1_load.h"
+/*tex
+
+    Here is a sneaky trick: fontforge knows how to convert Type1 to CFF, so I
+    have defined a utility function in luafflib.c that does exactly that. If it
+    works out ok, I will clean up this code.
+
+*/
 
 void writetype1w(PDF pdf, fd_entry * fd)
 {
     cff_font *cff;
+    int i;
     FILE *fp;
     ff_entry *ff;
-
+    unsigned char *tfm_buffer = NULL;
+    int tfm_size = 0;
     ff = check_ff_exist(fd->fm->ff_name, 0);
     fp = fopen(ff->ff_path, "rb");
     cur_file_name = ff->ff_path;
     if (!fp) {
         formatted_error("cff","could not open Type1 font: %s", cur_file_name);
     }
+    fclose(fp);
     if (is_subsetted(fd->fm)) {
         report_start_file(filetype_subset,cur_file_name);
     } else {
         report_start_file(filetype_font,cur_file_name);
     }
-
-    cff = t1_load_font(NULL, 0, fp);
-    if (cff != NULL) {
-        write_cff(pdf, cff, fd, 1);
+    (void) ff_createcff(ff->ff_path, &tfm_buffer, &tfm_size);
+    if (tfm_size > 0) {
+        cff = read_cff(tfm_buffer, tfm_size, 0);
+        if (cff != NULL) {
+            write_cff(pdf, cff, fd);
+        } else {
+            for (i = 0; i < tfm_size; i++)
+                strbuf_putchar(pdf->fb, tfm_buffer[i]);
+        }
         fd->ff_found = 1;
     } else {
         formatted_error("cff","could not understand Type1 font: %s",cur_file_name);

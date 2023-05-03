@@ -23,8 +23,6 @@
 #ifndef _CFF_LIMITS_H_
 #  define _CFF_LIMITS_H_
 
-#include "ptexlib.h"
-
 #  include <limits.h>
 
 #  define CFF_INT_MAX 0x7fffffff
@@ -84,12 +82,6 @@ typedef struct {
     card8 *data;                /* Object data                       */
 } cff_index;
 
-typedef struct {
-  card8     major;    /* format major version (starting at 1) */
-  card8     minor;    /* format minor version (starting at 0) */
-  card8     hdr_size; /* Header size (bytes)                  */
-  c_offsize offsize;  /* Absolute offset (0) size             */
-} cff_header;
 
 /* Dictionary */
 typedef struct {
@@ -195,7 +187,12 @@ typedef struct {
     char *fontname;             /* FontName */
 
     /* - CFF structure - */
-    cff_header header;          /* CFF Header */
+
+    card8 header_major;         /* major version                  */
+    card8 header_minor;         /* minor version                  */
+    card8 header_hdr_size;      /* Header size (bytes)                  */
+    c_offsize header_offsize;   /* Absolute offset (0) size             */
+
     cff_index *name;            /* Name INDEX */
     cff_dict *topdict;          /* Top DICT (single) */
     cff_index *string;          /* String INDEX */
@@ -224,7 +221,6 @@ typedef struct {
 
     int index;                  /* CFF fontset index */
     int flag;                   /* Flag: see above */
-    int is_notdef_notzero;      /* 1 if .notdef is not the 1st glyph */
 } cff_font;
 
 extern cff_font *cff_open(unsigned char *stream, long stream_size, int n);
@@ -273,6 +269,7 @@ extern long cff_read_fdarray(cff_font * cff);
 extern long cff_read_private(cff_font * cff);
 
 /* String */
+extern int cff_match_string(cff_font * cff, const char *str, s_SID sid);
 extern char *cff_get_string(cff_font * cff, s_SID id);
 extern long cff_get_sid(cff_font * cff, const char *str);
 extern s_SID cff_add_string(cff_font * cff, const char *str);
@@ -329,8 +326,5 @@ typedef struct {
 
 extern cff_font *read_cff(unsigned char *buf, long buflength, int subf);
 
-#include "pdf/pdftypes.h"
-#include "font/luatexfont.h"
-
-extern void write_cff(PDF pdf, cff_font * cff, fd_entry * fd, int t1);
+extern void write_cff(PDF pdf, cff_font * cff, fd_entry * fd);
 extern void write_cid_cff(PDF pdf, cff_font * cffont, fd_entry * fd);

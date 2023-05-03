@@ -23,7 +23,6 @@ with LuaTeX; if not, see <http://www.gnu.org/licenses/>.
 
 #include "ptexlib.h"
 
-#include "font/dvipdfmx-util.h"
 #include "font/sfnt.h"
 #include "font/tt_table.h"
 #include "font/tt_glyf.h"

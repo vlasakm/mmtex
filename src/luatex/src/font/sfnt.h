@@ -119,6 +119,11 @@ extern void sfnt_set_table(sfnt * sfont,
                            const char *tag, void *data, ULONG length);
 extern int sfnt_require_table(sfnt * sfont, const char *tag, int must_exist);
 
+#define ASSERT(a) assert(a)
+#define RELEASE(a) free(a)
+#define NEW(a,b) xmalloc((unsigned)((unsigned)(a)*sizeof(b)))
+#define RENEW(a,b,c) xrealloc(a, (unsigned)((unsigned)(b)*sizeof(c)))
+
 extern pdf_obj *sfnt_create_FontFile_stream(sfnt * sfont);
 
 #endif                          /* _SFNT_H_ */

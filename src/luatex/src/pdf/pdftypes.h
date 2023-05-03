@@ -190,6 +190,8 @@ typedef struct pdf_link_stack_record {
     int ref_link_node;          /* points to original |pdf_start_link_node|, or a
                                    copy of |link_node| created by |append_link| in
                                    case of multi-line link */
+    int direction;
+    int count; 
 } pdf_link_stack_record;
 
 /* types of objects */
@@ -295,6 +297,8 @@ typedef struct pdf_output_file_ {
     int gen_tounicode;
     int omit_cidset;
     int omit_charset;
+    int omit_infodict;
+    int omit_mediabox; 
     int inclusion_copy_font;
     int major_version;          /* fixed major part of the PDF version */
     int minor_version;          /* fixed minor part of the PDF version */
