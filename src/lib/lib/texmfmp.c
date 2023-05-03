@@ -849,14 +849,11 @@ maininit (int ac, string *av)
   enc = kpse_var_value("command_line_encoding");
   get_command_line_args_utf8(enc, &argc, &argv);
 #endif
-#if IS_pTeX && !IS_upTeX && !defined(WIN32)
-  ptenc_get_command_line_args(&argc, &argv);
-#endif
 
   /* If the user says --help or --version, we need to notice early.  And
      since we want the --ini option, have to do it before getting into
      the web (which would read the base file, etc.).  */
-#if ((IS_upTeX || defined(XeTeX) || defined(pdfTeX)) && defined(WIN32)) || (IS_pTeX && !IS_upTeX && !defined(WIN32))
+#if ((IS_upTeX || defined(XeTeX) || defined(pdfTeX)) && defined(WIN32))
   parse_options (argc, argv);
 #else
   parse_options (ac, av);
@@ -1016,7 +1013,14 @@ maininit (int ac, string *av)
     /* If run like `tex \&foo', reasonable to guess "foo" as the fmt name.  */
     if (!main_input_file) {
       if (argv[1] && *argv[1] == '&') {
+#if IS_pTeX && !defined(WIN32)
+        string new_arg;
+        is_terminalUTF8(); /* To call get_terminal_enc(). return value is not used */
+        new_arg = ptenc_from_utf8_string_to_internal_enc(argv[1]);
+        dump_name = argv[1] + 1; argv[1] = new_arg;
+#else
         dump_name = argv[1] + 1;
+#endif
       }
     }
 
@@ -1056,12 +1060,25 @@ maininit (int ac, string *av)
     unsigned ext_len = strlen (DUMP_EXT);
     
     /* Provide extension if not there already.  */
+#if IS_pTeX && !defined(WIN32)
+    string new_dump_name;
+    is_terminalUTF8(); /* To call get_terminal_enc(). return value is not used */
+    new_dump_name = ptenc_from_utf8_string_to_internal_enc(dump_name);
+    if (!new_dump_name) new_dump_name = (string)dump_name;
+    if (name_len > ext_len
+        && FILESTRCASEEQ (dump_name + name_len - ext_len, DUMP_EXT)) {
+      with_ext = new_dump_name;
+    } else {
+      with_ext = concat(new_dump_name, DUMP_EXT);
+    }
+#else
     if (name_len > ext_len
         && FILESTRCASEEQ (dump_name + name_len - ext_len, DUMP_EXT)) {
       with_ext = dump_name;
     } else {
       with_ext = concat (dump_name, DUMP_EXT);
     }
+#endif
     DUMP_VAR = concat (" ", with_ext); /* adjust array for Pascal */
     DUMP_LENGTH_VAR = strlen (DUMP_VAR + 1);
   } else {
@@ -1836,10 +1853,8 @@ static struct option long_options[]
       { "no-mktex",                  1, 0, 0 },
 #endif /* TeX or MF */
 #if IS_pTeX
-#ifdef WIN32
       { "guess-input-enc",           0, &infile_enc_auto, 1 },
       { "no-guess-input-enc",        0, &infile_enc_auto, 0 },
-#endif
       { "kanji",                     1, 0, 0 },
       { "kanji-internal",            1, 0, 0 },
 #endif /* IS_pTeX */
@@ -3097,7 +3112,16 @@ getjobname(strnumber name)
 {
     strnumber ret = name; int i, l, p;
     if (c_job_name != NULL)
+#if IS_pTeX && !defined(WIN32)
+      {
+        string new_job_name;
+        is_terminalUTF8();
+        new_job_name = ptenc_from_utf8_string_to_internal_enc(c_job_name);
+        ret = maketexstring(new_job_name? new_job_name : c_job_name);
+      }
+#else
       ret = maketexstring(c_job_name);
+#endif
 #if IS_pTeX
     i = strstart[ret]; l = strstart[ret+1];
     while (i<l)
@@ -3414,12 +3438,11 @@ find_input_file(integer s)
 #endif
     /* Look in -output-directory first, if the filename is not
        absolute.  This is because we want the pdf* functions to
-       be able to find the same files as \openin */
+       be able to find the same files as \openin.  */
     if (output_directory && !kpse_absolute_p (filename, false)) {
-        string pathname;
-
-        pathname = concat3(output_directory, DIR_SEP_STRING, filename);
-        if (!access(pathname, R_OK) && !dir_p (pathname)) {
+        string pathname = concat3(output_directory, DIR_SEP_STRING, filename);
+        /* If there happens to be a directory by that name, never mind.  */
+        if (access(pathname, R_OK) == 0 && !dir_p (pathname)) {
 #if IS_pTeX && !defined(WIN32)
             if (fname1) free(filename);
 #endif
