@@ -718,11 +718,11 @@ if(source_stat.st_mtim.tv_sec> target_stat.st_mtim.tv_sec||
 source_stat.st_mtim.tv_nsec>=target_stat.st_mtim.tv_nsec))
 return 0;
 #else
-if(source_stat.st_mtime>=target_stat.st_mtime)
+ if(source_stat.st_mtime>=target_stat.st_mtime)
 return 0;
 #endif
 #endif
-return 1;
+ return 1;
 }
 
 
@@ -3514,10 +3514,10 @@ char*wrk,*p;
 struct _finddata_t c_file;
 intptr_t hFile;
 #else
-struct dirent*entry;
+ struct dirent*entry;
 DIR*d;
 #endif
-wrk= xstrdup(mpx->tex);
+ wrk= xstrdup(mpx->tex);
 p= strrchr(wrk,'.');
 *p= '\0';
 
@@ -3535,7 +3535,7 @@ remove(c_file.name);
 _findclose(hFile);
 }
 #else
-if((d= opendir(cur_path))==NULL){
+ if((d= opendir(cur_path))==NULL){
 mpx_default_erasetmp(mpx);
 }else{
 while((entry= readdir(d))!=NULL){
@@ -3556,7 +3556,7 @@ free(wrk);
 #else
 #define GETCWD getcwd
 #endif
-static void mpx_erasetmp(MPX mpx){
+ static void mpx_erasetmp(MPX mpx){
 char cur_path[1024];
 if(mpx->debug)
 return;
@@ -3597,7 +3597,7 @@ static int do_spawn(MPX mpx,char*icmd,char**options){
 #ifndef WIN32
 pid_t child;
 #endif
-int retcode= -1;
+ int retcode= -1;
 char*cmd= xmalloc(strlen(icmd)+1,1);
 if(icmd[0]!='"'){
 strcpy(cmd,icmd);
@@ -3620,9 +3620,9 @@ mpx_abort(mpx,"wait failed: %s",strerror(errno));
 }
 }
 #else
-retcode= _spawnvp(_P_WAIT,cmd,(const char*const*)options);
+ retcode= _spawnvp(_P_WAIT,cmd,(const char*const*)options);
 #endif
-xfree(cmd);
+ xfree(cmd);
 return retcode;
 }
 
@@ -3633,7 +3633,7 @@ return retcode;
 #else
 #define nuldev "/dev/null"
 #endif
-static int mpx_run_command(MPX mpx,char*inname,char*outname,int count,char**cmdl){
+ static int mpx_run_command(MPX mpx,char*inname,char*outname,int count,char**cmdl){
 char*s;
 int retcode;
 int sav_o,sav_i;
@@ -3657,7 +3657,7 @@ fw= mpx_xfopen(mpx,(outname?outname:nuldev),"wb");
 #define DUP dup
 #define DUPP dup2
 #endif
-sav_i= DUP(fileno(stdin));
+ sav_i= DUP(fileno(stdin));
 sav_o= DUP(fileno(stdout));
 DUPP(fileno(fr),fileno(stdin));
 DUPP(fileno(fw),fileno(stdout))
@@ -3833,7 +3833,7 @@ strncpy(tmpname,tmpstring,i);
 }
 }
 #else
-sprintf(tmpname,"mp%06d",(int)(time(NULL)%1000000));
+ sprintf(tmpname,"mp%06d",(int)(time(NULL)%1000000));
 #endif
 #endif
  /*@+bufferoverflowhigh@*/ /*:230*/

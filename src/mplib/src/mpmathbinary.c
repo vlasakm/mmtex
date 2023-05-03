@@ -1046,7 +1046,7 @@ fprintf(stdout,"\n%f = ab_vs_cd(%f,%f,%f,%f)",mp_number_to_double(*ret),
 mp_number_to_double(a_orig),mp_number_to_double(b_orig),
 mp_number_to_double(c_orig),mp_number_to_double(d_orig));
 #endif
-mp_check_mpfr_t(mp,ret->data.num);
+ mp_check_mpfr_t(mp,ret->data.num);
 mpfr_clears(q,r,test,a,b,c,d,(mpfr_ptr)0);
 return;
 }
@@ -1122,7 +1122,7 @@ RETURN:
 fprintf(stdout,"\n%f = crossing_point(%f,%f,%f)",mp_number_to_double(*ret),
 mp_number_to_double(aa),mp_number_to_double(bb),mp_number_to_double(cc));
 #endif
-mpfr_clears(a,b,c,x,xx,x0,x1,x2,scratch,(mpfr_ptr)0);
+ mpfr_clears(a,b,c,x,xx,x0,x1,x2,scratch,(mpfr_ptr)0);
 mp_check_mpfr_t(mp,ret->data.num);
 return;
 }

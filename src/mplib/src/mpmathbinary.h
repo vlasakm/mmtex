@@ -12,7 +12,7 @@
 #define MP_STR(x) MP_STR_HELPER(x)
 const char*const COMPILED_gmp_version= MP_STR(__GNU_MP_VERSION)"."MP_STR(__GNU_MP_VERSION_MINOR)"."MP_STR(__GNU_MP_VERSION_PATCHLEVEL);
 #else
-const char*const COMPILED_gmp_version= "unknown";
+ const char*const COMPILED_gmp_version= "unknown";
 #endif
 
 const char*COMPILED_MPFR_VERSION_STRING= MPFR_VERSION_STRING;

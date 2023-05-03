@@ -166,7 +166,7 @@ Isspace(char c)
 return(c==' '||c=='\t');
 }
 #endif
-static void mpost_run_editor(MP mp,char*fname,int fline){
+ static void mpost_run_editor(MP mp,char*fname,int fline){
 char*temp,*command,*fullcmd,*edit_value;
 char c;
 boolean sdone,ddone;
@@ -287,7 +287,7 @@ strcat(fullcmd,"\"");
 strcat(fullcmd,command);
 }else
 #endif
-fullcmd= command;
+ fullcmd= command;
 
 if(system(fullcmd)!=0)
 fprintf(stderr,"! Trouble executing `%s'.\n",command);
@@ -345,7 +345,7 @@ else if(IS_KANJI(p))
 p++;
 }
 #endif
-fprintf(recorder_file,"PWD %s\n",cwd);
+ fprintf(recorder_file,"PWD %s\n",cwd);
 }else{
 fprintf(recorder_file,"PWD <unknown>\n");
 }
@@ -384,7 +384,7 @@ return kpse_find_file(nam,fmt,req);
 #ifndef MPXCOMMAND
 #define MPXCOMMAND "makempx"
 #endif
-static int mpost_run_make_mpx(MP mp,char*mpname,char*mpxname){
+ static int mpost_run_make_mpx(MP mp,char*mpname,char*mpxname){
 int ret;
 char*cnf_cmd= kpse_var_value("MPXCOMMAND");
 if(restricted_mode){
@@ -429,7 +429,7 @@ if(source_stat.st_mtim.tv_sec<target_stat.st_mtim.tv_sec||
 source_stat.st_mtim.tv_nsec<target_stat.st_mtim.tv_nsec))
 nothingtodo= 1;
 #else
-if(source_stat.st_mtime<target_stat.st_mtime)
+ if(source_stat.st_mtime<target_stat.st_mtime)
 nothingtodo= 1;
 #endif
 }
@@ -583,12 +583,12 @@ struct timeb tb;
 ftime(&tb);
 ret= (tb.millitm+1000*tb.time);
 #else
-time_t clock= time((time_t*)NULL);
+ time_t clock= time((time_t*)NULL);
 struct tm*tmptr= localtime(&clock);
 if(tmptr!=NULL)
 ret= (tmptr->tm_sec+60*(tmptr->tm_min+60*tmptr->tm_hour));
 #endif
-return ret;
+ return ret;
 }
 
 /*:12*//*14:*/
@@ -658,7 +658,7 @@ if(source_stat.st_mtim.tv_sec<=target_stat.st_mtim.tv_sec||
 source_stat.st_mtim.tv_nsec<=target_stat.st_mtim.tv_nsec))
 s= mpost_xstrdup(f);
 #else
-if(source_stat.st_mtime<=target_stat.st_mtime)
+ if(source_stat.st_mtime<=target_stat.st_mtime)
 s= mpost_xstrdup(f);
 #endif
 }
@@ -843,7 +843,7 @@ int
 #if defined(DLLPROC)
 DLLPROC(int argc,char**argv)
 #else
-main(int argc,char**argv)
+ main(int argc,char**argv)
 #endif
 
 {
