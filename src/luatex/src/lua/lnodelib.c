@@ -1566,7 +1566,7 @@ static int lua_nodelib_direct_setleader(lua_State * L)
 #define get_pdf_literal_direct_value(L,n) do {                  \
     if (pdf_literal_type(n) == lua_refid_literal) {             \
         lua_rawgeti(L, LUA_REGISTRYINDEX, pdf_literal_data(n)); \
-    } else if (pdf_literal_type(n) == lua_refid_literal) {      \
+    } else if (pdf_literal_type(n) == normal) {                 \
         tokenlist_to_luastring(L, pdf_literal_data(n));         \
     }                                                           \
 } while (0)
