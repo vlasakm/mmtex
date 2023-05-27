@@ -1,7 +1,7 @@
 project(
   'mmtex',
   'c',
-  version: '20230422',
+  version: '20230527',
 )
 
 mmtex_version = meson.project_version()
