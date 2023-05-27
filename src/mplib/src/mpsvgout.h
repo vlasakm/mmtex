@@ -22,8 +22,9 @@ int level;
 
 /*:20*//*27:*/
 
-integer dx;
-integer dy;
+double dx;
+double dy;
+
 
 /*:27*//*56:*/
 

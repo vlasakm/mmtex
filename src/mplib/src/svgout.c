@@ -1050,7 +1050,7 @@ mp_svg_open_starttag(mp,"g");
 
 append_string("url(#CLIP");
 mp_svg_store_int(mp,mp->svg->clipid);
-append_string(");");
+append_string(")");
 mp_svg_attribute(mp,"clip-path",mp->svg->buf);
 mp_svg_reset_buf(mp);
 

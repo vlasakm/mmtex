@@ -1,14 +1,5 @@
 --- a/src/lua/lnodelib.c
 +++ b/src/lua/lnodelib.c
-@@ -150,7 +150,7 @@
- 
- #define nodelib_setattr(L, s, n)     reassign_attribute(n,nodelib_getlist(L,s))
- 
--#define nodelib_gettoks(L,a)   tokenlist_from_lua(L)
-+#define nodelib_gettoks(L,a)   tokenlist_from_lua(L, a)
- 
- #define nodelib_getspec        nodelib_getlist
- #define nodelib_getaction      nodelib_getlist
 @@ -1566,7 +1566,7 @@ static int lua_nodelib_direct_setleader(lua_State * L)
  #define get_pdf_literal_direct_value(L,n) do {                  \
      if (pdf_literal_type(n) == lua_refid_literal) {             \
@@ -18,69 +9,16 @@
          tokenlist_to_luastring(L, pdf_literal_data(n));         \
      }                                                           \
  } while (0)
-@@ -1584,6 +1584,7 @@ static int lua_nodelib_direct_setleader(lua_State * L)
- 
- #define set_pdf_literal_direct_token(L,n,i) do { \
-     pdf_literal_data(n) = nodelib_gettoks(L, i); \
-+    pdf_literal_type(n) = normal;                \
- } while (0)
- 
- #define cleanup_late_lua(n) do {                               \
+diff --git a/src/luatex/src/lua/ltexlib.c b/src/luatex/src/lua/ltexlib.c
+index 8962a39..eb70c19 100644
 --- a/src/lua/ltexlib.c
 +++ b/src/lua/ltexlib.c
 @@ -1790,7 +1790,7 @@ static int settex(lua_State * L)
                  }
              } else if (is_toks_assign(cur_cmd1)) {
                  if (lua_type(L,i) == LUA_TSTRING) {
--                    j = tokenlist_from_lua(L);  /* uses stack -1 */
+-                    j = tokenlist_from_lua(L, -1);  /* uses stack -1 */
 +                    j = tokenlist_from_lua(L, i);
                      assign_internal_value((isglobal ? 4 : 0), equiv(cur_cs1), j);
  
                  } else {
---- a/src/lua/luatex-api.h
-+++ b/src/lua/luatex-api.h
-@@ -162,7 +162,7 @@ extern int characters_from_lua(lua_State * L, int f); /* return is boolean */
- extern int luaopen_token(lua_State * L);
- extern void tokenlist_to_lua(lua_State * L, int p);
- extern void tokenlist_to_luastring(lua_State * L, int p);
--extern int tokenlist_from_lua(lua_State * L);
-+extern int tokenlist_from_lua(lua_State * L, int n);
- 
- extern void lua_nodelib_push(lua_State * L);
- extern int nodelib_getdir(lua_State * L, int n);
---- a/src/lua/luatoken.c
-+++ b/src/lua/luatoken.c
-@@ -482,7 +482,7 @@ void tokenlist_to_luastring(lua_State * L, int p)
-     free(s);
- }
- 
--int tokenlist_from_lua(lua_State * L)
-+int tokenlist_from_lua(lua_State * L, int n)
- {
-     const char *s;
-     int tok, t;
-@@ -492,12 +492,12 @@ int tokenlist_from_lua(lua_State * L)
-     token_info(r) = 0;
-     token_link(r) = null;
-     p = r;
--    t = lua_type(L, -1);
-+    t = lua_type(L, n);
-     if (t == LUA_TTABLE) {
--        j = lua_rawlen(L, -1);
-+        j = lua_rawlen(L, n);
-         if (j > 0) {
-             for (i = 1; i <= j; i++) {
--                lua_rawgeti(L, -1, (int) i);
-+                lua_rawgeti(L, n, (int) i);
-                 tok = token_from_lua(L);
-                 if (tok >= 0) {
-                     store_new_token(tok);
-@@ -507,7 +507,7 @@ int tokenlist_from_lua(lua_State * L)
-         }
-         return r;
-     } else if (t == LUA_TSTRING) {
--        s = lua_tolstring(L, -1, &j);
-+        s = lua_tolstring(L, n, &j);
-         for (i = 0; i < j; i++) {
-             if (s[i] == 32) {
-                 tok = token_val(10, s[i]);

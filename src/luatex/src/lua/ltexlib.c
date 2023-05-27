@@ -1796,7 +1796,6 @@ static int settex(lua_State * L)
                 } else {
                     luaL_error(L, "unsupported value type");
                 }
-
             } else if (lua_istable(L, (i - 2))) {
                 /*
                     people may want to add keys that are also primitives |tex.wd| for example)

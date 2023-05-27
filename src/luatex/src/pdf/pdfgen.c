@@ -929,10 +929,10 @@ void pdf_add_rect_spec(PDF pdf, halfword r)
 void pdf_add_rect_spec(PDF pdf, halfword r)
 {
     /* the check is now here */
-    pdf_add_bp(pdf, pdf_ann_left(r)   < pdf_ann_right(r) ? pdf_ann_left(r)   : pdf_ann_right(r));
-    pdf_add_bp(pdf, pdf_ann_bottom(r) < pdf_ann_top(r)   ? pdf_ann_bottom(r) : pdf_ann_top(r));
-    pdf_add_bp(pdf, pdf_ann_left(r)   < pdf_ann_right(r) ? pdf_ann_right(r)  : pdf_ann_left(r));
-    pdf_add_bp(pdf, pdf_ann_bottom(r) < pdf_ann_top(r)   ? pdf_ann_top(r)    : pdf_ann_bottom(r));
+    pdf_add_bp(pdf, (pdf_ann_left(r)   < pdf_ann_right(r) ? pdf_ann_left(r)   : pdf_ann_right(r) ) - pdf_ann_margin(r));
+    pdf_add_bp(pdf, (pdf_ann_bottom(r) < pdf_ann_top(r)   ? pdf_ann_bottom(r) : pdf_ann_top(r)   ) - pdf_ann_margin(r));
+    pdf_add_bp(pdf, (pdf_ann_left(r)   < pdf_ann_right(r) ? pdf_ann_right(r)  : pdf_ann_left(r)  ) + pdf_ann_margin(r));
+    pdf_add_bp(pdf, (pdf_ann_bottom(r) < pdf_ann_top(r)   ? pdf_ann_top(r)    : pdf_ann_bottom(r)) + pdf_ann_margin(r));
 }
 
 void pdf_rectangle(PDF pdf, halfword r)
@@ -1801,13 +1801,16 @@ void pdf_end_page(PDF pdf)
         pdf_dict_add_name(pdf, "Type", "Page");
         pdf_dict_add_ref(pdf, "Contents", pdf->last_stream);
         pdf_dict_add_ref(pdf, "Resources", res_p->last_resources);
-        pdf_add_name(pdf, "MediaBox");
-        pdf_begin_array(pdf);
-        pdf_add_int(pdf, 0);
-        pdf_add_int(pdf, 0);
-        pdf_add_bp(pdf, pdf->page_size.h);
-        pdf_add_bp(pdf, pdf->page_size.v);
-        pdf_end_array(pdf);
+        pdf->omit_mediabox = pdf_omit_mediabox;
+        if (! pdf->omit_mediabox) {
+            pdf_add_name(pdf, "MediaBox");
+            pdf_begin_array(pdf);
+            pdf_add_int(pdf, 0);
+            pdf_add_int(pdf, 0);
+            pdf_add_bp(pdf, pdf->page_size.h);
+            pdf_add_bp(pdf, pdf->page_size.v);
+            pdf_end_array(pdf);
+        }
         page_attributes = pdf_page_attr ;
         if (page_attributes != null)
             pdf_print_toks(pdf, page_attributes);
@@ -2227,7 +2230,8 @@ void pdf_finish_file(PDF pdf, int fatal_error) {
         print_err(" ==> Fatal error occurred, no output PDF file produced!");
     } else {
         int i, j, k;
-        int root, info;
+        int root = 0;
+        int info = 0;
         int xref_stm = 0;
         int outlines = 0;
         int threads = 0;
@@ -2250,6 +2254,10 @@ void pdf_finish_file(PDF pdf, int fatal_error) {
             }
         } else {
             if (pdf->draftmode == 0) {
+                pdf->gen_tounicode = pdf_gen_tounicode;
+                pdf->omit_cidset = pdf_omit_cidset;
+                pdf->omit_charset = pdf_omit_charset;
+                pdf->omit_infodict = pdf_omit_infodict;
                 /*tex We make sure that the output file name has been already created. */
                 pdf_flush(pdf);
                 /*tex Flush page 0 objects from JBIG2 images, if any. */
@@ -2262,12 +2270,6 @@ void pdf_finish_file(PDF pdf, int fatal_error) {
                     check_nonexisting_destinations(pdf);
                     check_nonexisting_structure_destinations(pdf);
                 }
-                /*tex
-                    Output fonts definition.
-                */
-                pdf->gen_tounicode = pdf_gen_tounicode;
-                pdf->omit_cidset = pdf_omit_cidset;
-                pdf->omit_charset = pdf_omit_charset;
                 /*tex
                     The first pass over the list will flag the slots that are
                     used so that we can do a preroll for type 3 fonts.
@@ -2384,7 +2386,8 @@ void pdf_finish_file(PDF pdf, int fatal_error) {
                 print_pdf_table_string(pdf, "catalog");
                 pdf_end_dict(pdf);
                 pdf_end_obj(pdf);
-                info = pdf_print_info(pdf, luatexversion, luatexrevision);
+                if (! pdf->omit_infodict) 
+                    info = pdf_print_info(pdf, luatexversion, luatexrevision);
                 if (pdf->os_enable) {
                     pdf_buffer_select(pdf, OBJSTM_BUF);
                     pdf_os_write_objstream(pdf);
@@ -2418,7 +2421,8 @@ void pdf_finish_file(PDF pdf, int fatal_error) {
                     pdf_add_int(pdf, 1);
                     pdf_end_array(pdf);
                     pdf_dict_add_ref(pdf, "Root", root);
-                    pdf_dict_add_ref(pdf, "Info", info);
+                    if (! pdf->omit_infodict) 
+                        pdf_dict_add_ref(pdf, "Info", info);
                     if (pdf_trailer_toks != null) {
                         pdf_print_toks(pdf, pdf_trailer_toks);
                         delete_token_ref(pdf_trailer_toks);
@@ -2476,7 +2480,8 @@ void pdf_finish_file(PDF pdf, int fatal_error) {
                     pdf_begin_dict(pdf);
                     pdf_dict_add_int(pdf, "Size", pdf->obj_ptr + 1);
                     pdf_dict_add_ref(pdf, "Root", root);
-                    pdf_dict_add_ref(pdf, "Info", info);
+                    if (! pdf->omit_infodict) 
+                        pdf_dict_add_ref(pdf, "Info", info);
                     if (pdf_trailer_toks != null) {
                         pdf_print_toks(pdf, pdf_trailer_toks);
                         delete_token_ref(pdf_trailer_toks);

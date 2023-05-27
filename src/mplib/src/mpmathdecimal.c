@@ -1029,7 +1029,7 @@ mp_number_to_double(st),mp_number_to_double(ct),
 mp_number_to_double(sf),mp_number_to_double(cf),
 mp_number_to_double(t));
 #endif
-mp_check_decNumber(mp,ret->data.num,&set);
+ mp_check_decNumber(mp,ret->data.num,&set);
 }
 
 
@@ -1135,7 +1135,7 @@ fprintf(stdout,"\n%f = ab_vs_cd(%f,%f,%f,%f)",mp_number_to_double(*ret),
 mp_number_to_double(a_orig),mp_number_to_double(b_orig),
 mp_number_to_double(c_orig),mp_number_to_double(d_orig));
 #endif
-mp_check_decNumber(mp,ret->data.num,&set);
+ mp_check_decNumber(mp,ret->data.num,&set);
 return;
 }
 
@@ -1210,7 +1210,7 @@ RETURN:
 fprintf(stdout,"\n%f = crossing_point(%f,%f,%f)",mp_number_to_double(*ret),
 mp_number_to_double(aa),mp_number_to_double(bb),mp_number_to_double(cc));
 #endif
-mp_check_decNumber(mp,ret->data.num,&set);
+ mp_check_decNumber(mp,ret->data.num,&set);
 return;
 }
 
@@ -1420,7 +1420,7 @@ decNumberAtan2(&atan2val,y_orig.data.num,x_orig.data.num,&set);
 #if DEBUG
 fprintf(stdout,"\n%g = atan2(%g,%g)",decNumberToDouble(&atan2val),mp_number_to_double(x_orig),mp_number_to_double(y_orig));
 #endif
-decNumberMultiply(ret->data.num,&atan2val,&oneeighty_angle,&set);
+ decNumberMultiply(ret->data.num,&atan2val,&oneeighty_angle,&set);
 checkZero(ret->data.num);
 #if DEBUG
 fprintf(stdout,"\nn_arg(%g,%g,%g)",mp_number_to_double(*ret),
@@ -1502,7 +1502,7 @@ while(decNumberGreater(&rad,&PI_decNumber))
 decNumberSubtract(&rad,&rad,&PI_decNumber,&set);
 }
 #endif
-if((tmp==90.0)||(tmp==-270)){
+ if((tmp==90.0)||(tmp==-270)){
 decNumberZero(n_cos->data.num);
 decNumberCopy(n_sin->data.num,&fraction_multiplier_decNumber);
 }else if((tmp==-90.0)||(tmp==270.0)){
@@ -1523,7 +1523,7 @@ decNumberMultiply(n_sin->data.num,n_sin->data.num,&fraction_multiplier_decNumber
 fprintf(stdout,"\nsin_cos(%f,%f,%f)",decNumberToDouble(&rad),
 mp_number_to_double(*n_cos),mp_number_to_double(*n_sin));
 #endif
-mp_check_decNumber(mp,n_cos->data.num,&set);
+ mp_check_decNumber(mp,n_cos->data.num,&set);
 mp_check_decNumber(mp,n_sin->data.num,&set);
 }
 

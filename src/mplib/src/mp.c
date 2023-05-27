@@ -1213,7 +1213,7 @@ static mp_node do_get_value_node(MP mp,mp_token_node A);
 static mp_string do_get_value_str(MP mp,mp_token_node A);
 static mp_knot do_get_value_knot(MP mp,mp_token_node A);
 #endif
-static void do_set_value_sym(MP mp,mp_token_node A,mp_sym B);
+ static void do_set_value_sym(MP mp,mp_token_node A,mp_sym B);
 static void do_set_value_number(MP mp,mp_token_node A,mp_number B);
 static void do_set_value_node(MP mp,mp_token_node A,mp_node B);
 static void do_set_value_str(MP mp,mp_token_node A,mp_string B);
@@ -2359,13 +2359,13 @@ vfprintf(mp->log_file,fmt,ap);
 }
 va_end(ap);
 #endif
-va_start(ap,fmt);
+ va_start(ap,fmt);
 #if 0
 if(mp->term_out&&!ferror((FILE*)mp->term_out)){
 #else
-if(false){
+ if(false){
 #endif
-fputs(prefix,mp->term_out);
+ fputs(prefix,mp->term_out);
 vfprintf(mp->term_out,fmt,ap);
 }else{
 fputs(prefix,stdout);
@@ -3079,7 +3079,7 @@ t_open_out();
 setvbuf(stdout,(char*)NULL,_IONBF,0);
 setvbuf(mp->term_out,(char*)NULL,_IONBF,0);
 #endif
-if(opt->math_mode==mp_math_scaled_mode){
+ if(opt->math_mode==mp_math_scaled_mode){
 mp->math= mp_initialize_scaled_math(mp);
 }else if(opt->math_mode==mp_math_decimal_mode){
 mp->math= mp_initialize_decimal_math(mp);
@@ -4306,7 +4306,7 @@ mp->history= mp_fatal_error_stop;
 mp_jump_out(mp);
 }
 #endif
-w= calloc(nmem,size);
+ w= calloc(nmem,size);
 if(w==NULL){
 mp_fputs("Out of memory!\n",mp->err_out);
 mp->history= mp_system_error_stop;
@@ -4778,7 +4778,7 @@ return mp->troff_mode;
 #if defined(_MSC_VER)
 #define strtoull _strtoui64
 #endif
-static void mp_fix_date_and_time(MP mp){
+ static void mp_fix_date_and_time(MP mp){
 char*source_date_epoch;
 time_t epoch;
 char*endptr;
@@ -4796,7 +4796,7 @@ source_date_epoch);
 if(epoch> 32535291599ULL)
 epoch= 32535291599ULL;
 #endif
-tmptr= gmtime(&epoch);
+ tmptr= gmtime(&epoch);
 }else{
 epoch= time((time_t*)0);
 tmptr= localtime(&epoch);
@@ -5079,7 +5079,7 @@ return(temp==sym);
 #define value_str(A)    ((mp_token_node)(A))->data.str
 #define value_knot(A)   ((mp_token_node)(A))->data.p
 #endif
-static void do_set_value_sym(MP mp,mp_token_node A,mp_sym B){
+ static void do_set_value_sym(MP mp,mp_token_node A,mp_sym B){
 FUNCTION_TRACE3("set_value_sym(%p,%p)\n",(A),(B));
 A->data.sym= (B);
 }
@@ -6739,6 +6739,14 @@ if(mp->num_knot_nodes<max_num_knot_nodes){
 q->next= mp->knot_nodes;
 mp->knot_nodes= q;
 mp->num_knot_nodes++;
+if(mp->math_mode> mp_math_double_mode){
+free_number(q->x_coord);
+free_number(q->y_coord);
+free_number(q->left_x);
+free_number(q->left_y);
+free_number(q->right_x);
+free_number(q->right_y);
+}
 return;
 }
 if(mp->math_mode> mp_math_double_mode){
@@ -6747,6 +6755,8 @@ mp_free_knot(mp,q);
 mp_xfree(q);
 }
 }
+
+
 void mp_toss_knot_list(MP mp,mp_knot p){
 mp_knot q;
 mp_knot r;
@@ -11352,7 +11362,7 @@ dbg_str(return{);dbg_nl;
 dbg_n(w0->x_coord);
 dbg_n(w0->y_coord);
 #endif
-do{
+ do{
 q= mp_next_knot(p);
 #ifdef DEBUGENVELOPE
 dbg_nl;dbg_open_t;dbg_str(--[==[begin loop]==]);dbg_nl;
@@ -11371,11 +11381,11 @@ dbg_key(Split the cubic);dbg_open_t;dbg_nl;
 dbg_key_ival(pre info p,mp_knot_info(p));dbg_comma;
 dbg_n(w0->x_coord);dbg_n(w0->y_coord);
 #endif
-mp_knot_info(p)= zero_off+k_needed;
+ mp_knot_info(p)= zero_off+k_needed;
 #ifdef DEBUGENVELOPE
 dbg_key_ival(post info p,mp_knot_info(p));dbg_close_t;dbg_comma;dbg_nl;
 #endif
-k_needed= 0;
+ k_needed= 0;
 /*567:*/
 
 set_number_from_substraction(x0,p->right_x,p->x_coord);
@@ -11444,7 +11454,7 @@ dbg_nl;
 dbg_comment(Find the initial direction|(dx,dy)|);dbg_nl;
 dbg_n(w0->x_coord);dbg_n(w0->y_coord);
 #endif
-number_clone(dx_m,zero_t);
+ number_clone(dx_m,zero_t);
 number_clone(dy_m,zero_t);
 number_clone(dx,x0);
 number_clone(dy,y0);
@@ -11515,7 +11525,7 @@ dbg_key(mp_get_turn_amt_dx_dy);dbg_open_t;dbg_str(--[==[call mp_get_turn_amt]==]
 dbg_n(w0->x_coord);dbg_n(w0->y_coord);dbg_n(dx);dbg_n(dy);dbg_in(number_nonnegative(ab_vs_cd));
 dbg_n(ab_vs_cd);
 #endif
-is_dxdy= true;
+ is_dxdy= true;
 turn_amt= mp_get_turn_amt(mp,w0,dx,dy,number_nonnegative(ab_vs_cd));
 is_dxdy= false;
 #ifdef DEBUGENVELOPE
@@ -11523,14 +11533,14 @@ dbg_dn(turn_amt);
 dbg_close_t;dbg_comma;
 dbg_nl;
 #endif
-free_number(ab_vs_cd);
+ free_number(ab_vs_cd);
 #ifdef DEBUGENVELOPE
 dbg_key(w0 before walk);dbg_open_t;dbg_nl;
 dbg_n(w0->x_coord);dbg_n(w0->y_coord);
 dbg_dn(turn_amt);
 dbg_close_t;dbg_comma;
 #endif
-w= mp_pen_walk(mp,w0,turn_amt);
+ w= mp_pen_walk(mp,w0,turn_amt);
 w0= w;
 #ifdef DEBUGENVELOPE
 dbg_key(w0 after walk);dbg_open_t;dbg_nl;
@@ -11538,7 +11548,7 @@ dbg_n(w0->x_coord);dbg_n(w0->y_coord);
 dbg_close_t;dbg_comma;
 dbg_open_t;dbg_in(mp_knot_info(p));
 #endif
-mp_knot_info(p)= mp_knot_info(p)+turn_amt;
+ mp_knot_info(p)= mp_knot_info(p)+turn_amt;
 #ifdef DEBUGENVELOPE
 dbg_in(mp_knot_info(p));dbg_close_t;dbg_comma;
 #endif
@@ -11590,7 +11600,7 @@ new_number(ab_vs_cd);
 dbg_sp;
 dbg_key(Decide on the net change in pen offsets and set turn_amt);dbg_open_t;dbg_nl;
 #endif
-ab_vs_cd(ab_vs_cd,dx,dyin,dxin,dy);
+ ab_vs_cd(ab_vs_cd,dx,dyin,dxin,dy);
 #ifdef DEBUGENVELOPE
 dbg_n(ab_vs_cd);dbg_n(dx);dbg_n(dyin);dbg_n(dxin);dbg_n(dy);
 #endif
@@ -11663,7 +11673,7 @@ take_fraction(r2,x2,y0);
 dbg_sp;
 dbg_open_t;dbg_dn(d_sign);dbg_close_t;dbg_comma;dbg_nl;
 #endif
-number_half(r1);
+ number_half(r1);
 number_half(r2);
 set_number_from_substraction(t0,r1,r2);
 set_number_from_addition(arg1,y0,y2);
@@ -11727,7 +11737,7 @@ dbg_n(ss);dbg_close_t;dbg_comma;
 dbg_key(patch ss after);dbg_open_t;
 dbg_n(ss);dbg_close_t;dbg_comma;
 #endif
-free_number(abs_ss);
+ free_number(abs_ss);
 free_number(eps_ss);
 
 free_number(arg1);
@@ -11746,7 +11756,7 @@ dbg_key(Make|ss|negative if and only if);dbg_open_t;dbg_nl;
 dbg_key(mp_get_turn_amt_dxin_dyin);dbg_open_t;dbg_str(--[==[call mp_get_turn_amt]==]);dbg_nl;;
 dbg_n(w->x_coord);dbg_n(w->y_coord);dbg_n(dxin);dbg_n(dyin);dbg_in((d_sign> 0));
 #endif
-is_dxindyin= true;
+ is_dxindyin= true;
 turn_amt= mp_get_turn_amt(mp,w,dxin,dyin,(d_sign> 0));
 is_dxindyin= false;
 #ifdef DEBUGENVELOPE
@@ -11755,7 +11765,7 @@ dbg_key_nval(ss,ss);dbg_comma;dbg_nl;
 dbg_key_ival(d_sign,d_sign);dbg_comma;dbg_nl;
 dbg_key_ival(n,n);dbg_comma;dbg_nl;
 #endif
-if(number_negative(ss))
+ if(number_negative(ss))
 turn_amt= turn_amt-d_sign*n;
 #ifdef DEBUGENVELOPE
 dbg_key_dval(turn_amt 2,turn_amt);dbg_comma;dbg_nl;
@@ -11784,7 +11794,7 @@ new_number(abs_dv);
 #ifdef DEBUGENVELOPE
 dbg_key(Compute test coefficients|(t0,t1,t2)|for $d(t)$ versus...);dbg_open_t;dbg_nl;
 #endif
-set_number_from_substraction(du,ww->x_coord,w->x_coord);
+ set_number_from_substraction(du,ww->x_coord,w->x_coord);
 set_number_from_substraction(dv,ww->y_coord,w->y_coord);
 number_clone(abs_du,du);
 number_abs(abs_du);
@@ -11800,7 +11810,7 @@ dbg_n(abs_du);dbg_n(abs_dv);
 dbg_n(du);dbg_n(dv);
 dbg_in(number_greaterequal(abs_du,abs_dv));
 #endif
-if(number_greaterequal(abs_du,abs_dv)){
+ if(number_greaterequal(abs_du,abs_dv)){
 mp_number r1;
 new_fraction(r1);
 make_fraction(s,dv,du);
@@ -11857,7 +11867,7 @@ dbg_close_t;dbg_comma;dbg_nl;
 #ifdef DEBUGENVELOPE
 dbg_key(Find the first|t|where);dbg_open_t;dbg_nl;
 #endif
-crossing_point(t,t0,t1,t2);
+ crossing_point(t,t0,t1,t2);
 if(turn_amt>=0){
 if(number_negative(t2)){
 number_clone(t,fraction_one_t);
@@ -11908,7 +11918,7 @@ dbg_n(x0);dbg_n(x1);dbg_n(x2);
 dbg_n(y0);dbg_n(y1);dbg_n(y2);
 dbg_close_t;dbg_comma;dbg_nl;
 #endif
-mp_fin_offset_prep(mp,p,w,x0,x1,x2,y0,y1,y2,1,turn_amt);
+ mp_fin_offset_prep(mp,p,w,x0,x1,x2,y0,y1,y2,1,turn_amt);
 }else{
 mp_split_cubic(mp,p,t);
 r= mp_next_knot(p);
@@ -11928,7 +11938,7 @@ dbg_n(x0);dbg_n(x1a);dbg_n(x2a);
 dbg_n(y0);dbg_n(y1a);dbg_n(y2a);
 dbg_close_t;dbg_comma;dbg_nl;
 #endif
-mp_fin_offset_prep(mp,p,w,x0,x1a,x2a,y0,y1a,y2a,1,0);
+ mp_fin_offset_prep(mp,p,w,x0,x1a,x2a,y0,y1a,y2a,1,0);
 number_clone(x0,x2a);
 number_clone(y0,y2a);
 mp_knot_info(r)= zero_off-1;
@@ -11992,13 +12002,13 @@ dbg_n(w->x_coord);dbg_n(w->y_coord);
 dbg_n(w0->x_coord);dbg_n(w0->y_coord);
 dbg_close_t;dbg_comma;dbg_nl;
 #endif
-NOT_FOUND:
+ NOT_FOUND:
 /*557:*/
 
 #ifdef DEBUGENVELOPE
 dbg_comment(Advance|p|to node|q|);dbg_nl;
 #endif
-q0= q;
+ q0= q;
 do{
 r= mp_next_knot(p);
 if(number_equal(p->x_coord,p->right_x)&&
@@ -12099,7 +12109,7 @@ dbg_key_ival(info post,mp_knot_info(c));
 dbg_close_t;
 dbg_nl;dbg_str(--[==[END]==]);dbg_nl;
 #endif
-free_number(ss);
+ free_number(ss);
 free_number(s);
 free_number(dxin);
 free_number(dyin);
@@ -12225,7 +12235,7 @@ new_fraction(t);
 #ifdef DEBUGENVELOPE
 dbg_key(mp_fin_offset_prep);dbg_open_t;dbg_nl;
 #endif
-while(1){
+ while(1){
 if(rise> 0)
 ww= mp_next_knot(w);
 else
@@ -12248,7 +12258,7 @@ new_number(abs_dv);
 #ifdef DEBUGENVELOPE
 dbg_key(Compute test coefficients|(t0,t1,t2)|for $d(t)$ versus...);dbg_open_t;dbg_nl;
 #endif
-set_number_from_substraction(du,ww->x_coord,w->x_coord);
+ set_number_from_substraction(du,ww->x_coord,w->x_coord);
 set_number_from_substraction(dv,ww->y_coord,w->y_coord);
 number_clone(abs_du,du);
 number_abs(abs_du);
@@ -12264,7 +12274,7 @@ dbg_n(abs_du);dbg_n(abs_dv);
 dbg_n(du);dbg_n(dv);
 dbg_in(number_greaterequal(abs_du,abs_dv));
 #endif
-if(number_greaterequal(abs_du,abs_dv)){
+ if(number_greaterequal(abs_du,abs_dv)){
 mp_number r1;
 new_fraction(r1);
 make_fraction(s,dv,du);
@@ -12313,14 +12323,14 @@ dbg_close_t;dbg_comma;dbg_nl;
 #ifdef DEBUGENVELOPE
 dbg_comment(crossing_point);
 #endif
-crossing_point(t,t0,t1,t2);
+ crossing_point(t,t0,t1,t2);
 #ifdef DEBUGENVELOPE
 dbg_n(t);dbg_n(t0);dbg_n(t1);dbg_n(t2);
 dbg_in(number_greaterequal(t,fraction_one_t));
 dbg_in(turn_amt);
 dbg_close_t;dbg_comma;dbg_nl;
 #endif
-if(number_greaterequal(t,fraction_one_t)){
+ if(number_greaterequal(t,fraction_one_t)){
 if(turn_amt> 0)
 number_clone(t,fraction_one_t);
 else
@@ -12389,7 +12399,7 @@ RETURN:
 dbg_comment(RETURN);
 dbg_n(t);
 #endif
-free_number(s);
+ free_number(s);
 free_number(t);
 free_number(du);
 free_number(dv);
@@ -12437,7 +12447,7 @@ dbg_in(number_zero(dx)&&number_zero(arg1)&&number_negative(dy)&&number_positive(
 dbg_in(number_zero(dy)&&number_zero(arg2)&&number_positive(dx)&&number_negative(arg1));
 dbg_nl;
 #endif
-if(number_negative(t))
+ if(number_negative(t))
 break;
 incr(s);
 w= ww;
@@ -12457,7 +12467,7 @@ dbg_n(t_ap);dbg_n(dy_ap);dbg_n(dx_ap);dbg_n(dyin_ap);dbg_n(dxin_ap);
 dbg_close_t;dbg_comma;
 dbg_nl;
 #endif
-while(number_negative(t)){
+ while(number_negative(t)){
 decr(s);
 w= ww;
 ww= mp_prev_knot(ww);
@@ -12531,7 +12541,7 @@ dbg_in(mp_knot_info(p));
 dbg_close_t;dbg_close_t;dbg_comma;dbg_nl;
 dbg_nl;dbg_str(--[==[STOP]==]);dbg_nl;
 #endif
-if(mp_knot_info(p)> zero_off)
+ if(mp_knot_info(p)> zero_off)
 mp_print(mp,"counter");
 mp_print(mp,"clockwise to offset ");
 mp_print_two(mp,w->x_coord,w->y_coord);
@@ -15026,9 +15036,9 @@ mp_print(mp,"right");
 mp_print(mp," delimiter that matches ");
 mp_print_text(m);
 #else
-mp_print(mp," delimiter");
+ mp_print(mp," delimiter");
 #endif
-break;
+ break;
 case mp_tag_token:
 if(m==0)
 mp_print(mp,"tag");
@@ -18019,7 +18029,7 @@ p->value_mod= mp_expr_sym;
 p->value_mod= mp_suffix_sym;
 }
 mp_get_x_next(mp);
-if(cur_cmd()==mp_within_token){
+if(p->value_mod==mp_expr_sym&&cur_cmd()==mp_within_token){
 /*850:*/
 
 {
@@ -18341,7 +18351,7 @@ mp->quoted_filename= false;
 #ifndef IS_DIR_SEP
 #define IS_DIR_SEP(c) (c=='/' || c=='\\')
 #endif
-boolean mp_more_name(MP mp,ASCII_code c){
+ boolean mp_more_name(MP mp,ASCII_code c){
 if(c=='"'){
 mp->quoted_filename= !mp->quoted_filename;
 }else if((c==' '||c=='\t')&&(mp->quoted_filename==false)){
@@ -27482,9 +27492,9 @@ else
 /*1264:*/
 
 {
-s= xmalloc(12,1);
-mp_snprintf(s,12,".%i",(int)c);
-s[7]= '\0';
+s= xmalloc(13,1);
+mp_snprintf(s,13,".%i",(int)c);
+s[13]= '\0';
 }
 
 

@@ -65,6 +65,7 @@ const_string CTANGLEHELP[] = {
     "-dN         set 'kpathsea_debug' to N (0..127)",
     "+k          keep separators in numeric literals in the output",
     "+s          print usage statistics",
+    "+u          transliterate UTF-8 characters in C code",
     "--help      display this help and exit",
     "--version   output version information and exit",
     NULL
@@ -373,6 +374,7 @@ const_string PBIBTEXHELP[] = {
     "  Write bibliography for entries in AUXFILE to AUXFILE.bbl,",
     "  along with a log file AUXFILE.blg."
     "",
+    "[-no]-guess-input-enc  disable/enable to guess input file encoding",
     "-kanji=STRING          set Japanese encoding (STRING=euc|jis|sjis|utf8)",
     "-min-crossrefs=NUMBER  include item after NUMBER cross-refs; default 2",
     "-terse                 do not print progress reports",
@@ -533,6 +535,7 @@ const_string UPBIBTEXHELP[] = {
     "  Write bibliography for entries in AUXFILE to AUXFILE.bbl,",
     "  along with a log file AUXFILE.blg."
     "",
+    "[-no]-guess-input-enc  disable/enable to guess input file encoding",
     "-kanji=STRING          set Japanese encoding (STRING=euc|jis|sjis|utf8|uptex)",
     "-kanji-internal=STRING set Japanese internal encoding (STRING=euc|uptex)",
     "-min-crossrefs=NUMBER  include item after NUMBER cross-refs; default 2",
@@ -645,10 +648,12 @@ const_string WEAVEHELP[] = {
 
 #ifdef TWILL
 const_string TWILLHELP[] = {
-    "Usage: twill [OPTION]... WEBFILE[.web] [CHANGEFILE[.ch]]",
+    "Usage: twill [OPTION] WEBFILE[.web] [{CHANGEFILE[.ch]|-} [OUTFILE[.tex]]]",
     "  Weave WEBFILE with CHANGEFILE into a TeX document with mini-indexes.",
     "  Default CHANGEFILE is " DEV_NULL ";",
-    "  TeX output goes to the basename of WEBFILE extended with `.tex'.",
+    "  TeX output goes to the basename of WEBFILE extended with `.tex',",
+    "  unless otherwise specified by OUTFILE;",
+    "  in this case, '-' specifies a null CHANGEFILE.",
     "",
     "-x          omit cross-reference information",
     "-help       display this help and exit",
