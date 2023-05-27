@@ -1,17 +1,13 @@
 %% This is part of the OpTeX project, see http://petr.olsak.net/optex
 
-\_codedecl \nopagenumbers {Output routine <2022-10-20>} % preloaded in format
+\_codedecl \nopagenumbers {Output routine <2023-04-28>} % preloaded in format
 
    \_doc -----------------------------
-   \`\_optexoutput` is the default output routine. You can create another...\nl
-   The \^`\_preshipout``<destination box number><box specification>` used
-   here behaves similarly like `\setbox` but it does not only copy the box
-   contents but adds the color literals depending on used attributes.
-   It is defined using lua code, see section~\ref[lua].
+   \`\_optexoutput` is the default output routine. You can create another
    \_cod -----------------------------
 
 \_output={\_optexoutput}
-\_def \_optexoutput{\_begoutput \_preshipout0\_completepage \_shipout\_box0 \_endoutput}
+\_def \_optexoutput{\_begoutput \_optexshipout\_completepage \_endoutput}
 
    \_doc -----------------------------
    Default \`\_begoutput` and \`\_endoutput` is defined.
@@ -37,6 +33,16 @@
 \_def \_prepoffsets {}
 
    \_doc -----------------------------
+   The \`\_optexshipout` does similar work like the `\_shipout` primitive.
+   The color literals are added to the `\box0` using
+   the \^`\_preshipout``<destination box number><box specification>` pseudo-primitive.
+   It is defined using lua code, see section~\ref[lua].
+   Finally the `\_shipout` primitive is used.
+   \_cod -----------------------------
+
+\_def \_optexshipout #1{\_setbox0=#1\_preshipout0\_box0 \_shipout\_box0 }
+
+   \_doc -----------------------------
    The `\hsize` value can be changed at various places in the document but
    we need to have a constant value \`\_xhsize` in the output routine
    (for headlines and footlines, for instance). This value is set
@@ -48,7 +54,7 @@
    `\hsize` value is eventually changed by the user in this environment.
    \_cod -----------------------------
 
-\_newdimen \_xhsize
+\_newdimen \_xhsize  \_xhsize=\_hsize
 \_def\_setxhsize {\_global\_xhsize=\_hsize \_global\_let\_setxhsize=\_relax}
 
    \_doc -----------------------------
@@ -258,6 +264,7 @@ The output routine \^`\_optexoutput` is similar as in plain \TeX. It does:
 
 \_endinput
 
+2022-04-28 \_optexshipout introduced
 2022-10-22 \_normalbaselines added to \makehead/foot/line
 2022-03-07 \_resetattrs instead \_resetcolor
 2021-07-16 output routine supports colors via attributes

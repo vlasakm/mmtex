@@ -1,9 +1,9 @@
-%% This is part of the OpTeX project, see http://petr.olsak.net/optex
+% This is part of the OpTeX project, see http://petr.olsak.net/optex
 
-\_codedecl \sin {Math macros plus mathchardefs <2021-08-02>} % preloaded in format
+\_codedecl \sin {Math macros plus mathchardefs <2023-05-24>} % preloaded in format
 
    \_doc -----------------------------
-   The category code of the character `_` remains as the letter (11) and the mathocode
+   The category code of the character `_` remains as the letter (11) and the mathcode
    of it is `"8000`.
    It means that it is an active character in math mode. It is defined as the subscript prefix.
 
@@ -36,7 +36,10 @@
    \_directlua{
    callback.add_to_callback("process_input_buffer",
      function (str)
-       return string.gsub(str.." ", "(\_nbb[a-zA-Z]+)_([a-zA-Z]?[^_a-zA-Z])", "\_pcent 1 _\_pcent 2")
+        local num
+        str, num = string.gsub(str.." ", \_gsubrule)
+        if num>0 then str = string.gsub(str, \_gsubrule) end % \phi_i\rho_j -> \phi _i\rho _j
+        return str
      end, "_mathsb") }%
    \_global\_mathsbtrue
 }
@@ -44,6 +47,8 @@
    \_directlua{ callback.remove_from_callback("process_input_buffer", "_mathsb") }%
    \_global \_mathsbfalse
 }
+\_edef\_gsubrule{"(\_nbb[a-zA-Z]+)_([a-zA-Z]?[^_a-zA-Z])", "\_pcent 1 _\_pcent 2"}
+
 \_public \mathsboff \mathsbon ;
 
    \_doc -----------------------------
@@ -367,25 +372,42 @@
 \_private \prime ;
 
    \_doc -----------------------------
-   \`\big`, \`\Big`, \`\bigg`, \`\Bigg`, \`\bigl`, \`\bigm`, \`\bigr`, \`\Bigl`, \`\Bigm`,
+   \`\big`, \`\bbig`, \`\Big`, \`\bigg`, \`\Bigg`,
+   \`\bigl`, \`\bigm`, \`\bigr`, \`\bbigl`, \`\bbigm`, \`\bbigr`, \`\Bigl`, \`\Bigm`,
    \`\Bigr`, \`\biggl`, \`\biggm`, \`\biggr`, \`\Biggl`, \`\Biggm`, \`\Biggr`
    are based on the \`\_scalebig` macro because we need the dependency on
    the various sizes of the fonts.
+   The \`\_scalebigcoef``<num>` returns relevant coefficient for these
+   macros. Multiply this coefficient by two and you get the strut
+   height+depth in em units.\nl
+   The \^`\big`, \^`\Big`, \^`\bigg`, \^`\Bigg` macros keep the strut height+depth
+   from plain \TeX/ and \^`\bbig` is a new macro in \OpTeX/. It generates the size
+   1.44\,em beween \^`\big` and  \^`\Big` which is
+   accessible in most of Unicode math fonts (but not in classical `cmex10`).
    \_cod -----------------------------
 
 %{\catcode`\^^Z=\active \gdef^^Z{\not=}} % ^^Z is like \ne in math %obsolete
 
-\_def\_scalebig#1#2{{\_left#1\_vbox to#2\_fontdimen6\_textfont1{}%
-                     \_kern-\_nulldelimiterspace\_right.}}
-\_protected\_def\_big#1{\_scalebig{#1}{.85}}
-\_protected\_def\_Big#1{\_scalebig{#1}{1.15}}
-\_protected\_def\_bigg#1{\_scalebig{#1}{1.45}}
-\_protected\_def\_Bigg#1{\_scalebig{#1}{1.75}}
-\_public \big \Big \bigg \Bigg ;
+\_def\_scalebig#1#2{{\_left#1%
+    \_raise\_Umathaxis\_textstyle\_vbox to\_scalebigcoef{#2}\_fontdimen6\_textfont1{}%
+    \_kern-\_nulldelimiterspace\_right.}}
+\_def\_scalebigcoef#1{\_ifcase #1 0\_or
+% \big (1.2)    \bbig (1.44)    \Big (1.8)    \bigg (2.4)    \Bigg (3.0)
+         .6\_or         .72\_or        .9\_or        1.2\_or        1.5\_else 0\_fi
+}
+\_protected\_def\_big #1{\_scalebig{#1}1}
+\_protected\_def\_bbig#1{\_scalebig{#1}2}
+\_protected\_def\_Big #1{\_scalebig{#1}3}
+\_protected\_def\_bigg#1{\_scalebig{#1}4}
+\_protected\_def\_Bigg#1{\_scalebig{#1}5}
+\_public \big \bbig \Big \bigg \Bigg ;
 
 \_protected\_def\_bigl{\_mathopen\_big}
 \_protected\_def\_bigm{\_mathrel\_big}
 \_protected\_def\_bigr{\_mathclose\_big}
+\_protected\_def\_bbigl{\_mathopen\_bbig}
+\_protected\_def\_bbigm{\_mathrel\_bbig}
+\_protected\_def\_bbigr{\_mathclose\_bbig}
 \_protected\_def\_Bigl{\_mathopen\_Big}
 \_protected\_def\_Bigm{\_mathrel\_Big}
 \_protected\_def\_Bigr{\_mathclose\_Big}
@@ -395,7 +417,8 @@
 \_protected\_def\_Biggl{\_mathopen\_Bigg}
 \_protected\_def\_Biggm{\_mathrel\_Bigg}
 \_protected\_def\_Biggr{\_mathclose\_Bigg}
-\_public \bigl \bigm \bigr \Bigl \Bigm \Bigr \biggl \biggm \biggr \Biggl \Biggm \Biggr ;
+\_public \bigl \bigm \bigr \bbigl \bbigm \bbigr
+         \Bigl \Bigm \Bigr \biggl \biggm \biggr \Biggl \Biggm \Biggr ;
 
    \_doc -----------------------------
    Math relations defined by the \`\jointrel` plain \TeX/ macro:
@@ -1046,6 +1069,23 @@
 \_public \cramped ;
 
    \_doc -----------------------------
+   \`\setmathstyle` saves current math style
+   (including its cramped/normal subversion) and \`\usemathstyle`
+   restores the saved math style. These macros are based on the \LuaTeX/'s
+   `\mathstyle` primitive,  i.e.\ they don't work in generalized fractions.\nl
+   Usage: `\def\mathclap #1{{\setmathstyle \hbox to0pt{\hss$\usemathstyle#1$\hss}}}`.
+   \_cod
+
+\_newcount\_mstylenum
+\_def\_setmathstyle{\_mstylenum=\_mathstyle\_relax}
+\_def\_usemathstyle{\_ifcase\_mstylenum
+   \_displaystyle\_or \_crampeddisplaystyle\_or \_textstyle\_or \_crampedtextstyle\_or
+   \_scriptstyle\_or \_crampedscriptstyle\_or \_scriptscriptstyle\_or \_crampedscriptscriptstyle
+   \_fi
+}
+\_public \setmathstyle \usemathstyle ;
+
+   \_doc -----------------------------
    The \`\mathbox``{<text>}` macro is copied from OPmac trick 078.
    It behaves like `\hbox{<text>}` but the `<text>` is scaled to a smaller
    size if it is used in scriptstyle or scriptscript style.\nl
@@ -1067,6 +1107,10 @@
 
 \_endcode %---------------------------------------------------
 
+2023-05-24 \matsbon: "local num" added
+2023-05-22 \mathsbon: \alpha_i\beta_j -> \alpha _i\beta _j (bug fixed)
+2023-04-15 \bbig introduced
+2023-03-12 \setmathstyle, \usemathstyle introduced
 2021-08-02 ssty fontfeatures rewritten
 2021-04-25 \triangleright: typo fixed
 2021-03-22 \(l)eqalignno: \hbox instead \llap, \rlap (\par error suppressed)

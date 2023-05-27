@@ -3,7 +3,7 @@
 % This file can serve as an template for other package files
 % See end of the file for more information
 
-\_def\_math_version {0.08, 2023-01-28}
+\_def\_math_version {0.11, 2023-04-15}
 \_codedecl \replacemissingchars {Doing math more comfortably <\_math_version>}
 \_namespace{math}
 
@@ -22,6 +22,8 @@
       \_kvx {vert}     {\.smartvert}%     sets | as math active, to do better |x| or ||x||
       \_kvx {dots}     {\.smartdots}%     \dots behaves like \ldots or \cdots
       \_kvx {bfserif}  {\.bfserif}%       \bf, \bi select fonts with serifs
+      \_kvx {mstyle}   {\.mstyle{##1}}%   sets mstyle=TeX or ISO or french or upright
+      \_kvx {bstyle}   {\.bstyle{##1}}%   sets bstyle=TeX or ISO or upright or OpTeX
       \_kvx {rmchars}  {\.rmchars{##1}}%  does \.rmchars{<list>}
       \_kvx {vargreek} {\.vargreek{##1}}% does \.vargreek{<list>}
       \_kvx {text}     {\.dotext{##1}}%   does \.dotext{<list>}
@@ -33,11 +35,12 @@
 \_nspublic \mathset ;
 
    \_doc
-   \`\bigp`, \`\Bigp`, \`\biggp`, \`\Biggp`, \`\autop`, \`\normalp` are inspired from
+   \`\bigp`, \`\bbigp`, \`\Bigp`, \`\biggp`, \`\Biggp`, \`\autop`, \`\normalp` are inspired from
    \tricklink[bigp]{0094}
    \_cod
 
 \_def\.bigp #1{\.fparam{#1}\_bigl\_bigr}
+\_def\.bbigp #1{\.fparam{#1}\_bbigl\_bbigr}
 \_def\.Bigp #1{\.fparam{#1}\_Bigl\_Bigr}
 \_def\.biggp#1{\.fparam{#1}\_biggl\_biggr}
 \_def\.Biggp#1{\.fparam{#1}\_Biggl\_Biggr}
@@ -64,7 +67,7 @@
    \.bigleft\.lparen{#1}\.bigright\.rparen
    \_ifx\.bigright\_right \_egroup\_fi
 }
-\_nspublic \bigp \Bigp \biggp \Biggp \autop \normalp ;
+\_nspublic \bigp \bbigp \Bigp \biggp \Biggp \autop \normalp ;
 
    \_doc
    We need macro \`\.ensurebalanced``<open-b><close-b><macro>` for balancing nested parentheses from
@@ -236,9 +239,57 @@
    \`\bfserif` re-defines internal \OpTeX/ \O`\_mabf` and \O`\_mabi` macros.
    \_cod
 
-\_def\bfserif{%
+\_def\.bfserif{%
    \_protected\_def\_mabf {\_inmath{\_bfvariables\_bfgreek\_bfGreek\_bfdigits}}%
    \_protected\_def\_mabi {\_inmath{\_bivariables\_bigreek\_bfGreek\_bfdigits}}%
+}
+
+\_nspublic \bfserif ;
+
+   \_doc
+   The options `mstyle`, resp. `bstyle` run \`\.mstyle`, resp. \`\.bstyle`
+   and these macros set required shapes of math variables. This can be done
+   only when Unicode-math is loaded already. This is a reason why
+   \`\.unionly``{<code>}{<text>}` is used: it runs <code> only when
+   Unicode-math is loaded, otherwise it prints a warning.
+   \_cod
+
+\_def\.mstyle #1{\.unionly{\_lowercase{\_cs{_math_mstyle_#1}}}{mstyle}}
+\_def\.bstyle #1{\.unionly{\_lowercase{\_cs{_math_bstyle_#1}}}{bstyle}}
+
+\_def\.mstyle_tex {%
+   \_protected\_def\_mit {\_itvariables \_rmdigits \_itgreek \_rmGreek}\_mit
+}
+\_def\.mstyle_iso {%
+   \_protected\_def\_mit {\_itvariables \_rmdigits \_itgreek \_itGreek}\_mit
+}
+\_def\.mstyle_french {%
+   \_protected\_def\_mit {\_umathrange{A-Z}71\_ncharrmA \_umathrange{a-z}71\_ncharita
+                          \_rmdigits \_rmgreek \_rmGreek}%
+   \_mit
+}
+\_def\.mstyle_upright {%
+   \_protected\_def\_mit {\_rmvariables \_rmdigits \_rmgreek \_rmGreek}\_mit
+}
+\_def\.bstyle_tex {%
+   \_protected\_def\_mabf {\_inmath{\_bfvariables\_bigreek\_bfGreek\_bfdigits}}%
+   \_protected\_def\_mabi {\_inmath{\_bivariables\_bigreek\_bfGreek\_bidigits}}%
+}
+\_def\.bstyle_optex {%
+   \_protected\_def\_mabf {\_inmath{\_bsansvariables \_bsansgreek \_bsansGreek \_bsansdigits}}%
+   \_protected\_def\_mabi {\_inmath{\_bisansvariables \_bisansgreek \_bsansGreek \_bsansdigits}}%
+}
+\_def\.bstyle_iso {%
+   \_protected\_def\_mabf {\_inmath{\_bivariables\_bigreek\_biGreek\_bfdigits}}%
+   \_protected\_def\_mabi {\_inmath{\_bivariables\_bigreek\_bfGreek\_bidigits}}%
+}
+\_def\.bstyle_upright {%
+   \_protected\_def\_mabf {\_inmath{\_bfvariables\_bfgreek\_bfGreek\_bfdigits}}%
+   \_protected\_def\_mabi {\_inmath{\_bivariables\_bigreek\_biGreek\_bidigits}}%
+}
+\_def\.unionly #1#2{\_ifx\_rmvariables\_undefined
+   \_opwarning{pkg:math: Unicode-math must be loaded first, \_string#2 ignored}%
+   \_else \_afterfi{#1}\_fi
 }
 
    \_doc
@@ -374,6 +425,17 @@
 
 \_nspublic \scriptspaces ;
 
+   \_doc
+   \`\mathclap``{<formula>}`, \`\mathrlap``{<formula>}`, and \`\mathllap``{<formula>}`
+   are based on the \OpTeX/ macros \O`\setmathstyle` and \O`\usemathstyle`.
+   \_cod
+
+\_def\.mathclap#1{{\_setmathstyle \_hbox to0pt{\_hss$\_usemathstyle#1$\_hss}}}
+\_def\.mathrlap#1{{{}\_setmathstyle \_rlap{$\_usemathstyle#1$}}}
+\_def\.mathllap#1{{{}\_setmathstyle \_llap{$\_usemathstyle#1$}}}
+
+\_nspublic \mathclap \mathrlap \mathllap ;
+
 \_endnamespace
 \_endcode
 
@@ -385,7 +447,7 @@ of them are inspired from
 
 The following macros are defined in this package:
 \begitems
-* \~`\bigp`, \~`\Bigp`, \~`\biggp`, \~`\Biggp`, \~`\autop`, \~`\normalp`
+* \~`\bigp`, \~`\bbigp`, \~`\Bigp`, \~`\biggp`, \~`\Biggp`, \~`\autop`, \~`\normalp`
   gives better controlling of sizes of parentheses.
 * \~`\smartdots` declares `\dots` macro more intelligent.
   \~`\smartvert` declares \"`|`" for better spacing.
@@ -405,13 +467,14 @@ The following macros are defined in this package:
   for printing them from additional math font.
 \enditems
 
-Six options are provided by the `math` package. You can set them by
+Eight options are provided by the `math` package. You can set them by
 \^`\mathset``{<options>}` after `\load[math]`, for example
 `\mathset{dots, vert, vargreek={\epsilon,\rho}}`. The options are:
 \begitems
 * `dots` sets more inteligent `\dots`, the same as \~`\smartdots`.
 * `vert` sets more inteligent `|`, the same as \~`\smartvert`.
 * `bfserif` sets bold-serif, bold-italic-serif, the same as \~`\bfserif`.
+* `mstyle=<style>`, `bstyle=<style>` are math styles explained in section~\ref[mstyle].
 * `rmchars={<list>}` sets `\rm` for selected characters, the same as \~`\rmchars`,
    see section~\ref[rmchars].
 * `vargreek={<list>}` sets variants for Greek letetters, the same as \~`\vargreek`,
@@ -433,7 +496,7 @@ bad with such markup. Better is to say that parentheses have to be bigger
 using a single prefix before functional symbol, i.e. `$\bigp f(x(y+z))$`.
 This should be print the same as previous example with \O`\bigl`, \O`\bigr`.
 
-The prefixes \^`\bigp` (big pair), \^`\Bigp` (Big pair),
+The prefixes \^`\bigp` (big pair), \^`\bbigp` (bbig pair), \^`\Bigp` (Big pair),
 \^`\biggp` (bigg pair) and \^`\Biggp` (Bigg pair) are provided,
 they can be used before a functional symbol. The scaled parentheses
 surrounding the functional parameter can be (...) or [...] or `\{`...`\}` or
@@ -450,7 +513,7 @@ Examples:
 \begtt
 $$
   \displaylines{
-  \Biggp F (1+\biggp g (1+\Bigp f(1+\bigp f(1+f(x))))) \cr
+  \biggp F (1+\Bigp g (1+\bbigp f(1+\bigp f(1+f(x))))) \cr
   f(x(y+z)),\quad  \bigp f(x(y+z)),\quad \autop f (a\over b)\cr
   \Bigp f(a\over b+c),\quad \Bigp f(x^2\over2),\quad \Bigp.(a\over b)
   }
@@ -459,7 +522,7 @@ $$
 gives:
 $$
   \displaylines{
-  \Biggp F (1+\biggp g (1+\Bigp f(1+\bigp f(1+f(x))))) \cr
+  \biggp F (1+\Bigp g (1+\bbigp f(1+\bigp f(1+f(x))))) \cr
   f(x(y+z)),\quad  \bigp f(x(y+z)),\quad \autop f (a\over b)\cr
   \Bigp f(a\over b+c),\quad \Bigp f(x^2\over2),\quad \Bigp.(a\over b)
   }
@@ -637,13 +700,21 @@ $$
 $$
 It looks better, doesn't it?
 
-\sec `\bf` and `\bi` can do shapes with serifs
+\sec[mstyle] `\bf` and `\bi` shapes, math styles
 
 \OpTeX/ sets `\bf` and `\bi` math selectors as sans serif, because this
 follows the old traditional math typesetting of vectors and matrices.
 But Knuth's \TeX/ has another default behavior:`\bf` and `\bi` select serifed
-shaped. So, many people consider it as a standard. You can declare \^`\bfserif` if
+shapes. So, many people consider it as a standard. You can declare \^`\bfserif` if
 you want serifed `\bf` and `\bi` math letters.
+
+Moreover, this package provides `mstyle=<style>` and `bstyle=<style>` options.
+The `mstyle` option can be `TeX`, `ISO`, `french` or `upright` and `bstyle`
+option can be `TeX`, `OpTeX`, `ISO`, `upright`. The `mstyle` and `bstyle`
+options set the upright/italic versions of math Latin/Greek variables in the same
+manner as `math-style` and `bold-style` options (from \LaTeX's
+`unicode-math`) do it. The `bstyle=OpTeX` sets sans serif bold variables,
+which is default in \OpTeX.
 
 \sec[rmchars] Selected upright letters and variants for Greek letters
 
@@ -744,7 +815,18 @@ then you can load a next additional math font using another \o`\addUmathfont` an
 by previous steps are replaced.
 
 
-\sec[pkgtemplate] General recommendation for writing packages
+\sec Miscelaneous commands
+
+I created various commands at the requests of users. They asked me to create
+commands similar to ones from \LaTeX/ packages.
+
+\^`\mathclap``{<formula>}` creates `{\hbox to0pt{\hss $<formula>$\hss}}` and
+respects the math style.\nl
+\^`\mathrlap``{<formula>}` and \^`\mathllap``{<formula>}` is \O`\rlap` and
+\O`\llap` analogue of \^`\mathclap`.
+
+
+\sec[pkgtemplate] General recommendation for writing \OpTeX/ packages
 
 This section has nothing common with the subject of this package but this package
 can serve as inspiration for another package writers. It should be a template
@@ -849,6 +931,9 @@ The user can read this warning and declare the macro after
 
 \endinput
 
+0.11  2023-04-15: \bbigp introduced.
+0.10  2023-03-12: \mathclap etc. introduced.
+0.09  2023-03-11: mstyle, bstyle options introduced.
 0.08  2023-01-28: \eqsystem introduced, \eqfil added.
 0.07  2023-01-23: \sgn etc. defined as \protected\def.
       2023-01-15: \replacemissingchars: bug fixed

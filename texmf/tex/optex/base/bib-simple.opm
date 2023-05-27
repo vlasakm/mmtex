@@ -1,6 +1,6 @@
 %% This is part of the OpTeX project, see http://petr.olsak.net/optex
 
-\_codedecl \_undefined {BIB style (simple) <2022-10-10>} % loaded on demand by \usebib
+\_codedecl \_undefined {BIB style (simple) <2023-04-22>} % loaded on demand by \usebib
 
 \_ifx\_optexbibstyle\_undefined \_errmessage
    {This file can be read by: \_string\usebib/? (simple) bibfiles command only}
@@ -17,23 +17,29 @@
 % Formatting of Author/Editor lists:
 
 \_def\_authorname{%
+  \_addauthlist
   \_ifnum\_NameCount>1
      \_ifnum0\_namecount=\_NameCount \_mtext{bib.and}\_else , \_fi
-  \_else
-     \_ifx\_dobibmark\_undefined \_edef\_dobibmark{\_Lastname}\_fi
   \_fi
   \_bprintc\_Firstname{* }\_bprintc\_Von{* }\_Lastname\_bprintc\_Junior{, *}%
+}
+\_def\_addauthlist{%
+   \_edef\_authlist{\_ifx\_authlist\_undefined \_else \_authlist;\_fi
+                    \_Lastname,\_Firstname,\_Von,\_Junior}%
 }
 \_let\_editorname=\_authorname
 
 % Preparing bib-mark (used when \nonumcitations is set):
 
-\_def\_setbibmark{%  
-   \_ifx\_dobibmark\_undefined \_def\_dobibmark{}\_fi
+\_def\_setbibmark{%
+   \_ifx\_authlist\_undefined \_def\_authlist{,;}\_fi
    \_RetrieveFieldIn{bibmark}\_tmp      
-   \_ifx\_tmp\_empty \_RetrieveFieldIn{year}\_tmp \_edef\_tmp{\_dobibmark, \_tmp}\_fi                
+   \_ifx\_tmp\_empty
+      \_RetrieveFieldIn{year}\_tmp
+      \_edef\_tmp{\_ea\_createbibmark\_expanded{\_tmp;\_authlist;,;,;,;}\_fin}\_fi
    \_bibmark=\_ea{\_tmp}%
 }
+\_def\_createbibmark#1;#2,#3\_fin{#2, #1}
 
 \_def\_preurl{\_hfil\_break} 
 \_def\_Inclause{In:~}
@@ -80,6 +86,7 @@
    \_bprinta [!author]    {*.\ }{\_bibwarning}%
    \_bprintb [title]      {{\_em##1}\:\ }{\_bibwarning}%
                          \_Inclause
+   \_let\_addauthlist\_relax   % no read authorlist again
    \_bprinta [!editor]    {*,~eds.\ }{}%
    \_bprintb [booktitle]  {{\_em##1}\:\ }{\_bibwarning}%
    \_bprinta [address]    {*: }{\_bibwarning}%
@@ -92,11 +99,12 @@
 }
 \_slet{_print:inproceedings}{_print:inbook}
 
-\_sdef{_print:incolection}{%
+\_sdef{_print:incollection}{%
    \_bprinta [!author]    {*.\ }{\_bibwarning}%
    \_bprintb [title]      {{\_em##1}\:\ }{\_bibwarning}%
    \_bprinta [crossreff]  {In~\_cite[*]. }{%
                          \_bprinta [booktitle]  {*. }{\_bibwarning}%
+                         \_let\_addauthlist\_relax
                          \_bprinta [!editor]    {*,~eds.\ }{\_bibwarning}%
                          \_bprinta [edition]    {*\_mtext{bib.edition}\ }{\_bibwarning}%
                          \_bprinta [address]    {*: }{\_bibwarning}%
