@@ -20,10 +20,11 @@ mmoptex_fmt = custom_target(
   'mmoptex.fmt',
   input: files('texmf/tex/mmoptex/mmoptex.ini'),
   output: 'mmoptex.fmt',
+  env: {
+    'TEXMF': meson.current_source_dir() + '/texmf',
+    'TEXMFCNF': '/none', # no config files
+  },
   command: [
-    'env',
-    'TEXMF=' + meson.current_source_dir() + '/texmf',
-    'TEXMFCNF=/none', # no config files
     mmluatex,
     '-ini',
     '@INPUT@'
