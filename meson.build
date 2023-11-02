@@ -33,6 +33,8 @@ mmoptex_fmt = custom_target(
 )
 
 # symlink mmoptex -> mmluatex
-meson.add_install_script('sh', '-c',
-  'ln -sf mmluatex "$MESON_INSTALL_DESTDIR_PREFIX/@0@/mmoptex"'.format(get_option('bindir'))
+install_symlink(
+  'mmoptex',
+  install_dir: get_option('bindir'),
+  pointing_to: 'mmluatex',
 )
