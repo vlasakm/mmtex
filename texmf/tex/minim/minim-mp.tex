@@ -9,9 +9,14 @@
 \input minim-pdfresources
 
 % a default catcode table
-\newcatcodetable \minim:mp:catcodes
+\newcatcodetable \minim:mp:catcodes:maketext
 {\catcode`\:=12 \catcode`\@=12
-    \savecatcodetable\csname minim:mp:catcodes\endcsname}
+    \savecatcodetable\csname minim:mp:catcodes:maketext\endcsname}
+% and an empty catcode table for reading metapost code
+\newcatcodetable \minim:mp:catcodes:mpcode
+{\catcodetable\minim:initcatcodes
+    \catcode`\{=1 \catcode`\}=2 \catcode9=10
+    \savecatcodetable\csname minim:mp:catcodes:mpcode\endcsname}
 
 \directlua { require('minim-mp') }
 
@@ -30,9 +35,10 @@
 %   \boxnamedmpimage       \instance box-nr {name}
 
 % \directmetapost [ options ] { code }
-\protected\def\directmetapost{\withoptions[]\directmetapost:}
+\protected\def\directmetapost{%
+    \begingroup\catcodetable\minim:mp:catcodes:mpcode
+    \withoptions[]\directmetapost:}
 \long\def\directmetapost:[#1]#2{%
-    \begingroup
         \newmetapostinstance[#1]\:mpinst:
         \runmetapost\:mpinst:{#2}%
         \loop \ifnum\remainingmpimages\:mpinst:>0\relax
@@ -54,6 +60,8 @@
 \newcount\RtoG \RtoG = 2126
 \newcount\GtoG \GtoG = 7152
 \newcount\BtoG \BtoG = 0722
+
+\newtoks \everymaketext
 
 \catcode`\: = \minimmploaded
 

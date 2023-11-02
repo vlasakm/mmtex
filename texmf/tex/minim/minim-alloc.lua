@@ -262,13 +262,14 @@ local function make_alloc_old(fname, globcount)
 end
 
 -- existing allocation counters
-make_alloc_old ('count',  260 )
-make_alloc_old ('dimen',  261 )
-make_alloc_old ('skip',   262 )
-make_alloc_old ('muskip', 263 )
-make_alloc_old ('box',    264 )
-make_alloc_old ('toks',   265 )
-make_alloc_old ('marks',  266 )
+local globoffset = tex.count['alloc:globoffset']
+make_alloc_old ('count',  globoffset + 0 )
+make_alloc_old ('dimen',  globoffset + 1 )
+make_alloc_old ('skip',   globoffset + 2 )
+make_alloc_old ('muskip', globoffset + 3 )
+make_alloc_old ('box',    globoffset + 4 )
+make_alloc_old ('toks',   globoffset + 5 )
+make_alloc_old ('marks',  globoffset + 6 )
 
 function M.luadef (csname, fn, ...)
     local nr = M.new_function(csname)

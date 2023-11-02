@@ -85,7 +85,6 @@
 \def\ProvidesFile#1{\begincsname minim:intercept:#1\endcsname
     \minim:providesfile{#1}}
 
-
 % repair ltluatex, which, without apparent reason, resets all allocation 
 % counters, even if they already exist
 \expandafter\def\csname minim:intercept:ltluatex.tex\endcsname
@@ -109,8 +108,15 @@
 
 % 1 allocation
 
-% use global allocation (see etex.src)
-\ifdefined \globcount
+% used on the lua side by make_alloc_old
+\newcount \alloc:globoffset
+\alloc:globoffset = 260
+
+\ifdefined \documentclass
+    % latex has no \globcount etc.
+    \alloc:globoffset = 10
+\else \ifdefined \globcount
+    % use global allocation (see etex.src)
     \let\newcount  = \globcount
     \let\newdimen  = \globdimen
     \let\newskip   = \globskip
@@ -118,7 +124,7 @@
     \let\newbox    = \globbox
     \let\newtoks   = \globtoks
     \let\newmarks  = \globmarks
-\fi
+\fi \fi
 
 % new allocation macros
 
@@ -153,6 +159,8 @@
 % those ourselves:
 \ifnum\csname e@alloc@ccodetable@count\endcsname = 0
     \csname e@alloc@ccodetable@count\endcsname = 4 \fi
+% an empty table
+\newcatcodetable \minim:initcatcodes
 
 % set initial chunk name value
 \def\chardef:chunk#1#2{\chardef#1#2\directlua{lua.name[\the#2]='\csstring#1'}}

@@ -112,19 +112,24 @@
 \protected\def\addstructuretype{\withoptions[]\addstructure:type}
 \def\addstructure:type[#1]{\struct:addalias{return {#1}}}
 
-% \setalttext {...} and \setactualtext {...}
+% \setalttext {...}
 \protected\def\setalttext{\iftagging:enabled
-    \expandafter\tagging:alt\fi}
+    \expandafter\tagging:alt\else
+    \expandafter\tagging:ignore\fi}
+% \setactualtext {...}
 \protected\def\setactualtext{\iftagging:enabled
-    \expandafter\tagging:actual\fi}
+    \expandafter\tagging:actual\else
+    \expandafter\tagging:ignore\fi}
 
 % \tagattribute Owner Key /verbatim_value
 \protected\def\tagattribute{\iftagging:enabled
-    \expandafter\tagging:attribute\fi}
+    \expandafter\tagging:attribute\else
+    \expandafter\tagging:ignore:attribute\fi}
 
 % \settagid {name}
 \protected\def\settagid{\iftagging:enabled
-    \expandafter\tagging:tagid\fi}
+    \expandafter\tagging:tagid\else
+    \expandafter\tagging:ignore\fi}
 
 % \showstructure
 \newtoks\tagging:showtoks
@@ -146,7 +151,8 @@
 
 % 1 tagging tables
 
-% \marktable \halign {\marktablerow\marktablecell#&\marktablecell#\cr
+% \marktable \halign
+%       {\marktablerow\marktablecell#&\marktablecell#\cr
 %    \marktableheader
 %       Header & cells \cr
 %    \marktablebody
@@ -155,7 +161,7 @@
 %       ... & ... \cr ... }
 %
 % lots of variables and constants
-\newcount\tagging:tablec
+\newcount\tagging:tablec % global; only used for cel ids
 \newcount\tagging:tablerow
 \newcount\tagging:tablecol
 \newcount\tagging:tablecolspan \tagging:tablecolspan 1
@@ -166,11 +172,11 @@
 % initialising variables
 \def\marktable{\startelement{Table}%
     \global\advance\tagging:tablec1
-    \global\tagging:tablerow0
-    \global\tagging:tablecol0
-    \global\def\tagging:tablecolheaders{}%
-    \global\def\tagging:tablerowheaders{}%
-    \global\let\tagging:cell\tagging:TD}
+    \tagging:tablerow0
+    \tagging:tablecol0
+    \def\tagging:tablecolheaders{}%
+    \def\tagging:tablerowheaders{}%
+    \let\tagging:cell\tagging:TD}
 % the header
 \def\marktableheader{%
     \noalign{\global\let\tagging:cell\tagging:TH
@@ -201,21 +207,78 @@
     \continueelementfrom\tagging:row
     \startelement{\tagging:cell}%
     \tagging:assignheaders}
-% table headers
+
+% spans
+\def\markcolumnspan#1{%
+    \tagattribute Table ColSpan #1\relax
+    \tagging:tablecolspan#1\relax
+    % adjust the column number
+    \global\advance\tagging:tablecol\numexpr#1-1\relax}
+\def\markrowspan#1{%
+    % note that the row number is not adjusted: \marktablerow must be present 
+    % somewhere on every row to increment it.
+    \tagattribute Table RowSpan #1\relax
+    \tagging:tablerowspan#1\relax}
+
+% headers
+\def\markcolumnhead{%
+    \tagging:setcelid
+    \tagattribute Table Scope /Column\relax
+    \tagging:i=1 \loop
+        \xdef\tagging:tablecolheaders{\tagging:tablecolheaders
+            {\the\numexpr\tagging:tablecol-\tagging:tablecolspan+\tagging:i}{\tagging:thecelid}}%
+         \advance\tagging:i1 \unless\ifnum\tagging:i>\tagging:tablecolspan\repeat}
+\def\markrowhead{%
+    \tagging:setcelid
+    \tagattribute Table Scope /Row\relax
+    \tagging:i=0 \loop
+        \xdef\tagging:tablerowheaders{\tagging:tablerowheaders
+            {\the\numexpr\tagging:tablerow+\tagging:i}{\tagging:thecelid}}%
+         \advance\tagging:i1 \ifnum\tagging:i<\tagging:tablerowspan\repeat}
+\def\tagging:setcelid{%
+    % assign an identifier to the cell structure element
+    \edef\tagging:thecelid{t\the\tagging:tablec r\the\tagging:tablerow c\the\tagging:tablecol}%
+    \expandafter\settagid\expandafter{\tagging:thecelid}}
+
+% assign cells to their headers
 \def\tagging:assignheaders{%
-    % TODO
-    }
+    \def\tagging:tmp{[}%
+    \expandafter\tagging:assignheaders:do\expandafter\tagging:tablecol
+        \tagging:tablecolheaders{}{}%
+    \expandafter\tagging:assignheaders:do\expandafter\tagging:tablerow
+        \tagging:tablerowheaders{}{}%
+    \ifx\tagging:tmp\tagging:noheaders\else
+        \tagattribute Table Headers {\tagging:tmp\space]}\fi}
+\def\tagging:assignheaders:do#1#2#3{%
+    \ifx\tagging:noheaders#3\tagging:noheaders
+        \expandafter\tagging:assignheaders:done
+    \else
+        \ifnum#1=#2\relax
+            % no cell is its own header
+            \edef\tagging:cmp:a{\tagging:thecelid}%
+            \edef\tagging:cmp:b{#3}%
+            \unless\ifx\tagging:cmp:a\tagging:cmp:b
+                \edef\tagging:tmp{\tagging:tmp\space\pdfstring{#3}}%
+            \fi
+        \fi
+    \fi\tagging:assignheaders:do{#1}}
+\def\tagging:noheaders{[}%]
+\def\tagging:assignheaders:done#1#2{}
+\def\tagging:thecelid{}
 
 % \automarktable \halign ... { ... }
 \def\automarktable#1#{\marktable
     \def\tagging:table{\tagging:mktrow{#1}}%
     \afterassignment\tagging:table
-    \let\tagging:tmp= }
+    \let\tagging:tmp= }% eats a bgroup
 \def\tagging:mktrow#1#2&#3\cr{\iftrue
-    \tagging:mktcell{#1\bgroup\marktablerow\marktablecell#2}\fi
+    \tagging:mktcell{#1\bgroup % \halign ...
+        \marktablerow\marktablecell#2}\fi
         #3&\tagging:mktrow&\cr}
 \def\tagging:mktcell#1#2\fi#3&{\fi
+    % the next ifx is true on the last (artificial) template cell
     \ifx\tagging:mktrow#3\tagging:mkthdr{#1}\fi
+    % the next ifx detects a double && (repeated template)
     \ifx\tagging:mktrow#3\tagging:mktrow
         \tagging:mktcell{#1&}\else
         \tagging:mktcell{#1&\marktablecell#3}\fi}
@@ -228,7 +291,7 @@
 \def\marktableaslist#1#{\startelement{L}%
     \def\tagging:table{\tagging:mktlist{#1}}%
     \afterassignment\tagging:table
-    \let\tagging:tmp= }
+    \let\tagging:tmp= }% eats a bgroup
 \def\tagging:mktlist#1#2&{#1\bgroup
     \startelement{LI}\savecurrentelementto\tagging:li
     \startelement{Lbl}#2&\continueelementfrom\tagging:li
@@ -254,6 +317,7 @@
 \newif \iftagging:indisplay
 \newif \iftagging:toplevelmath \tagging:toplevelmathtrue
 \newif \iftagging:formulaenabled
+\newif \iftagging:tagthisformula \tagging:tagthisformulatrue
 \let\startformulatagging = \tagging:formulaenabledtrue
 \let\stopformulatagging = \tagging:formulaenabledfalse
 \newcount \tagging:formulanr
@@ -269,36 +333,51 @@
 \def\tagging:startformula\fi\fi\fi#1${\tagging:makeformula{#1}{$}}
 \def\tagging:startdisplay\fi\fi\fi#1$${\tagging:makeformula{#1}{$$}}
 \def\tagging:makeformula#1#2{\fi\fi\fi
-    \global\advance\tagging:formulanr1\relax
-    \startelement attr Layout Placement \iftagging:indisplay/Block\else/Inline
-        % some html converters ignore Placement attributes
-        attr CSS-2.00 display (inline)\fi{Formula}%
-    \formulasource:set{#1}%
+    \tagging:tagformula{#1}%
     \scantextokens{#1}#2}
+\def\tagging:tagformula#1{%
+    \iftagging:formulaenabled
+        \global\advance\tagging:formulanr1\relax
+        \startelement attr Layout Placement \iftagging:indisplay/Block\else/Inline
+            % some html converters ignore Placement attributes
+            attr CSS-2.00 display (inline)\fi{Formula}%
+        \formulasource:set{#1}\fi}
 \def\tagging:formulasource#1{%
     $\iftagging:indisplay$\fi
     \unexpanded{#1}%
     $\iftagging:indisplay$\fi}
 
-% \includeformulasources {none|actualtext|attachment|both}
-\def\includeformulasources#1{%
-    \expandafter\let
-        \expandafter\formulasource:set
-            \csname formulasource:#1\endcsname}
-\def\formulasource:none#1{}
+% \includeformulasources {alttext,actualtext,attachment}
+\def\formulasource:set#1{%
+    \begingroup
+        % strip \setalttext, \setactualtext
+        \def\setalttext#1{}\def\setactualtext#1{}%
+        \xdef\formulasource:thesource{#1}%
+    \endgroup
+    \expandafter\splitcommalist
+        \expandafter\formulasource:do
+            \expandafter{\the\includeformulasources}}
+\def\formulasource:do#1{%
+    \expandafter\expandafter \csname formulasource:#1\endcsname
+        \expandafter{\formulasource:thesource}}
 \def\formulasource:actualtext#1{%
     \setactualtext{\tagging:formulasource{#1}}}
+\def\formulasource:alttext#1{%
+    \setalttext{\tagging:formulasource{#1}}}
 \def\formulasource:attachment#1{%
     \ifnum3=\pdfaconformancelevel
         \embedfile mimetype text/x-tex
             relation Source desc {Equation source}
             name {\formulafilename.tex}
             string {\tagging:formulasource{#1}}\fi}
+\newtoks\includeformulasources
+\includeformulasources{actualtext,attachment}
+
+% for compatibility with earlier versions (DO NOT USE)
+\def\formulasource:none#1{}
 \def\formulasource:both#1{%
     \formulasource:actualtext{#1}%
     \formulasource:attachment{#1}}
-\includeformulasources{both}
-
 
 % 1 hyperlinks
 

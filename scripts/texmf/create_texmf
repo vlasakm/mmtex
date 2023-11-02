@@ -126,7 +126,7 @@ install lua-widow-control/*.opm lua-widow-control/*.lua -t "$TEXMF/tex/lua-widow
 # install minim
 install minim*/*.tex minim*/*.lua minim*/*.ini -t "$TEXMF/tex/minim"
 install minim*/*.mp -t "$TEXMF/metapost/minim"
-rm -f "$TEXMF/tex/minim/minim-lamp.ini" "$TEXMF/metapost/minim/minim-hatching-doc.mp"
+rm -f "$TEXMF/tex/minim/minim-lamp."* "$TEXMF/metapost/minim/minim-lamp."* "$TEXMF/metapost/minim/minim-hatching-doc.mp"
 
 # install PGF/TikZ
 install base/tex/* -t "$TEXMF/tex/pgf"

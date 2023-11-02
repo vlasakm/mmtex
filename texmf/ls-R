@@ -40,6 +40,7 @@ troffnum.mp
 ./metapost/minim:
 minim-hatching.mp
 minim.mp
+minim-mp.mp
 
 ./tex:
 emoji

@@ -8,6 +8,16 @@ local M = {}
 
 --1 AUXILIARY FUNCTIONS
 
+local GLUE_NODE = node.id 'glue'
+local GLYPH_NODE = node.id 'glyph'
+local KERN_NODE = node.id 'kern'
+local WHATSIT_NODE = node.id 'whatsit'
+
+local function copy_table(from, to)
+    for k,v in pairs(from) do to[k] = v end
+    return to
+end
+
 -- 2 state metatable
 
 -- q Q  store/restore graphics state
@@ -338,7 +348,7 @@ function A.linestate (append, object)
     local res = { }
     if ml and ml ~= append.miterlimit then
         append.miterlimit = ml
-        table.insert(res, pdfnum('M', ml)) -- TODO is pdfnum here correct?
+        table.insert(res, pdfnum('M', ml))
     end
     local lj = object.linejoin
     if lj and lj ~= append.linejoin then
@@ -352,7 +362,7 @@ function A.linestate (append, object)
     end
     local dl = object.dash
     if dl then
-        local d = string.format('[%s] %i d', table.concat(dl.dashes or {},' '), dl.offset)
+        local d = string.format('[%s] %s', table.concat(dl.dashes or {},' '), pdfnum('d', dl.offset))
         if d ~= append.dashed then
             append.dashed = d
             table.insert(res, d)
@@ -691,13 +701,13 @@ local function definepattern(head, user, bbox)
     for n in node.traverse(head) do
         -- try if we can construct the content stream ourselves; otherwise, 
         -- stuff the pattern template into an xform.
-        if n.id == 8 then
+        if n.id == WHATSIT_NODE then
             -- try if we can simply concatenate pdf statements
-            if n.subtype == 16 then -- literal
+            if n.subtype == node.subtype 'literal' then
                 table.insert(literals, n.data)
-            elseif n.subtype == 30 then -- save
+            elseif n.subtype == node.subtype 'save' then
                 table.insert(literals, 'q')
-            elseif n.subtype == 31 then -- restore
+            elseif n.subtype == node.subtype 'restore' then
                 table.insert(literals, 'Q')
             else
                 resources, pat.stream = make_pattern_xform(head, bb)
@@ -807,8 +817,6 @@ M.instances  = instances
 
 --2 small instance helper functions
 
-local default_catcodes = alloc.registernumber('minim:mp:catcodes')
-
 -- parameters: wd, ht+dp, dp
 local function make_transform(w, h, d)
     return string.format('identity xscaled %fpt yscaled %fpt shifted (0,-%fpt)',
@@ -866,11 +874,27 @@ local function print_log (nr, res, why)
     i.status = res.status
 end
 
-local function finder (name, mode, ftype)
-    if mode == 'w' then
+local function new_file_finder()
+    -- HACK: The file finder is called twice for every file input by metapost. 
+    -- Thus, in order for the file recorder to work properly, we only record 
+    -- repeated files and hope for the best.
+    local last_found = false
+    local function record(name, record_fn)
+        if last_found and name == last_found then
+            record_fn(name)
+            last_found = false
+        else
+            last_found = name
+        end
+    end
+    return function(name, mode, ftype)
+        if mode == 'w' then
+            record(name, kpse.record_output_file)
+        else
+            name = kpse.find_file(name, ftype)
+            record(name, kpse.record_input_file)
+        end
         return name
-    else
-        return kpse.find_file(name,ftype)
     end
 end
 
@@ -933,6 +957,12 @@ end
 
 -- 2 running lua scripts
 
+-- There are two ways of running lua code with the runscript primitive. In the 
+-- normal case, the argument to runscript is executed as lua code. You can 
+-- bypass this mechanism by prepending the runscript argument with the name of 
+-- a lua function between double square brackets. Then, the remainder of the 
+-- string will be passed as an argument to that function.Q
+--
 -- Code run with runscript may return a value; we will try and convert it to 
 -- a string that metapost can understand.
 --
@@ -940,16 +970,17 @@ end
 -- converted to a transformation. (The margin will be ignored for now, this may 
 -- change in the future.)
 
-local function default_env()
-    local env = { }
-    for k,v in pairs(_G) do
-        env[k] = v
-    end
-    return env
+local function mkluastring(s)
+    return "'"..(s:gsub('\\', '\\\\'):gsub("'", "\\'")).."'"
 end
 
 local function runscript(code)
+    -- (possibly) pass directly to function
+    local fn, arg = code:match('^%[%[(.+)%]%](.*)')
+    if fn then code = 'return '..fn .. mkluastring(arg) end
+    -- execute the script
     local f, msg = load(code, current_instance.jobname, 't', current_instance.env)
+    -- interpret results
     if f then
         local result = f()
         if result == nil then
@@ -980,6 +1011,36 @@ local function runscript(code)
     end
 end
 
+-- The environment the scripts will be run in can be specified at instance 
+-- creation; its default value is a copy (at that time) of the global 
+-- environment. The runscript environment will then be extended with all 
+-- elements of the M.mp_functions table.
+
+local E = { }
+M.mp_functions = E
+
+local function prepare_env(e) -- in M.open()
+    local env = e or copy_table(_G, { })
+    return copy_table(E, env)
+end
+
+function E.quote(val)
+    if type(val) ~= 'string' then return val end
+    local escaped = string.format('%s', val):gsub('"', '"&ditto&"')
+    return string.format('("%s")', escaped)
+end
+
+function E.sp_to_pt(val)
+    return string.format('%.16fpt', val/65536)
+end
+
+function E.quote_for_lua(s)
+    return E.quote(mkluastring(s))
+end
+
+E.rgb_to_gray = rgb_to_gray
+E.enable_debugging = M.enable_debugging
+
 --2 typesetting with tex
 
 -- The result of the maketext function is fed back into metapost; on that side, 
@@ -1001,7 +1062,7 @@ local function maketext(text, mode)
     if mode == 0 then -- btex or maketext
         local nr = alloc.new_box()
         table.insert(current_instance.boxes, nr)
-        local assignment = string.format('\\global\\setbox%s=\\hbox{%s}', nr, text)
+        local assignment = string.format('\\global\\setbox%s=\\hbox{\\the\\everymaketext %s}', nr, text)
         tex.runtoks(function() tex.print(current_instance.catcodes, assignment:explode('\n')) end)
         local box = tex.box[nr]
         return 'image ( fill unitsquare withprescript "TEXBOX:' ..nr..'";'..
@@ -1020,25 +1081,25 @@ local typeset_box = alloc.new_box('infont box')
 
 local function process_typeset(text, fnt, sep, fn)
     tex.runtoks(function()
-        tex.sprint(default_catcodes, string.format(
+        tex.sprint(current_instance.catcodes, string.format(
             '\\setbox%d=\\hbox{\\setfontid%d\\relax', typeset_box, getfontid(fnt)))
-        tex.sprint(-2, text); tex.sprint(default_catcodes, '}')
+        tex.sprint(-2, text); tex.sprint(current_instance.catcodes, '}')
     end)
     local res, x = { }, 0
     for n in node.traverse(tex.box[typeset_box].list) do
-        if n.id == 29 then -- glyph
+        if n.id == GLYPH_NODE then
             fn(res, n, x)
             x = x + n.width
-        elseif n.id == 12 then -- glue
+        elseif n.id == GLUE_NODE then
             x = x + n.width
-        elseif n.id == 13 then -- kern
+        elseif n.id == KERN_NODE then
             x = x + n.kern
         end
     end
     return table.concat(res, sep)
 end
 
-function M.infont(text, fnt)
+function E.minim_infont(text, fnt)
     return process_typeset(text, fnt, '', function(res, n, x)
         table.insert(res, string.format(
             'draw image ( fill unitsquare shifted (%fpt,0) withprescript "CHAR:%d %d %d %d";'
@@ -1059,6 +1120,10 @@ function M.make_glyph(glyphname, fnt)
     end
     local fontid = getfontid(fnt)
     local thefont = font.getfont(fontid)
+    if not thefont then
+        alloc.err('Font not found: %s (id %s)', fnt, fontid)
+        return { }, 10
+    end
     local fontname = thefont.psname
     local gid = luaotfload.aux.gid_of_name(fontid, glyphname)
     if not gid then
@@ -1091,24 +1156,22 @@ function M.make_glyph(glyphname, fnt)
     return paths, thefont.size
 end
 
-function M.get_named_glyph(name, fnt)
-    local res, contours, size = {}, M.make_glyph(name, fnt)
-    for _, c in ipairs(contours) do
-        table.insert(res, string.format(
-            '%s scaled %f', c, size/65536000))
-    end
-    return table.concat(res, ', ')
-end
-
 local function get_glyphname(c_id)
     return luaotfload.aux.name_of_slot(c_id)
 end
 
-function M.get_glyph(c_id, fnt)
-    return M.get_named_glyph(get_glyphname(c_id), fnt)
+function E.get_glyph(c_id, fnt)
+    local name = (type(c_id) == 'string') and c_id or get_glyphname(c_id)
+    local contours, size = M.make_glyph(name, fnt)
+    local res = { }
+    for _, c in ipairs(contours) do
+        table.insert(res, string.format(
+            '%s scaled %f', c, size/65536/1000))
+    end
+    return table.concat(res, ', ')
 end
 
-function M.get_contours(text, fnt)
+function E.get_contours(text, fnt)
     return process_typeset(text, fnt, ', ', function(res, n, x)
         local contours, size = M.make_glyph(get_glyphname(n.char), n.font)
         for _, c in ipairs(contours) do
@@ -1119,6 +1182,9 @@ function M.get_contours(text, fnt)
     end)
 end
 
+M.get_contours = E.get_contours
+
+
 --2 opening, running and and closing instances
 
 local function apply_default_instance_opts(t)
@@ -1126,7 +1192,7 @@ local function apply_default_instance_opts(t)
         { ini_version  = true
         , error_line   = (texconfig.error_line or 79) - 5
         , extensions   = 1
-        , find_file    = finder
+        , find_file    = new_file_finder()
         --, script_error = ...
         , job_name     = t.jobname
         , math_mode    = t.math or 'scaled'
@@ -1168,7 +1234,8 @@ function M.run (nr, code)
     save_image_list(self, picts)
 end
 
-M.init_code = { 'let dump=endinput;', 'input INIT;', 'input minim.mp;' }
+M.init_code = { 'let dump=endinput;', 'input INIT;', 'input minim-mp.mp;', 'input minim.mp;' }
+local maketext_catcodes = alloc.registernumber('minim:mp:catcodes:maketext')
 
 function M.open (t)
     local nr = #instances + 1
@@ -1184,10 +1251,11 @@ function M.open (t)
         , jobname   = t.jobname
         , results   = { first = nil, last = nil, by_name = {}, count = 0 }
         , status    = 0
-        , catcodes  = t.catcodes or default_catcodes
+        , catcodes  = t.catcodes or maketext_catcodes
         , boxes     = { } -- allocated by maketext
-        , env       = t.env or default_env()
+        , env       = prepare_env(t.env)
         }
+    current_instance = instances[nr]
     print_log(nr, instance:execute(init), 'opening ')
     return nr
 end
@@ -1274,14 +1342,23 @@ end
 local scan_int = token.scan_int
 local scan_string = token.scan_string
 
+local code_catcodes = alloc.registernumber('minim:mp:catcodes:mpcode')
+local function scan_codestring()
+    local cct = tex.catcodetable
+    tex.catcodetable = code_catcodes
+    local res = token.scan_string()
+    tex.catcodetable = cct
+    return res
+end
+
 alloc.luadef('closemetapostinstance', function() M.close(scan_int()) end)
 
 alloc.luadef('runmetapost', function()
-    M.run(scan_int(), scan_string())
+    M.run(scan_int(), scan_codestring())
 end, 'protected')
 alloc.luadef('runmetapostimage', function()
     local i = scan_int()
-    local code = 'beginfig(0)'..scan_string()..';endfig;'
+    local code = 'beginfig(0)'..scan_codestring()..';endfig;'
     M.run(i, code)
     node.write(M.get_image(i))
 end, 'protected')

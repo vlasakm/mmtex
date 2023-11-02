@@ -7,6 +7,13 @@ alloc.remember('minim-pdf')
 
 -- 1 helper functions
 
+local GLUE_NODE = node.id 'glue'
+local GLYPH_NODE = node.id 'glyph'
+local RULE_NODE = node.id 'rule'
+local WHATSIT_NODE = node.id 'whatsit'
+local USER_DEFINED = node.subtype 'user_defined'
+local START_LINK = node.subtype 'pdf_start_link'
+
 local function insert_formatted(t, ...)
     table.insert(t, string.format(...))
 end
@@ -22,6 +29,14 @@ end
 local pdf_name = alloc.pdf_name
 local pdf_string = alloc.pdf_string
 local options_scanner = alloc.options_scanner
+
+-- is this table empty?
+local function is_empty(t)
+    for _, _ in pairs(t or {}) do
+        return false
+    end
+    return true
+end
 
 -- has this table just one element?
 local function singleton(t)
@@ -55,9 +70,9 @@ local function full_traverse(head)
     end, { { } }, { next = head }
 end
 
-local function pdf_err(n, msg)
+local function pdf_err(n, msg, ...)
     local m = node.new('whatsit', 'pdf_literal')
-    m.mode, m.token = 2, '%% Warning: '..msg
+    m.mode, m.token = 2, '%% Warning: '..string.format(msg, ...)
     node.insert_after(n, n, m)
 end
 
@@ -367,7 +382,7 @@ local function write_structure()
                 end
                 if #se.class > 1 then table.insert(res, ']') end
             end
-            if se.attributes then
+            if not is_empty(se.attributes) then
                 table.insert(res, '/A')
                 make_attributes(res, se.attributes)
             end
@@ -574,6 +589,13 @@ alloc.luadef('tagging:attribute', function()
         token.scan_string(), token.scan_string(), token.scan_string())
 end)
 
+alloc.luadef('tagging:ignore:attribute', function()
+    -- if \tagging:enabled is false
+    token.scan_string()
+    token.scan_string()
+    token.scan_string()
+end)
+
 alloc.luadef('newattributeclass', function()
     local s = options_scanner():subtable('attr')
     attribute_classes[token.scan_string()] = s:scan().attr
@@ -669,18 +691,18 @@ function M.mark_content_items(box)
     end
     -- traversing all nodes
     for n, b in full_traverse(box) do
-        local marker = n.id == 8 and n.subtype == 8
+        local marker = n.id == WHATSIT_NODE and n.subtype == USER_DEFINED
            and n.user_id == marker_whatsit and n.value
         local stat = n[current_status]
         -- first we start with marking artifacts
         if marker and marker.what == 'art_start' then
-            insert_tags(b);
+            insert_tags(b)
             start_content(n, b)
             local a = string.format('/Artifact << /Type/%s >> BDC', marker.it)
             open_artifacts[stat], open, art = a, pdf_literal(a), stat
         elseif marker and marker.what == 'art_stop' then
             end_node = n
-            insert_tags(b);
+            insert_tags(b)
             if art then open_artifacts[art], art = nil, nil end
         elseif stat and stat >10 and stat ~=art then -- broken artifact
             insert_tags(b);
@@ -688,14 +710,14 @@ function M.mark_content_items(box)
             local a = open_artifacts[stat]
             if not a then
                 alloc.err('Encountered tail of unknown artifact (see pdf)')
-                pdf_err(n, 'unknown artifact (this should not be possible)')
+                pdf_err(n, 'unknown artifact nr. %d (this should not be possible)', stat)
                 a = '/Artifact << /Type/Unknown >> BDC'
             end
             open, art = pdf_literal(a), stat
         elseif stat then -- inside artifact or tagging disabled
             end_node = n
         -- then attach links to Link elements
-        elseif n.id == 8 and n.subtype == 19 then -- pdf_start_link
+        elseif n.id == WHATSIT_NODE and n.subtype == START_LINK then
             local _se, _order = n[current_struct], n[current_order]
             local link = structure[_se]
             if link.struct == 'Link' then
@@ -714,10 +736,10 @@ function M.mark_content_items(box)
         elseif marker and marker.what == 'mci_stop' then
             end_node = end_node and n; insert_tags(b)
         -- finally, see if we need to intervene between content nodes
-        elseif n.id == 2 or n.id == 29 -- rule, glyph or content marker
+        elseif n.id == RULE_NODE or n.id == GLYPH_NODE
         or marker and marker.what == 'content' then
             local _se, _order = n[current_struct], n[current_order]
-            if n.id == 2 and (n.width == 0 or n.height == 0 and n.depth == 0) then
+            if n.id == RULE_NODE and (n.width == 0 or n.height == 0 and n.depth == 0) then
                 -- ignore invisible rules
             elseif not _se or not _order then
                 -- unmarkable content should not be possible (but is)
@@ -731,7 +753,7 @@ function M.mark_content_items(box)
             else -- nothing changed: continue current mci
                 end_node = n
             end
-        elseif n.id == 12 and n.subtype > 2 and n.subtype < 8 then
+        elseif n.id == GLUE_NODE and n.subtype > 2 and n.subtype < 8 then
         -- parskip or displayskip always closes mci
             insert_tags(b)
         end
@@ -963,8 +985,8 @@ function M.mark_spaces(head, gc)
     for g in node.traverse_id(12, head) do -- glue
         if g.prev and g.subtype == 13 or g.subtype == 14 then -- (x)spaceskip
             local p = g.prev
-            p[space_attr] = p.id == 29 and p.font
-                or g.next and g.next.id == 29 and g.next.font
+            p[space_attr] = p.id == GLYPH_NODE and p.font
+                or g.next and g.next.id == GLYPH_NODE and g.next.font
                 or font.current()
         end
     end
