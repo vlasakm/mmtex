@@ -170,7 +170,7 @@ lualibs-extended-merged.lua
 lualibs.lua
 
 ./tex/luaotfload:
-fontloader-2022-10-03.lua
+fontloader-2023-08-19.lua
 fontloader-basics-gen.lua
 luaotfload-auxiliary.lua
 luaotfload-bcp47.lua

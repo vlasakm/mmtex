@@ -5,8 +5,8 @@
 do -- block to avoid to many local variables error
  assert(luaotfload_module, "This is a part of luaotfload and should not be loaded independently") { 
      name          = "luaotfload-database",
-     version       = "3.23",       --TAGVERSION
-     date          = "2022-10-03", --TAGDATE
+     version       = "3.26",       --TAGVERSION
+     date          = "2023-08-31", --TAGDATE
      description   = "luaotfload submodule / database",
      license       = "GPL v2.0",
      author        = "Khaled Hosny, Elie Roux, Philipp Gesang, Marcel Krüger",
@@ -220,9 +220,20 @@ local format_precedence = {
 local location_precedence = {
     "local", "system", "texmf",
 }
+local enabled_locations = {
+    ['local'] = true,
+    system = true,
+    texmf = true,
+}
 
 local function set_location_precedence (precedence)
     location_precedence = precedence
+    for location in next, enabled_locations do
+        enabled_locations[location] = nil
+    end
+    for _, location in ipairs(location_precedence) do
+        enabled_locations[location] = location ~= 'local' or config.luaotfload.db.scan_local == true
+    end
 end
 
 --[[doc--
@@ -852,23 +863,25 @@ Also, the fields “resolved”, “sub”, “force” etc. influence the outco
 
 --doc]]--
 
-local concat_char = "#"
-local hash_fields = {
-    --- order is important
-    "specification", "style", "sub", "optsize", "size",
-}
-local n_hash_fields = #hash_fields
+local hash_request do
+    local concat_char = "#"
+    local hash_fields = {
+        --- order is important
+        "specification", "style", "sub", "optsize", "size",
+    }
+    local n_hash_fields = #hash_fields
 
---- spec -> string
-local function hash_request (specification)
-    local key = { } --- segments of the hash
-    for i=1, n_hash_fields do
-        local field = specification[hash_fields[i]]
-        if field then
-            key[#key+1] = field
+    --- spec -> string
+    function hash_request (specification)
+        local key = { } --- segments of the hash
+        for i=1, n_hash_fields do
+            local field = specification[hash_fields[i]]
+            if field then
+                key[#key+1] = field
+            end
         end
+        return tableconcat(key, concat_char)
     end
-    return tableconcat(key, concat_char)
 end
 
 --- 'a -> 'a -> table -> (string * int|boolean * boolean)
@@ -3121,10 +3134,17 @@ local function collect_font_filenames ()
     local bisect    = config.luaotfload.misc.bisect
     local max_fonts = config.luaotfload.db.max_fonts --- XXX revisit for lua 5.3 wrt integers
 
-    tableappend (filenames, collect_font_filenames_texmf  ())
-    tableappend (filenames, collect_font_filenames_system ())
-    local scan_local = config.luaotfload.db.scan_local == true
-    if scan_local then
+    -- We can't just scan in the order of location_precedence here since
+    -- the order is important. In the common situation of having texmf
+    -- added to the system font path, scanning system first would
+    -- classify all texmf fonts as system fonts.
+    if enabled_locations.texmf then
+        tableappend (filenames, collect_font_filenames_texmf  ())
+    end
+    if enabled_locations.system then
+        tableappend (filenames, collect_font_filenames_system ())
+    end
+    if enabled_locations['local'] then
         local localfonts, found = collect_font_filenames_local()
         if found then
             tableappend (filenames, localfonts)
@@ -3140,7 +3160,7 @@ local function collect_font_filenames ()
     if bisect then
         return { unpack (filenames, bisect[1], bisect[2]) }
     end
-    return filenames, scan_local
+    return filenames
 end
 
 --[[doc--
@@ -3411,8 +3431,8 @@ function update_names (currentnames, force, dry_run)
         read_blacklist ()
 
         --- pass 1: Collect the names of all fonts we are going to process.
-        local font_filenames, local_fonts = collect_font_filenames ()
-        if local_fonts then
+        local font_filenames = collect_font_filenames ()
+        if enabled_locations['local'] then
             targetnames.meta['local'] = true
         end
 
@@ -3806,6 +3826,7 @@ return function ()
     names.data      = nil      --- contains the loaded database
     names.lookups   = nil      --- contains the lookup cache
 
+    enabled_locations['local'] = enabled_locations['local'] and config.luaotfload.db.scan_local == true
     for sym, ref in next, export do names[sym] = ref end
     for sym, ref in next, api    do names[sym] = names[sym] or ref end
     return true
