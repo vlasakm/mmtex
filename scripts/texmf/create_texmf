@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # copy with `rsync -r scripts/texmf/texmf/ texmf/ -ic`
 
