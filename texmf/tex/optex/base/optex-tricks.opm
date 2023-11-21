@@ -1,0 +1,756 @@
+%% This is part of the OpTeX project, see http://petr.olsak.net/optex
+
+\_codedecl \_undefined {OpTeX tricks ready to autoload <2023-11-15>} % chunks loaded on demand
+
+% Selected OpTeX tricks are here, they are auto-loaded if the macro is used first
+% namespace: optextrick
+
+\_trick 0057 \begfile \createfile ;
+%%%%%%%%%%%%
+
+\newwrite\.outfile
+\def\begfile #1 {\_immediate\_openout\.outfile={#1}%
+   \_begingroup \_setverb \_endlinechar=`\^^J \.begfileA^^J%
+}
+\_ea\_def\_ea\.begfileA\_ea#\_ea1\_ea^^J\_csstring\\endfile#2^^J{\_endgroup
+   \_ifx^#1^\_else \_immediate\_write\.outfile{\_ignoreit #1}\_fi
+   \_immediate\_closeout\.outfile
+}
+\_let\createfile=\begfile
+
+\_trick 0054 \beglua \begLUA \logginglua ;
+%%%%%%%%%%%%
+
+\_newtoks\.luamacros
+\.luamacros={\_let\\=\_nbb \_edef\%{\_csstring\%}\_edef\#{\csstring\#}\_let\n=\_relax}
+\_def\beglua{\.savelineno\_bgroup \_setverb \_endlinechar=`\^^J \.begluaA}
+\_ea\_def\_ea\.begluaA\_ea#\_ea1\_csstring\\endlua^^J{\_egroup\.debuglua{#1}\_directlua{#1}}
+\_def\begLUA{\.savelineno\_bgroup \_setverb \_endlinechar=`\^^J \_catcode`\\=0 \.begLUAA}
+\_def\.begLUAA#1\endLUA^^J{\_the\.luamacros\.debuglua{#1}\_directlua{#1}\_egroup}
+\_def\.savelineno{\_edef\.tmp{\_the\_numexpr\_inputlineno+1}}
+\_let\.debuglua=\_ignoreit
+\_def\.printloglua#1{\_wlog{lua code processed (l.\.tmp):^^J#1-------------}}
+\_def\logginglua{\_let\.debuglua=\.printloglua}
+
+\_trick 0055 \sethours \setminutes \setseconds \setweekday ;
+%%%%%%%%%%%%
+
+\_newcount\.hours \_newcount\.minutes \_newcount\.seconds \_newcount\.weekday
+
+\_def\setminutes{%
+   \.minutes=\_directlua{tex.sprint(\_the\_time\_pcent 60)}\_relax
+   \.hours=\_directlua{tex.sprint(math.floor(\_the\_time/60))}\_relax
+}
+\_let\sethours=\setminutes
+\_def\setseconds{\_ea\.setsecondsA\_pdffeedback creationdate\_relax}
+\_def\.setsecondsA#1#2#3#4#5#6#7#8#9{\.setsecondsB}
+\_def\.setsecondsB#1#2#3#4#5#6#7#8\_relax{\.seconds=#6#7\_relax}
+\_def\setweekday{\.weekday=\_directlua{% Zeller's algorithm:
+      local m, y, K, J
+      m = \_the\_month \_ifnum\_month<3 +12 \_fi
+      y = \_the\_year  \_ifnum\_month<3 -1 \_fi
+      K = y \_pcent 100
+      J = math.floor(y/100)
+      tex.sprint((\_the\_day + math.floor((13*(m+1))/5) + K +
+         math.floor(K/4) + math.floor(J/4) - 2*J + 6)\_pcent 7)
+   }\_relax
+}
+\_def\.Othe#1{\_ifnum#1<10 0\_fi\_the#1}
+
+\_nspublic \hours \minutes \seconds \weekday \Othe ;
+
+\_trick 0063 \showpglists ;
+%%%%%%%%%%%%
+
+\_def\.addshowpglists{\_directlua{
+   local nodetree = require("nodetree")
+   callback.add_to_callback("pre_shipout_filter", function(head)
+         nodetree.print(head)
+         return head
+      end, "showpglists") }}
+\_gdef\.removeshowpglists{\_directlua{
+   callback.remove_from_callback("pre_shipout_filter", "showpglists") }}
+
+\_def\showpglists #1 {\_addto\.showpgs{#1,}}
+\_def\.showpgs{,}
+
+\_addto\_begoutput{%
+   \_ea\_isinlist\_ea\.showpgs\_ea{\_ea,\_the\_pageno,}\_iftrue
+      \.addshowpglists
+      \_addto\_endoutput{\.removeshowpglists}%
+   \_fi
+}
+
+\_trick 0101 \runsystem ;
+%%%%%%%%%%%%
+
+\_newcount\.exitstatus
+\_def\runsystem#1{\.exitstatus=\_directlua{
+   texio.write_nl("")
+   local status = os.execute("\_luaescapestring{#1}")
+   texio.write("log", "\_nbb runsystem{\_luaescapestring{#1}} status: " .. (status or -1) .. "\_string\n")
+   tex.print(status or -1)
+} }
+
+\_nspublic \exitstatus ;
+
+\_trick 105 \directoutput ;
+%%%%%%%%%%%
+
+\_def\directoutput{\_begingroup \_afterassignment\.directoutputA \_setbox0=}
+\_def\.directoutputA{\_aftergroup \.directoutputB}
+\_def\.directoutputB{\_preshipout0\_box0
+   \_pdfpageheight=\_dimexpr\_ht0+\_dp0+2\_vvkern \_relax
+   \_pdfpagewidth=\_dimexpr\_wd0+2\_hhkern\_relax
+   \_hoffset=\_hhkern \_voffset=\_vvkern
+   \_shipout\_box0
+   \_incr\_pageno
+   \_endgroup
+}
+
+\_trick 0078 \algol ;
+%%%%%%%%%%%%
+
+\_newtoks \_hisyntaxalg
+\_hisyntaxalg = {
+   \_hicolor K \_bf  % Keywords
+   \_foreach {Require:}{Ensure:}{Input:}
+      {while}{do}{if}{then}{else}{end}{function}{return}{print}
+      {for}{all}{range}{continue}{repeat}{until}{loop}
+      {not}{and}{or}{xor}{true}{false}
+      \_do {\_replthis{\n#1\n}{\z K{#1}}}
+}
+\_def\.algolmath#1${\_catcodetable\_optexcatcodes \_scantextokens{#1}$}
+
+\_def\algol{\_catcode`$=3 %
+   \_everymath={\.algolmath}%
+   \_def\_ttfont{\_rm}%
+   \_catcode`\!=13
+   \_bgroup \_lccode`\~=`\! \_lowercase{\_egroup \_def~##1~{\_ifx^##1^!\_else{\_bf##1}\_fi}}%
+   \_hisyntax{ALG}%
+}
+\_def\var#1{{\_it\_adef _{\_vrule height.4pt width4pt\_relax}#1}}
+
+\_trick 0079 \ttlineref ;
+%%%%%%%%%%%%
+
+\_def\ttlineref#1{\_adef#1[##1]{\.setlref{##1}}}
+\_protected\_def\.setlref#1{\_sxdef{ttlin:#1}{\_the\_ttline}}
+\_def\lref[#1]{\_trycs{ttlin:#1}{??}}
+
+\_trick 0011 \scaleto \scaletof ;
+%%%%%%%%%%%%
+
+\_def\scaleto#1#{\_def\.tmp{#1}\.scaletoA}
+\_def\.scaletoA#1{\_setbox0=\_hbox{{#1}}%
+   \_edef\.tmp{\_expr{\_bp{\.tmp}/\_bp{\_wd0}}}%
+   \_transformbox{\_pdfscale{\.tmp}{\.tmp}}{#1}}
+
+\_def\scaletof#1#{\_def\.tmp{#1}\.scaletofA}
+\_def\.scaletofA#1{\_setbox0=\_hbox{{#1}}%
+   \_edef\.tmpa{\_expr{\_bp{\.tmp}/\_bp{\_wd0}}}%
+   \.scaletoA{\_setfontsize{mag\.tmpa}\_currvar#1}}
+
+\_trick 0053 \ignoreinspic ;
+%%%%%%%%%%%%
+
+\_def\.trydef #1{\_ifx#1\_undefined \_afterfi{\_def#1}\_else \_afterfi{\_def\.tmp}\_fi}
+\.trydef\nopicw{5cm}
+\.trydef\nopicratio{1.7}
+
+\_let\.inspicBori=\_inspicB
+\_def\.inspicBnew#1{%
+   \_isfile{\_the\_picdir#1}\_iftrue
+      \_edef\.filename{\_the\_picdir#1}%
+      \_setbox0=\_hbox\_bgroup\.inspicBori{#1}% \egroup is in \inspicBori
+   \_else
+      \_edef\.filename{NONE: \_the\_picdir#1}%
+      \_ifdim\_picheight=0pt \_picheight=\_expr{1/\nopicratio}\_picwidth \_fi
+      \_ifdim\_picwidth=0pt \_picwidth=\nopicratio\_picheight \_fi
+      \_ifdim\_picwidth=0pt \_picwidth=\nopicw\_relax \_picheight=\_expr{1/\nopicratio}\_picwidth \_fi
+      \_setbox0=\_hbox to\_picwidth{\_vbox to\_picheight{}\_hss}%
+   \_fi
+   {\LightGrey \_vrule height\_ht0 width\_wd0\Black\_raise1ex\_llap{\.filename\ }}\_egroup
+}
+\_def\ignoreinspic{\_let\_inspicB=\.inspicBnew}
+
+\_trick 0047 \style m \keepstyle ;
+%%%%%%%%%%%%
+
+\_def\.iprefix#1{}
+\_addto\_setlistskip{\_ifnum\_ilevel>1 \_edef\.iprefix{\.iprefix.\_the\_itemnum}\_fi}
+\_sdef{_item:m}{\.iprefix.\_the\_itemnum. }
+\_def\keepstyle{\_defaultitem=\_printitem}
+
+\_trick 0048 \easylist ;
+%%%%%%%%%%%%
+
+\_def\easylist{\_adef*{\.countlist}\_def\enditems{\_fornum 1..\_ilevel\_do{\_enditems}}}
+\_def\.aast{\.countlist}
+\_def\.countlist{\_tmpnum=1 \.countlistA}
+\_def\.countlistA{\_futurelet\.next\.countlistB}
+\_def\.countlistB{\_ifx\.next\.aast \_ea\.countlistC\_else \_ea\.countlistD \_fi}
+\_def\.countlistC#1{\_incr\_tmpnum \.countlistA}
+\_def\.countlistD{%
+   \_ifnum\_tmpnum>\_ilevel \_fornum \_ilevel..\_tmpnum-1 \_do{\_begitems\easylist}\_else
+   \_ifnum\_tmpnum<\_ilevel \_fornum \_tmpnum..\_ilevel-1 \_do{\_enditems}\_fi\_fi
+   \_startitem}
+
+\_trick 0092 \fcread ;
+%%%%%%%%%%%%
+
+\_newtoks\.fcithook
+\_def\.fcitlist{}
+
+\_def\.xbibadd#1{%
+   \_unless \_ifcsname fcit:\_entrykey\_endcsname
+      \_sxdef{fcit:\_entrykey}{}\_xdef\.fcitlist{\.fcitlist\fcititem[\_entrykey]}\_fi
+   \_global \_ea\_addto\_csname fcit:\_entrykey\_ea\_endcsname\_ea{\_expanded{#1}}%
+}
+\_def\.ubibfield{\_unexpanded\_ea{\_bibfield}}
+\_def\.remdotspace #1. \_end #2\_relax #3{%
+   \_ifx ^#2^\_else \_ea \_gdef \_csname fcit:#3\_endcsname{#1}\_fi}
+\_def\.remdotxspace #1.\ \_end #2\_relax #3{%
+   \_ifx ^#2^\_else \_ea \_gdef \_csname fcit:#3\_endcsname{#1}\_fi}
+
+\.fcithook{
+  \_def\_dofullfield#1#2{\_def\_dofield##1{#1}\.xbibadd{\_ea\_dofield\_ea{\.ubibfield}}}
+  \_def\_dofemptyfield#1#2{\_def\_dofield##1{#2}\.xbibadd{\_ea\_dofield\_ea{\.ubibfield}}}
+  \_def\_bprintaB #1*#2*#3\_fin{%
+     \_ifx\_bibfield\.readauthor \_def\_bibfield{}\.readauthor \_fi
+     \_ifx\_bibfield\.readeditor \_def\_bibfield{}\.readeditor \_fi
+     \.xbibadd{\_if^#3^#1\_else\_ea\_bprintaC\_ea{\.ubibfield}{#1}{#2}\_fi}}
+  \_def\_authorini#1\_endcsname{\_edef\_bibfield{\.ubibfield\_authorname}}
+  \_def\_editorini#1\_endcsname{\_edef\_bibfield{\.ubibfield\_editorname}}
+  \_def\_addauthlist{}
+  \_def\_bprintv [#1]#2#3{#3}
+  \_def\_Inclause{\.xbibadd{In:~}}
+  \_def\_dobibmark{}
+  \_let\_url=\_relax  \_let\_ulink=\_relax \_def\_preurl{}
+  \_def\_citelist{\_citeI[*]}
+  \_let\fcititem=\_relax
+}
+\_def\.readauthor{\_loopauthors {author}}
+\_def\.readeditor{\_loopauthors {editor}}
+
+\_def\fcread (#1) #2 {{%
+   \_setbox0=\_vbox{\_bibtexhook=\.fcithook
+      \_bibpart{fullcites}\_nocite[*]\_usebib/c (#1) #2 }
+   \_def\fcititem[##1]{%
+   \_ea\_ea\_ea \.remdotspace  \_csname fcit:##1\_endcsname \_end . \_end \_relax {##1}%
+   \_ea\_ea\_ea \.remdotxspace \_csname fcit:##1\_endcsname \_end .\ \_end \_relax {##1}%
+   }\.fcitlist % removing last .\space or .space from each bib-record
+}}
+\_def\fullcite[#1]{\_trycs{fcit:#1}{??\_opwarning{\_string\fullcite[#1] unknown label}}}
+
+\_trick 0071 \shadedframe ;
+%%%%%%%%%%%%
+
+\_def\.shadedframedefaults {% defaults:
+   frame-color=\Grey,       % color of frame rules
+   text-color=\Black,       % color ot text inside the frame
+   shadow-color=\LightGrey, % color of shadow
+   bg-color=\Yellow,        % background color inside the frame
+   rule-width=1pt,          % width of rules used in the frame
+   v-margins=4pt,           % vertical space between text and frame
+   h-margins=4pt,           % horizontal space between text and frame
+   shade-width=4pt,         % the width of the shadow
+   text-width=4cm,          % width of the text inside the frame
+}
+\_optdef\shadedframe [] #1{\_bgroup
+      \_readkv\.shadedframedefaults \_readkv{\_the\_opt}%
+      \_vvkern=\_kv{v-margins}\_hhkern=\_kv{h-margins}%
+      \_rulewidth=\_kv{rule-width}\_hsize=\_kv{text-width}\relax
+      \_kv{frame-color}%
+      \_setbox0=\_hbox{\_frame{\_vbox{\_kv{text-color}\_noindent\_ignorespaces#1}}}%
+      \_edef\.htzo{\_the\_ht0}\_edef\.wdzo{\_the\_wd0}%
+      \_kv{shadow-color}%
+      \_hbox{\_vbox{\_hbox{\_rlap{\_kv{bg-color}\_vrule height\_ht0 width\_wd0 depth\_dp0}\_box0}%
+                  \_nointerlineskip \_moveright\_kv{shade-width}
+                     \_hbox{\_vrule height\_kv{shade-width}width\.wdzo}\_kern-\_kv{shade-width}}%
+            \_kern-\_kv{shade-width}\_vrule height\.htzo width\kv{shade-width}}%
+   \_egroup
+}
+
+\_trick 0073 \roundframe ;
+%%%%%%%%%%%%
+
+\_def \.roundframedefaults {% default parameters:
+   round-corner=3mm,        % diameter of corners
+   title-bgcolor=\Blue,     % background color of the title area
+   title-color=\White,      % color of title text
+   title-font=\_bf,         % font of title text
+   title-above=2pt,         % space above the first line of title
+   title-below=1pt,         % space below the last line of title
+   midrule-color=\Yellow,   % color of the rule between title and text area
+   midrule-width=2pt,       % thickness of the rule between title and text area
+   text-bgcolor=\LightGrey, % background color of the text area
+   text-color=\Black,       % color of normal text
+   text-font=\_rm,          % font of normal text
+   text-width=6cm,          % text paragraph width; frame width = text width + margins
+   text-margins=3mm,        % left and right margins
+   text-above=3pt,          % space above the first line of text
+   text-below=1pt,          % space below the last line of text
+   shadow-width=2pt,        % shadow thickness (if 0pt then no shadow printed)
+}
+\_optdef \roundframe [] #1#2{\_bgroup
+   \_kvdict{_optextrick:roundframe}% dictionary of used key-value parameters
+   \_readkv\.roundframedefaults \_readkv{\_the\_opt}%
+   \_roundness=\_kv{round-corner}\_relax
+   \_hsize=\_kv{text-width}\_relax
+   \_leftskip=\_kv{text-margins}\_relax \_rightskip=\_leftskip
+   \_setbox0=\_vbox{%
+      \.bgbox{\_kv{title-bgcolor}}{\_kern\_kv{title-above}%
+         \_noindent\_strut\_kv{title-color}\_kv{title-font}#1\.parstrut\_kern\_kv{title-below}}
+      \_kv{midrule-color}\_hrule height\_kv{midrule-width}%
+      \.bgbox{\_kv{text-bgcolor}}{\_kern\_kv{text-above}%
+         \_noindent\_strut\_kv{text-color}\_kv{text-font}#2\.parstrut\_kern\_kv{text-below}}}
+   \_setbox1=\_vbox to\_dimexpr\_ht0-2\_roundness{}\_wd1=\_dimexpr\_wd0-2\_roundness\_relax
+   \_hbox{\_unless\_ifdim\_kv{shadow-width}=0pt \.roundframeshadow \_fi
+      \_clipinoval .5\_wd0 .5\_ht0 \_wd0 \_ht0 {\_box0}}%
+   \_egroup
+}
+\_def\.bgbox#1#2{\_setbox0=\_vbox{#2}\_hbox{\_rlap{#1\_vrule height\_ht0 depth\_dp0 width\_wd0}\_box0}}
+\_def\.parstrut{\_par\_kern-\_prevdepth\_kern\_dp\_strutbox}
+\_def\.roundframeshadow{\_raise\_roundness\_rlap{\_edef\_shadowb{\_bp{\_kv{shadow-width}}}%
+   \_inoval[\_fcolor=\Grey \_roundness=\_kv{round-corner} \_shadow=Y \_lwidth=0pt]{\_box1}}}
+\_edef\.tmp{\_the\_kvdict}
+{\_kvdict{_optextrick:roundframe} \_ea\_foreach\.roundframedefaults \_do #1#2=#3,{\_global\_kvx{#1#2}{}}
+ \_global\_nokvx{\_opwarning{\_string\roundframe: Unknown option "#1"}}}
+\_kvdict=\_ea{\.tmp} % restoring \_kvdict, because \globaldefs=1
+
+\_trick 0103 \cancel ;
+%%%%%%%%%%%%
+
+\_def\cancel#1#{\_isempty{#1}\_iftrue \_afterfi{\cancel/}
+   \_else
+      \_lowercase{\_casesof #1}
+        /  {\_let\.cancline=\.drawFslash}
+        \\ {\_let\.cancline=\.drawBslash}
+        x  {\_def\.cancline{\.drawBslash\.drawFslash}}
+        -  {\_let\.cancline=\.drawHline}
+        \_finc {}%
+      \_ea\.cancelA
+   \_fi
+}
+\_def\.cancelA{\_ifmmode \_ea\.cancelM \_else \_ea\.cancelT \_fi}
+\_def\.cancelT#1{\_setbox0=\_hbox{#1}\.cancelF} % text mode
+\_def\.cancelM#1{\_mathstyles{\_setbox0=\_hbox{$\_currstyle#1$}\_cancelF}} % math mode
+\_def\.cancelF{\_edef\.tmp{\.cancline}\_quitvmode\_box0 \_pdfliteral{q \_useit{\cancelparams} \.tmp S Q}}
+\_def\.drawFslash{\_bp{-\_wd0} \_bp{-\_dp0} m 0 \_bp{\_ht0} l } % forward slash
+\_def\.drawBslash{\_bp{-\_wd0} \_bp{\_ht0} m 0 \_bp{-\_dp0} l } % backward slash
+\_def\.drawHline {\_bp{-\_wd0} \_bp{.5ex} m 0 \_bp{.5ex} l }    % horizontal line
+\_ifx\cancelparams\_undefined \_def\cancelparams{1 0 0 RG 1 J .6 w}\_fi % color RG linetype J linewidth w
+
+\_trick 0070 \keystroke ;
+%%%%%%%%%%%%
+
+\_ifx\keysize\_undefined \_newdimen\keysize \keysize=1.3em \_fi
+\_ifx\keystrokefont\_undefined \_def\keystrokefont{\_setfontsize{mag.77}\_cs{sans}\_rm} \_fi
+
+\_newbox\.keylbox  \_newbox\.keymbox  \_newbox\.keyrbox
+\_edef\.picheight{\_the\_picheight}
+\_setbox\.keylbox=\_hbox{\_picheight=\keysize \_inspic{keystroke_left.pdf}}
+\_setbox\.keymbox=\_hbox{\_picheight=\keysize \_inspic{keystroke_middle.pdf}}
+\_setbox\.keyrbox=\_hbox{\_picheight=\keysize \_inspic{keystroke_right.pdf}}
+\_picheight=\.picheight
+
+\_def\keystroke#1{\_setbox0=\_hbox{\keystrokefont#1}%
+   \_leavevmode \_lower.2\keysize \_hbox{\_copy\.keylbox
+      \_tmpdim=\_wd\.keymbox
+      \_ifdim\_wd0>\_tmpdim \_tmpdim=\_wd0 \_fi
+      \_ifdim\_tmpdim>\_wd\.keymbox
+         \_pdfsave \_pdfscale{\_expr{\_bp{\_tmpdim}/\_bp{\_wd\.keymbox}}}{1}%
+            \_rlap{\_copy\.keymbox}\_pdfrestore
+      \_else \_rlap{\_copy\.keymbox}\_fi
+      \_raise.33\keysize \_hbox to\_tmpdim{\_hss\_box0\_hss}\_copy\.keyrbox}%
+}
+
+\_trick 0004 \colortab ;
+%%%%%%%%%%%%
+
+\_def\.tabdC{\_futurelet\.next\.setcellcolor##\_fin\_hfil\_hfil}
+\_def\.tabdL{\_futurelet\.next\.setcellcolor##\_fin\_relax\_hfil}
+\_def\.tabdR{\_futurelet\.next\.setcellcolor##\_fin\_hfil\_relax}
+\_def\.tabdP#1{\_futurelet\.next\.setcellcolor##\_fin\_vtop
+    {\_hsize=#1\_relax \_baselineskip=\_normalbaselineskip
+     \_lineskiplimit=0pt \_noindent\.tmp\_unsskip\_lower\_dp\_tstrutbox\_hbox{}}}
+\_def\colortab{\_tablinespace=0pt \_let\_paramtabdeclarep=\.tabdP
+   \_let\_tabdeclarec=\.tabdC \_let\_tabdeclarel=\.tabdL \_let\_tabdeclarer=\.tabdR}
+\_def\.setcellcolor{%
+   \_ifx\.next\_setcolor \_ea\.setcellcolorC\_else \_ea\.setcellcolorD\_fi}
+\_def\.setcellcolorC\_setcolor#1#2#3#4\_fin#5#6{%
+   \_ifx#5\_vtop \_def\.tmp{#4}%
+      \_setbox0=\_hbox{\_the\_tabiteml\_vtop{\_localcolor#6}\_the\_tabitemr}%
+      \_the\_tabstrut {\_localcolor\_setcolor{#1}{#2}{#3}\_vrule width\_wd0}\_kern-\_wd0 \_box0
+   \_else
+      \_setbox0=\_hbox{\_the\_tabiteml\_localcolor#4\_unsskip\_the\_tabitemr}%
+      {\_localcolor\_setcolor{#1}{#2}{#3}%
+       \_the\_tabstrut\_leaders\_vrule\_hskip\_wd0 \_ifx#5\_hfil plus1fil\_fi}\_kern-\_wd0 \_box0
+      \_ifx#6\_hfil
+      {\_kern-.3bp \_localcolor\_setcolor{#1}{#2}{#3}\_leaders\_vrule\_hskip.3bp plus1fil}\_fi
+   \_fi
+}
+\_def\.setcellcolorD{\_ifx\cellcolor\undefined \_let\.next=\.setcellcolorN
+   \_else \_def\.next{\_ea\_ea\_ea\.setcellcolorC\cellcolor}%
+   \_fi \.next
+}
+\_def\.setcellcolorN#1\_fin#2#3{#2\_the\_tabiteml{\_localcolor#1\_unskip}\_the\_tabitemr#3}
+
+\_def\multispanc#1#2#3{\_multispan{#1}%
+   \_ea\_ea\_ea\.cellcolexp#2#3\_fin\_hfil\_hfil\_ignorespaces}
+\_def\.cellcolexp{\_futurelet\.next\.setcellcolor}
+
+\_trick 0005 \crx ;
+%%%%%%%%%%%%
+
+\_newcount\.tabline  \.tabline=1
+\_def\crx {\_crcr \_ifodd\.tabline \.colortabline \_else\_noalign{\_hrule height0pt}\_fi \_incr\.tabline}
+\_def\.colortabline{\_noalign{\_localcolor\LightGrey
+   \_hrule height\ht\_strutbox depth\_dimexpr\_dp\_strutbox +2\_tablinespace\_relax
+   \_kern-\_dimexpr\ht\_strutbox+\_dp\_strutbox +2\_tablinespace}}
+
+\_trick 0007 \crtop \crbot \crmid ;
+%%%%%%%%%%%%
+
+\_def\crtop{\_crcr \_noalign{\_hrule height.6pt \_kern2.5pt}}
+\_def\crbot{\_crcr \_noalign{\_kern2.5pt\_hrule height.6pt}}
+\_def\crmid{\_crcr \_noalign{\_kern1pt\_hrule height.4pt\_kern1pt}}
+
+\_trick 0016 \longtable ;
+%%%%%%%%%%%%
+
+\_def\longtable#1#2{\_goodbreak \_bgroup \_tablinespace=0pt \_let\_zerotabrule=\_empty
+   \_setbox0=\_table{#1}{\.strutT\_relax #2}
+   \_setbox1=\_vbox{\_unvbox0 \_setbox2=\_vbox{}\.revertbox}
+   \_setbox2=\_vbox{\_unvbox2 \_global\_setbox4=\_lastbox\_unskip \_global\_setbox5=\_lastbox\_unskip}
+   \.whatfree4 \_advance\_tmpdim by-.8pt \_ifdim\_tmpdim<\_baselineskip \_vfil\_break \_fi
+   \_offinterlineskip \.crule\.center4\.crule\.center5 \.printboxes
+   \.center5\.crule \_egroup \_goodbreak
+}
+\_def\.whatfree#1{\_tmpdim=\_vsize \_advance\_tmpdim by-\_pagetotal
+   \_advance\_tmpdim by-\_prevdepth \_advance\_tmpdim by-.4pt
+   \_advance\_tmpdim by-\_ht#1 \_advance\_tmpdim by-\_dp#1 \_advance\_tmpdim by-\_ht5 }
+\_def\.revertbox {\_setbox0=\_lastbox\_unskip
+   \_ifvoid0 \_else \_global\_setbox2=\_vbox{\_unvbox2\_box0} \_ea\.revertbox\_fi}
+\_def\.printboxes{\_setbox2=\_vbox{\_unvbox2 \_global\_setbox0=\_lastbox\_unskip}
+   \_ifvoid0 \_else \.whatfree0
+      \_ifdim\_tmpdim<0pt \.center5\.crule\_vfil\_break \.crule\.center4\.crule\.center5 \_fi
+      \.center0 \_nobreak \.printboxes \_fi}
+\_def\.crule{\_centerline{\_hbox to\_wd4{\_hrulefill}}\_nobreak}
+\_def\.center#1{\_centerline{\_copy#1}\_nobreak}
+
+\_def\.strutT {\_vrule height1.8em depth.8em width0pt} % strut for the title
+
+\_trick 0032 \vcent \vbot ;
+%%%%%%%%%%%%
+
+\_def\vbot {\_let\_tableparbox=\_vbox}
+\_def\vcent {\_toksapp\_tabiteml{$}\_tokspre\_tabitemr{$}\_let\_tableparbox=\_vcenter}
+
+\_trick 0046 \tnote ;
+%%%%%%%%%%%%
+
+\_newcount\.tnotenum
+\_def\.tnotelist{}
+\_def\.tnoteformat{$\Red^{\_rm\_athe\.tnotenum}$}
+\_def\tnote#1{\_incr\.tnotenum \.tnoteformat\_global\_addto\.tnotelist{{#1}}}
+\_def\tnoteprint{\_par\_noindent \.tnotenum=0
+   \_ea\_foreach\.tnotelist \_do{\_advance\.tnotenum by1 \.tnoteformat##1 }\_par
+   \_global\.tnotenum=0 \_gdef\.tnotelist{}%
+}
+
+\_trick 0050 \tabnodes \tablebefore ;
+%%%%%%%%%%%%
+
+\_def\tablebefore{\_ifvmode \_nointerlineskip\_null \_fi
+   \_incr\.tndnum \_setpos[t\_the\.tndnum:ori:b]\_ea\.tbpxpy\_ea{\_the\.tndnum}{b}\_decr\.tndnum
+}
+\_def\tableafter {\_setpos[t\_the\_tndnum:ori:e]\_ea\.tbpxpy\_ea{\_the\.tndnum}{e}}
+\_def\.tbpxpy#1#2{%
+   \_def\.tbpx[##1]{\_expr{\_bp{\_posx[t#1:##1]}-\_bp{\_posx[t#1:ori:#2]}}}%
+   \_def\.tbpy[##1]{\_expr{\_bp{\_posy[t#1:##1]}-\_bp{\_posy[t#1:ori:#2]}}}%
+}
+\_newcount\.tndnum \_newcount\.tablerownum
+\_def\.putnodeh#1{\_omit\_relax
+   \_setpos[t\_the\.tndnum:l#1]\_hskip0pt plus1fill\_relax \_setpos[t\_the\.tndnum:r#1]}
+\_def\.putnodelr{\_fornum 1..\_colnum-1\_do{\.putnodeh{##1}&}\.putnodeh{\_the\_colnum}%
+   \_gdef\.putnode{\_noalign{\.putnodev}}\_cr}
+\_def\.putnodev{\_setpos[t\_the\.tndnum:v\_the\.tablerownum]\_incr\.tablerownum}
+\_def\tabnodes{\_incr\.tndnum \.tablerownum=0
+   \_def\_tablepxpreset{\_everycr{}}\_let\.putnode=\.putnodelr \_everycr={\.putnode}}
+
+\_def\itl[#1,#2]{\_expr{\.tbpx[l\.enum{#2}]} \_expr{\.tbpy[v\.enum{#1-1}]}}
+\_def\icl[#1,#2]{\_expr{\.tbpx[l\.enum{#2}]}
+                 \_expr{(\.tbpy[v\.enum{#1-1}]+(\.tbpy[v\.enum{#1}]))/2}}
+\_def\ibl[#1,#2]{\_expr{\.tbpx[l\.enum{#2}]} \_expr{\.tbpy[v\.enum{#1}]}}
+\_def\itc[#1,#2]{\_expr{(\.tbpx[l\.enum{#2}]+(\.tbpx[r\.enum{#2}]))/2}
+                 \_expr{\.tbpy[v\.enum{#1-1}]}}
+\_def\icc[#1,#2]{\_expr{(\.tbpx[l\.enum{#2}]+(\.tbpx[r\.enum{#2}]))/2}
+                 \_expr{(\.tbpy[v\.enum{#1-1}]+(\.tbpy[v\.enum{#1}]))/2}}
+\_def\ibc[#1,#2]{\_expr{(\.tbpx[l\.enum{#2}]+(\.tbpx[r\.enum{#2}]))/2}
+                 \_expr{\.tbpy[v\.enum{#1}]}}
+\_def\itr[#1,#2]{\_expr{\.tbpx[r\.enum{#2}]} \_expr{\.tbpy[v\.enum{#1-1}]}}
+\_def\icr[#1,#2]{\_expr{\.tbpx[r\.enum{#2}]}
+                 \_expr{(\.tbpy[v\.enum{#1-1}]+(\.tbpy[v\.enum{#1}]))/2}}
+\_def\ibr[#1,#2]{\_expr{\.tbpx[r\.enum{#2}]} \_expr{\.tbpy[v\.enum{#1}]}}
+\_def\iwd[#1,#2]{\_expr{\.tbpx[r\.enum{#2}]-(\.tbpx[l\.enum{#2}])}}
+\_def\iht[#1,#2]{\_expr{\.tbpy[v\.enum{#1-1}]-(\.tbpy[v\.enum{#1}])}}
+
+\_def\.enum#1{\_number\_numexpr#1\_relax}
+\_def\ishift #1{\_ea\.ishifta#1}  %  \ishift[2,3][1pt,2.5pt]
+\_def\.ishifta \_expr#1 \_expr#2#3#4,#5]{\_expr{#1+(\_bp{#4})} \_expr{#2+(\_bp{#5})}}
+\_def\tabpos#1#2{#1\_ifx\ishift#2\_afterfi{\_ea\_ea\_ea\_ea\_ea\_ea}\_fi\_ea\.tabposA#2}
+\_def\.tabposA\_expr#1 \_expr#2{\_expr{#1}bp \_expr{#2}bp}
+
+\_trick 0031 \framedblocks ;
+%%%%%%%%%%%%
+
+\_newcount\.blocklevel  % nesting level of blocks
+\_def\begblock{\_par\_bgroup
+   \_advance\.blocklevel by1 \_advance\_leftskip by\_iindent \_rightskip=\_leftskip
+   \_medskip
+   \_openref\_pdfsavepos \_ea\_wref\_ea\.Xblock\_ea{\_ea{\_the\.blocklevel}B{\_the\_pdflastypos}}
+   \_nobreak \_medskip
+}
+\_def\endblock{\_par\_nobreak\_medskip
+   \_pdfsavepos \_ea\_wref\_ea\.Xblock\_ea{\_ea{\_the\.blocklevel}E{\_the\_pdflastypos}}
+   \_medskip \_egroup
+}
+\_newdimen\.frtop \_newdimen\.frbottom % positions of top and bottom text on the pages
+\_pgbackground={%
+   \_slet{_optextrick_tmp}{frm:\_the\_gpageno}
+   \_ifx\.tmp\_undefined \_def\.tmp{}\_fi
+   \.frtop=\_dimexpr \_pdfpageheight-\_voffset+\_smallskipamount\_relax
+   \.frbottom=\_dimexpr\_pdfpageheight-\_voffset-\_vsize-\_medskipamount\_relax
+   \_ifx\.frnext y \_edef\.tmp{B{\_number\.frtop}\.tmp}\_global\_let\.frnext n\_fi
+   \_ea\.printframes \.tmp B{0}E{\_number\.frbottom}
+   \_ifx\frameslist\_empty \_else
+   \_pdfliteral{q 1 0 0 1 0 \_bp{-\_pdfpageheight} cm \frameslist Q}\_fi
+}
+\_def\.printframes B#1#2E#3{\_ifnum#1=0 \_else
+   \printframe {\_hoffset}{#3sp}{\_xhsize}{\_ifnum#1=-1 \_number\.frtop\_else#1\_fi sp-#3sp}
+   \_ifx^#2^\_else \_global\_let\.frnext=y \_let\.printframes=\_relax \_fi
+   \_ea\.printframes\_fi
+}
+\_def\frameslist{}
+\_ifx\printframe\_undefined
+\_def\printframe #1#2#3#4{\_edef\frameslist{\frameslist
+    .8 g \_bp{#1} \_bp{#2} \_bp{#3} \_bp{#4} re f }%
+}
+\_fi
+\_def\framedblocks{} % for autoloading only, it redefines standard \begblock, \endblock
+\_globaldefs=0 % \refdecl needs to be processed when \localdefs=0
+\_refdecl{%
+   \_def\.Xblock#1#2#3{\_ifnum#1=1 \_edef\.tmp{frm:\_ea\_ignoresecond\_currpage}^^J
+      \_unless\_ifcsname \.tmp \_endcsname \_sxdef{\.tmp}{}\_fi^^J
+      \_sxdef{\.tmp}{\_cs{\.tmp}#2{#3}}\_fi}
+}
+
+\_trick 0086 \twoblocks ;
+%%%%%%%%%%%%
+
+\_newdimen\.pageblank
+\_newdimen\.columnsht
+
+\_def\.setcolumn{\_advance\_hsize by-\_colsep \_hsize=.5\_hsize \_penalty0 }
+\_def\twoblocks{\_par
+   \_begingroup \_hbadness=5000 \_splittopskip=1em plus1fil \_brokenpenalty=0
+   \_setbox0=\_vbox\_bgroup \.setcolumn
+      \_aftergroup\.twoblocksA
+      \_let\.next=%
+}
+\_def\.twoblocksA{%
+   \_setbox1=\_vbox\_bgroup \.setcolumn
+      \_aftergroup\.twoblocksB
+      \_let\.next=%
+}
+\_def\.twoblocksB{\_setbox2=\_vsplit0 to0pt \_setbox2=\_vsplit1 to0pt \.twoblocksC}
+\_def\.twoblocksC{%
+   \_penalty0 \_vskip\_parskip
+   \_ifdim\_pagegoal=\_maxdimen \.pageblank=\_vsize \_else \.pageblank=\_pagegoal \_fi
+   \_advance\.pageblank by-\_pagetotal
+   \_ifdim\.pageblank<24pt \_vfil\_break \.pageblank=\_vsize \_fi
+   \_ifdim\_ht0>\_ht1 \.columnsht=\_ht0 \_dimen0=\_dp0 \_else \.columnsht=\_ht1 \_dimen0=\_dp1 \_fi
+   \_ifdim\.columnsht>\.pageblank
+      \_setbox2=\_vsplit0 to\.pageblank \_setbox3=\_vsplit1 to\.pageblank
+      \_line{\.xvtop2\_hss\.xvtop3}
+      \_kern-\_baselineskip \_nobreak\_vfil\_break
+      \_ea\.twoblocksC
+   \_else
+      \_line{\.xvtop0\_hss\.xvtop1}
+      \_prevdepth=\_dimen0
+      \_endgroup
+   \_fi
+}
+\_def\.xvtop#1{\_vtop{\_null\_kern-\_splittopskip\_unvbox#1}}
+
+\_trick 0069 \pstart ;
+%%%%%%%%%%%%
+
+\_newcount\.firstlinenum
+\_newcount\.gprevgraf
+
+\_def\pstart{\_par \_setbox0=\_vbox\_bgroup
+   \_def\_par{\_endgraf\_advance\.gprevgraf by\_prevgraf \_prevgraf=0 }}
+\_def\pend{\_par \_global\_tmpnum=\.gprevgraf \_egroup
+   \_ifnum\.firstlinenum=0 \.firstlinenum=1 \_fi
+   \_advance\_tmpnum by\.firstlinenum
+   \.firstlinenum=\_tmpnum \_advance\_tmpnum by-1
+   \_setbox0=\_vbox{\_unvbox0
+      \_setbox2=\_hbox{}
+      \_loop
+         \_unskip\_unskip\_unpenalty \_setbox1=\_lastbox
+         \_ifvoid1 \_else
+            \_global\_setbox2=\_hbox{\_llap{\.pendprintnum}\_box1\_penalty0\_unhbox2}
+            \_advance\_tmpnum by-1
+            \_repeat
+   }\_noindent\_unhbox2 \_par
+}
+\_def\.pendprintnum{\_setfontsize{mag.6}\_rm\_the\_tmpnum\_kern.8em}
+
+\_trick 0021 \settabs ;
+%%%%%%%%%%%%
+
+\_def\tabs #1\cr{\_setbox0=\_hbox\_bgroup \.tabA #1&\cr&}
+\_def\.tabA #1&{\_ifx\cr#1\_egroup\_box0 \_else
+   \_egroup
+      \_tmpdim=\_maxdimen \_ea\.tabB \.tabsdata {}\_relax
+      \_ifdim \_tmpdim=\_maxdimen \_tmpdim=0pt
+      \_else \_advance\_tmpdim by-\_wd0 \_fi
+   \_setbox0=\_hbox\_bgroup \_unhbox0 \_kern\_tmpdim \_ignorespaces#1\_unskip\_kern1sp
+   \_ea\.tabA \_fi
+}
+\_def\.tabB #1{\_ifx^#1^\_else \_unless\_ifdim \_wd0>#1 \_tmpdim=#1 \.tabC \_fi \_ea\.tabB \_fi}
+\_def\.tabC #1\_relax {\_fi\_fi}
+
+\_def\settabs #1{\_def\.tabsdata{}\_ifx\tabs#1\_ea\.settabstext \_else\_ea\.settabscols \_fi #1}
+\_def\.settabscols #1\columns{\_tmpdim=\_hsize \_divide\_tmpdim by#1\_relax
+   \_fornum 0..#1 \_do {\_edef\.tabsdata{\.tabsdata{\_the\_dimexpr##1\_tmpdim\_relax}}}}
+
+\_def\.settabstext #1#2\cr{\_setbox0=\_hbox\_bgroup \.settabA #2&\cr&}
+\_def\.settabA #1&{\_ifx\cr#1\_egroup \_edef\.tabsdata{\.tabsdata{\_the\_wd0}}\_else
+    #1\_egroup \_edef\.tabsdata{\.tabsdata{\_the\_wd0}}%
+    \_setbox0=\_hbox\_bgroup \_unhbox0
+    \_ea\.settabA \_fi
+}
+\_def\.tabsdata{}  % default: no tabulators set
+
+\_trick 0035 \import ;
+%%%%%%%%%%%%
+
+\_def\import#1#2{\_def\.tmp{\_gtoksapp\_picdir{#1/}\input{#2}}%
+   \_ea\.tmp\_ea\_global\_ea\_picdir\_ea{\_the\_picdir}}
+\_def\input#1{\_input{\_the\_picdir#1}}
+
+\_trick 0051 \incrpp ;
+%%%%%%%%%%%%
+
+\_openref
+\_def\thepp#1{\_trycs{pp:\_csstring#1}{?\_the#1}}
+\_def\thepplast#1#2{\_trycs{lastpp:\_csstring#1:#2}{?\_the#1}}
+\_def\truepage{?\_the\_pageno}
+\_def\incrpp#1{\_incr#1%
+   \_isdefined{_pgref:pp:\_csstring#1:\_the#1}\_iftrue
+      \_edef\.tmp{\_cs{_pgref:pp:\_csstring#1:\_the#1}}%
+      \_ea\_ifx\_csname currpp:\_csstring#1\_endcsname\.tmp
+         \_sxdef{pp:\_csstring#1}{\_the\_numexpr\_cs{pp:\_csstring#1}+1\_relax}%
+      \_else \_sxdef{pp:\_csstring#1}{\_trycs{resetpp:\csstring#1}{1}}%
+         \_sxdef{currpp:\csstring#1}{\.tmp}\_fi
+      \_xdef\truepage{\_ea\_ea\_ea\_usesecond \_csname currpp:\_csstring#1\_endcsname}%
+      \_sxdef{lastpp:\_csstring#1:\truepage}{\_cs{pp:\_csstring#1}}%
+   \_else \_incr\_unresolvedrefs \_openref \_fi
+   \_ewref \_Xlabel {{pp:\csstring#1:\the#1}{}}%
+}
+
+\_trick 0115 \ispageodd ;
+
+\_def\ispageodd#1{%
+   \_incr\_mnotenum
+   \_ifcsname _mn:\_the\_mnotenum \_endcsname
+       \_expanded{\_let \_noexpand\.pgtype =\_cs{_mn:\_the\_mnotenum}}\_else
+       \_let\.pgtype=\_right \_opwarning{pageside is unknown, TeX me again}\_openref
+   \_fi
+   \_wref\_Xmnote{}%
+   #1\_else \_ea\_unless\_fi \_ifx\.pgtype\_right
+}
+
+\_trick 0033 \iniseccc \seccc ;
+
+\_newcount \_secccnum
+\_def \_thesecccnum {\_othe\_chapnum.\_the\_secnum.\_the\_seccnum.\_the\_secccnum}
+
+\_optdef\_seccc[]{\_trylabel \_scantoeol\_inseccc}
+
+\_def\_inseccc #1{\_par \_sectionlevel=4
+   \_def \_savedtitle {#1}% saved to .ref file
+   \_ifnonum \_else {\_globaldefs=1 \_incr\_secccnum \_secccx}\_fi
+   \_edef \_therefnum {\_ifnonum \_space \_else \_thesecccnum \_fi}%
+   \_printseccc{\_scantextokens{#1}}%
+   \_resetnonumnotoc
+}
+\public \seccc ;
+
+\_def \_seccx {\_secccx \_secccnum=0 }
+\_def \_secccx {}
+
+\_def\_printseccc#1{\_par
+   \_abovetitle{\_penalty-100}{\_medskip}
+   {\_bf \_noindent \_raggedright \_printrefnum[@\_quad]#1\_nbpar}%
+   \_nobreak \_belowtitle{\_smallskip}%
+   \_firstnoindent
+}
+
+\_def\iniseccc{} % use it for autoloading the OpTeX trick code before \maketoc
+\_sdef{_tocl:4}#1#2#3{\_advance\_leftskip by2\_iindent \_cs{_tocl:2}{#1}{#2}{#3}}
+
+\_trick 0066 \makeLOF \makeLOT \captionT \captionF ;
+%%%%%%%%%%%%
+
+\_def\captionT [#1]#2{\_caption/t[#1]\_ewref\.Xtab{{#1}{\_thetnum}{#2}}\_ignorespaces}
+\_def\captionF [#1]#2{\_caption/f[#1]\_ewref\.Xfig{{#1}{\_thefnum}{#2}}\_ignorespaces}
+
+\_def\.lline#1#2#3#4#5{\_line{\_hskip2em\_llap{\_bf#2 } #3 \_tocdotfill\ \_ilink[pg:#4]{#5}}}
+
+\_def\.makell#1#2{\_par
+   \_ifx#1\_undefined \_opwarning{no data for list of #2, try to run TeX again}\_openref
+   \_else #1\_fi
+}
+\_def\makeLOF{\.makell\.loflist{figures}}
+\_def\makeLOT{\.makell\.lotlist{tables}}
+
+\_globaldefs=0 % \refdecl needs to be processed when \localdefs=0
+\_refdecl{%
+\_def\.lotlist{} \_def\.loflist{}^^J
+\_def\.Xtab#1#2#3{\_addto\.lotlist{\.lline{#1}{#2}{#3}}\_ea\_addto\_ea\.lotlist\_ea{\_currpage}}^^J
+\_def\.Xfig#1#2#3{\_addto\.loflist{\.lline{#1}{#2}{#3}}\_ea\_addto\_ea\.loflist\_ea{\_currpage}}
+}
+
+\_trick 0121 \correctvsize ;
+%%%%%%%%%%%%
+
+\_def\correctvsize{%
+   \_vsize=\_dimexpr
+      \_expr[0]{\_bp{\_vsize-\_topskip}//\_bp{\_baselineskip}}\_baselineskip
+      +\_topskip \_relax
+}
+
+\_trick end ;
+
+\_endcode
+
+2023-11-15 \correctvsize added
+2023-11-09 \makeLOF, \makeLOT aded
+2023-11-08 \ispageodd, \seccc added
+2023-11-07 \settabs \import \incrpp added
+2023-11-05 \twoblocks, \pstart added
+2023-11-03 \framedblocks added
+2023-11-01 \longtable, \vcent, \vbot, \tnote, \tabnodes added
+2023-10-31 \ignoreinspic, \keystroke, \colortab, \crx, \crtop, \crbot, \crmid added
+2023-10-23 \shadedframe, \roundframe  added
+2023-10-21 \fcread, \fullcite added
+2023-10-20 \style m, \keepstyle, \easylist, \ttlineref added
+2023-10-19 \directoutput, \scaleto added
+2023-10-18 \algol, \cancel added
+2023-10-18 \createfile added
+2023-10-17 released

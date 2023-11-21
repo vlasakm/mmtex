@@ -273,13 +273,16 @@ f-besley.opm
 f-bodonimoda.opm
 f-bonum.opm
 f-cabin.opm
+f-clara.opm
 f-comicneue.opm
+f-culmus.opm
 f-cursor.opm
 f-dejavu.opm
 f-draftingmono.opm
 f-ebgaramond.opm
 f-erewhon.opm
 f-fira.opm
+f-fraunces.opm
 f-garamondl.opm
 f-gfsbodoni.opm
 f-heros.opm
@@ -301,6 +304,7 @@ f-merriweather.opm
 f-montserrat.opm
 f-newcm.opm
 fnotes.opm
+f-oldstandard.opm
 fonts-catalog.opm
 fonts-opmac.opm
 fonts-preload.opm
@@ -344,6 +348,7 @@ more-macros.opm
 multicolumns.opm
 optex.ini
 optex.lua
+optex-tricks.opm
 others.opm
 outlines.opm
 output.opm
