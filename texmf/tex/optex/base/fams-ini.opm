@@ -107,6 +107,11 @@
      \caps: {\rm\bf\it\bi} \caps\semibold: {\bf\bi} \caps\sans: {\rm\bf\it}
      -: {\mono\initials\displ\keybr} }
 
+\_famfrom{Victor Gaultney}
+\_faminfo [Gentium] {Serif free fonts, support Greek, Cyrrilic, IPA} {f-gentium}
+   { -,\caps,\book,\book\caps: {\rm\bf\it\bi} }
+\_famalias [GentiumPro]
+
 \_famfrom {Daniel Flipo}
 \_faminfo [KP fonts] {KP fonts -- Johannes Kepler project} {f-kpfonts}
    { -,\light,\sans,\mono, \caps, \caps\light, \caps\sans,\caps\mono,\swash: {\rm\bf\it\bi} }
@@ -248,6 +253,11 @@
 \_famfrom {George Matthiopoulos, Greek Font Society}
 \_faminfo [GFSBodoni] {Based on Bodoni with greek letters} {f-gfsbodoni}
    { -: {\rm\bf\it\bi} \caps: {\rm} }
+
+\_famfrom {David J. Perry, Michael Sharpe}
+\_faminfo [fbb] {Bembo–like fonts derived from Cardo} {f-fbb}
+   { -,\caps: {\rm\bf\it\bi} \swash: {\rm} }
+\_famalias [Bembo] \_famalias [FBembo]
 
 \_famfrom {bBox Type GmbH, Carrois Corporate GbR, Edenspiekermann AG}
 \_faminfo [Fira] {Humanist sans-serif, originally designed for Firefox OS} {f-fira}

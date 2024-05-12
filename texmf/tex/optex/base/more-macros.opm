@@ -1,6 +1,6 @@
 %% This is part of the OpTeX project, see http://petr.olsak.net/optex
 
-\_codedecl \eoldef {OpTeX useful macros <2023-01-18>} % preloaded in format
+\_codedecl \eoldef {OpTeX useful macros <2024-02-10>} % preloaded in format
 
    \_doc -----------------------------
    We define \`\opinput` `{<file name>}` macro which
@@ -119,8 +119,9 @@
 
 \_newtoks\_opt
 \_def\_optdef#1[#2]{%
-   \_def#1{\_opt={#2}\_isnextchar[{\_cs{_oA:\_csstring#1}}{\_cs{_oB:\_csstring#1}}}%
-   \_sdef{_oA:\_csstring#1}[##1]{\_opt={##1}\_cs{_oB:\_csstring#1\_nospaceafter}}%
+   \_def#1{\_isnextchar[{\_cs{_oA:\_csstring#1}}{\_cs{_oA:\_csstring#1}[#2]}}%
+   \_sdef{_oA:\_csstring#1}[##1]{%
+      \_immediateassignment\_opt={##1}\_cs{_oB:\_csstring#1\_nospaceafter}}%
    \_sdef{_oB:\_csstring#1\_nospaceafter}%
 }
 \_def\_nospaceafter#1{\_ea#1\_romannumeral-`\.\_noexpand}
@@ -130,12 +131,21 @@
 \_public \opt \optdef \nospaceafter \nospacefuturelet ;
 
    \_doc -----------------------------
+   \`\_noprefix` `<cs>` works like `\csstring` `<cs>`, but ignores not only
+   the first backlash but the second~\"`_`" ignores too (if it follows the
+   backslash).
+   \_cod -----------------------------
+
+\_def\_noprefix#1{\_ea\_noprefixA \_csstring#1\_empty\_fin}
+\_def\_noprefixA #1#2\_fin{\_if _#1\_else #1\_fi #2}
+
+   \_doc -----------------------------
    The declarator \`\eoldef``\macro #1{<replacement text>}` defines a `\macro`
    which scans its parameter to the end of the current line.
    This is the parameter `#1` which can be used in the `<replacement text>`.
    The catcode of the `\endlinechar` is reset temporarily when the parameter is scanned. 
 
-   The macro defined by `\eoldef` cannot be used with its parameter inside
+   The macro defined by \^`\eoldef` cannot be used with its parameter inside
    other macros because the catcode dancing is not possible here. But the
    \`\bracedparam``\macro{<parameter>}` can be used here. The `\bracedparam`
    is a prefix that re-sets temporarily the `\macro` to a `\macro` with
@@ -146,15 +156,16 @@
    \_cod -----------------------------
 
 \_def\_eoldef #1{\_def #1{\_begingroup \_catcode`\^^M=12 \_eoldefA #1}%
-   \_ea\_def\_csname _\_csstring #1:M\_endcsname}
+   \_ea\_def\_csname _eol:\_noprefix #1\_endcsname}
 \_catcode`\^^M=12 %
-\_def\_eoldefA #1#2^^M{\_endgroup\_csname _\_csstring #1:M\_endcsname{#2}}%
+\_def\_eoldefA #1#2^^M{\_endgroup\_csname _eol:\_noprefix #1\_endcsname{#2}}%
 \_normalcatcodes %
 
 \_eoldef\_skiptoeol#1{}
-\_def\_bracedparam#1{\_ifcsname _\_csstring #1:M\_endcsname
-    \_csname _\_csstring #1:M\_ea \_endcsname
-    \_else \_csname _in\_csstring #1\_ea \_endcsname \_fi
+
+\_def\_bracedparam#1{%
+   \_trycs{_eol:\_noprefix#1}%
+      {\_errmessage{\_string\bracedparam: \_string#1 isn't defined by \_string\eoldef}}%
 }
 \_public \eoldef \skiptoeol \bracedparam ;
 
@@ -270,7 +281,8 @@
    \endtt
    You can use expandable \`\expr``{<expression>}` for analogical purposes.
    It expands to the value of the `<expression>` at expand processor level.
-   The `<expression>` can include `+-*/()` and decimal numbers in common syntax.
+   The `<expression>` can include `+-*/^()` and decimal numbers in common syntax.
+   Moreover, `a//b` means integer division and `a\%b` is remainder.
    The math functions (and pi constant) have to be prefixed by `math.`,
    because it is processed by Lua interpreter. For
    example `\expr{math.pi*math.sqrt(2)}`.
@@ -297,6 +309,21 @@
 \_def\_exprA[#1]#2{\_directlua{tex.print(string.format('\_pcent.#1f',#2))}}
 
 \_public \expr \bp ;
+
+   \_doc -----------------------------
+   The \^`\expr` and \^`\bp` macros return their results with given number of decimal
+   digits even if there are trailing zeros. There is the \^`\nnum` macro to
+   \"normalize" such decimal numbers. \`\nnum``{<number>}` expands its parameter
+   and removes trailing zeros after decimal point and removes the decimal point
+   if nothing follows. For example, use `\nnum{\expr[10]{<expression>}}`.
+   The `\nnum` macro is fully expandable.
+   \_cod -----------------------------
+
+\_def\_nnum #1{\_ea\_nnumA\_expanded{#1}.\_fin}
+\_def\_nnumA #1.#2\_fin{#1\_ifx~#2~\_else \_nnumB #20.\_fin \_fi}
+\_def\_nnumB #10.#2\_fin{\_ifx~#2~\_nnumC#1\_else \_nnumB #1.0.\_fin \_fi}
+\_def\_nnumC #1.{\_ifx~#1~\_else .#1\_fi}
+\_public \nnum ;
 
    \_doc ------------------
    You can write \^`\setpos``[<label>]` somewhere and the position of such
@@ -374,6 +401,9 @@
 
 \_endcode % -------------------------------------
 
+2024-02-10 \optdef reimplemented, it can create expandable macros now.
+2024-01-18 \bracedparam reimplemented.
+2023-12-04 \nnum introduced
 2023-01-18 \bp, \expr have optional syntax for setting dec-digits
 2022-11-24 \setpos, \posx, \posy moved from OpTeX trick here
 2022-11-22 \docgen writes banner to log
