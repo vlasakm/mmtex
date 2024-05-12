@@ -1,7 +1,7 @@
 project(
   'mmtex',
   'c',
-  version: '20231121',
+  version: '20240512',
   meson_version: '>=0.61',
 )
 
