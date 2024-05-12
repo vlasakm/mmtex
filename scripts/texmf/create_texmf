@@ -106,7 +106,6 @@ install lua-uni-algos/*.lua -t "$TEXMF/tex/lua-uni-algos"
 install lipsum.sty *.ltd.tex -t "$TEXMF/tex/lipsum"
 install hyphen.tex -t "$TEXMF/tex/knuth-lib"
 install emoji-table.def -t "$TEXMF/tex/emoji"
-install librarian.tex -t "$TEXMF/tex/librarian"
 (cd luavlna; install luavlna.lua luavlna-presi.lua luavlna-si.lua luavlna-predegrees.lua luavlna-sufdegrees.lua -t "$TEXMF/tex/luavlna")
 
 # install fonts

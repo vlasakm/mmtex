@@ -16,7 +16,6 @@ https://mirrors.ctan.org/macros/luatex/generic/lua-uni-algos.zip # for luaotfloa
 https://mirrors.ctan.org/macros/optex.zip # optex
 https://mirrors.ctan.org/systems/knuth/dist/lib/hyphen.tex # Knuth's hyphen.tex
 https://mirrors.ctan.org/macros/latex/contrib/lipsum.zip # optex needs lipsum.ltd.tex
-https://mirrors.ctan.org/macros/generic/librarian/tex/generic/librarian/librarian.tex # for optex bibliography
 https://mirrors.ctan.org/macros/luatex/latex/emoji/emoji-table.def # for optex emoji pkg
 https://mirrors.ctan.org/macros/luatex/generic/luavlna.zip # for optex vlna pkg
 mmoptex.ini

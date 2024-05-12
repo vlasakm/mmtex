@@ -23,9 +23,6 @@ File "hyphen.tex" comes from "knuth-lib" package
 (https://www.ctan.org/pkg/knuth-lib, Donald E. Knuth). See the file itself for
 licensing information.
 
-File "librarian.tex" comes from "librarian" package
-(https://ctan.org/pkg/librarian, Paul Isambert, under LPPL).
-
 Files in the "lipsum" directory originate from "lipsum" package
 (https://www.ctan.org/pkg/lipsum, Patrick Happel, under LPPLv1.3).
 
