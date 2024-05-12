@@ -1,4 +1,3 @@
-/*4:*/
 
 #ifndef MPXOUT_H
 #define MPXOUT_H 1
@@ -7,7 +6,6 @@ mpx_tex_mode= 0,
 mpx_troff_mode= 1
 }mpx_modes;
 typedef struct mpx_data*MPX;
-/*157:*/
 
 typedef char*(*mpx_file_finder)(MPX,const char*,const char*,int);
 enum mpx_filetype{
@@ -20,7 +18,6 @@ mpx_fontdesc_format,
 mpx_specchar_format
 };
 
-/*:157*//*225:*/
 
 typedef struct mpx_options{
 int mode;
@@ -36,8 +33,6 @@ int mpx_makempx(mpx_options*mpxopt);
 int mpx_run_dvitomp(mpx_options*mpxopt);
 
 
-/*:225*/
 
 #endif
 
-/*:4*/

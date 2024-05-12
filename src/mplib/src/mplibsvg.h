@@ -1,4 +1,3 @@
-/*62:*/
 
 #ifndef MPLIBSVG_H
 #define MPLIBSVG_H 1
@@ -6,4 +5,3 @@
 int mp_svg_ship_out(mp_edge_object*hh,int prologues);
 #endif
 
-/*:62*/

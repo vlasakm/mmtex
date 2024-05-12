@@ -1,4 +1,3 @@
-/*1:*/
 
 #include <w2c/config.h> 
 #include <stdio.h> 
@@ -96,7 +95,6 @@ mp_svg_print_ln(mp) ; \
 
 
 
-/*39:*/
 
 typedef struct mp_pen_info{
 double tx,ty;
@@ -105,71 +103,54 @@ double ww;
 }mp_pen_info;
 
 
-/*:39*/
 
-/*29:*/
 
 void mp_svg_font_pair_out(MP mp,double x,double y);
 
-/*:29*//*31:*/
 
 void mp_svg_trans_pair_out(MP mp,mp_pen_info*pen,double x,double y);
 
-/*:31*//*33:*/
 
 static void mp_svg_pair_out(MP mp,double x,double y);
 
-/*:33*//*34:*/
 
 static void mp_svg_print_initial_comment(MP mp,mp_edge_object*hh);
 
-/*:34*//*38:*/
 
 static void mp_svg_color_out(MP mp,mp_graphic_object*p);
 
-/*:38*//*40:*/
 
 mp_pen_info*mp_svg_pen_info(MP mp,mp_gr_knot pp,mp_gr_knot p);
 
-/*:40*//*43:*/
 
 static boolean mp_is_curved(mp_gr_knot p,mp_gr_knot q);
 
 
-/*:43*//*48:*/
 
 void mp_svg_print_glyph_defs(MP mp,mp_edge_object*h);
 
-/*:48*//*50:*/
 
 static void mp_svg_text_out(MP mp,mp_text_object*p,int prologues);
 
-/*:50*//*52:*/
 
 static void mp_svg_stroke_out(MP mp,mp_graphic_object*h,
 mp_pen_info*pen,boolean fill_also);
 
 
-/*:52*//*54:*/
 
 static void mp_svg_fill_out(MP mp,mp_gr_knot p,mp_graphic_object*h);
 
-/*:54*//*58:*/
 
 static void mp_svg_clip_out(MP mp,mp_clip_object*p);
 
-/*:58*/
 
 
-/*:1*//*5:*/
 
 void mp_svg_backend_initialize(MP mp){
 mp->svg= mp_xmalloc(mp,1,sizeof(svgout_data_struct));
-/*7:*/
 
 mp->svg->file_offset= 0;
 
-/*:7*//*13:*/
 
 mp->svg->loc= 0;
 mp->svg->bufsize= 256;
@@ -177,15 +158,12 @@ mp->svg->buf= mp_xmalloc(mp,mp->svg->bufsize,1);
 memset(mp->svg->buf,0,256);
 
 
-/*:13*//*21:*/
 
 mp->svg->level= 0;
 
-/*:21*//*57:*/
 
 mp->svg->clipid= 0;
 
-/*:57*/
 ;
 }
 void mp_svg_backend_free(MP mp){
@@ -194,14 +172,12 @@ mp_xfree(mp->svg);
 mp->svg= NULL;
 }
 
-/*:5*//*8:*/
 
 static void mp_svg_print_ln(MP mp){
 (mp->write_ascii_file)(mp,mp->output_file,"\n");
 mp->svg->file_offset= 0;
 }
 
-/*:8*//*9:*/
 
 static void mp_svg_print_char(MP mp,int s){
 char ss[2];
@@ -210,7 +186,6 @@ ss[0]= (char)s;ss[1]= 0;
 mp->svg->file_offset++;
 }
 
-/*:9*//*10:*/
 
 static void mp_svg_print(MP mp,const char*ss){
 (mp->write_ascii_file)(mp,mp->output_file,ss);
@@ -218,7 +193,6 @@ mp->svg->file_offset+= strlen(ss);
 }
 
 
-/*:10*//*11:*/
 
 static void mp_svg_print_nl(MP mp,const char*s){
 if(mp->svg->file_offset> 0)
@@ -227,21 +201,18 @@ mp_svg_print(mp,s);
 }
 
 
-/*:11*//*15:*/
 
 static void mp_svg_reset_buf(MP mp){
 mp->svg->loc= 0;
 memset(mp->svg->buf,0,mp->svg->bufsize);
 }
 
-/*:15*//*16:*/
 
 static void mp_svg_print_buf(MP mp){
 mp_svg_print(mp,(char*)mp->svg->buf);
 mp_svg_reset_buf(mp);
 }
 
-/*:16*//*17:*/
 
 static void mp_svg_store_int(MP mp,integer n){
 unsigned char dig[23];
@@ -269,7 +240,6 @@ append_char((char)('0'+dig[k]));
 }
 }
 
-/*:17*//*18:*/
 
 static void mp_svg_store_dd(MP mp,integer n){
 char nn= (char)abs(n)%100;
@@ -277,7 +247,6 @@ append_char((char)('0'+(nn/10)));
 append_char((char)('0'+(nn%10)));
 }
 
-/*:18*//*19:*/
 
 static void mp_svg_store_double(MP mp,double s){
 char*value,*c;
@@ -292,7 +261,6 @@ free(value);
 }
 
 
-/*:19*//*22:*/
 
 static void mp_svg_open_starttag(MP mp,const char*s){
 int l= mp->svg->level*2;
@@ -309,7 +277,6 @@ static void mp_svg_close_starttag(MP mp){
 mp_svg_print_char(mp,'>');
 }
 
-/*:22*//*23:*/
 
 static void mp_svg_endtag(MP mp,const char*s,boolean indent){
 mp->svg->level--;
@@ -326,7 +293,6 @@ append_char('>');
 mp_svg_print_buf(mp);
 }
 
-/*:23*//*24:*/
 
 static void mp_svg_attribute(MP mp,const char*s,const char*v){
 mp_svg_print_char(mp,' ');
@@ -336,7 +302,6 @@ mp_svg_print(mp,v);
 mp_svg_print_char(mp,'"');
 }
 
-/*:24*//*28:*/
 
 void mp_svg_pair_out(MP mp,double x,double y){
 mp_svg_store_double(mp,(x+mp->svg->dx));
@@ -344,7 +309,6 @@ append_char(' ');
 mp_svg_store_double(mp,(-(y+mp->svg->dy)));
 }
 
-/*:28*//*30:*/
 
 void mp_svg_font_pair_out(MP mp,double x,double y){
 mp_svg_store_double(mp,(x));
@@ -352,7 +316,6 @@ append_char(' ');
 mp_svg_store_double(mp,-(y));
 }
 
-/*:30*//*32:*/
 
 void mp_svg_trans_pair_out(MP mp,mp_pen_info*pen,double x,double y){
 double sx,sy,rx,ry,px,py,retval,divider;
@@ -372,11 +335,9 @@ mp_svg_store_double(mp,(retval));
 
 
 
-/*:32*//*35:*/
 
 void mp_svg_print_initial_comment(MP mp,mp_edge_object*hh){
 double tx,ty;
-/*36:*/
 
 {
 char*s;
@@ -400,7 +361,6 @@ mp_svg_print(mp," -->");
 }
 
 
-/*:36*/
 ;
 mp_svg_open_starttag(mp,"svg");
 mp_svg_attribute(mp,"version","1.1");
@@ -437,7 +397,6 @@ mp_svg_print_buf(mp);
 mp_svg_print(mp," -->");
 }
 
-/*:35*//*37:*/
 
 static void mp_svg_color_out(MP mp,mp_graphic_object*p){
 int object_color_model;
@@ -481,7 +440,6 @@ append_char(')');
 }
 }
 
-/*:37*//*41:*/
 
 static double coord_range_x(mp_gr_knot h,double dz){
 double z;
@@ -518,7 +476,6 @@ break;
 return(zhi-zlo<=dz?aspect_bound:aspect_default);
 }
 
-/*:41*//*42:*/
 
 mp_pen_info*mp_svg_pen_info(MP mp,mp_gr_knot pp,mp_gr_knot p){
 double wx,wy;
@@ -569,7 +526,6 @@ pen->sy= pen->sy/pen->ww;
 return pen;
 }
 
-/*:42*//*44:*/
 
 boolean mp_is_curved(mp_gr_knot p,mp_gr_knot q){
 double d;
@@ -590,7 +546,6 @@ return true;
 }
 
 
-/*:44*//*45:*/
 
 static void mp_svg_path_out(MP mp,mp_gr_knot h){
 mp_gr_knot p,q;
@@ -622,7 +577,6 @@ append_char('Z');
 append_char(0);
 }
 
-/*:45*//*46:*/
 
 static void mp_svg_path_trans_out(MP mp,mp_gr_knot h,mp_pen_info*pen){
 mp_gr_knot p,q;
@@ -655,7 +609,6 @@ append_char(0);
 }
 
 
-/*:46*//*47:*/
 
 static void mp_svg_font_path_out(MP mp,mp_gr_knot h){
 mp_gr_knot p,q;
@@ -687,7 +640,6 @@ p= q;
 append_char(0);
 }
 
-/*:47*//*49:*/
 
 void mp_svg_print_glyph_defs(MP mp,mp_edge_object*h){
 mp_graphic_object*p;
@@ -788,7 +740,6 @@ mp_xfree(mp_chars);
 }
 
 
-/*:49*//*51:*/
 
 void mp_svg_text_out(MP mp,mp_text_object*p,int prologues){
 
@@ -865,7 +816,6 @@ if(/*25:*/
 (k>=0x7F&&k<=0x84)||(k>=0x86&&k<=0x9F)
 
 
-/*:25*/
 ){
 char S[100];
 mp_snprintf(S,99,"The character %d cannot be output in SVG "
@@ -875,7 +825,6 @@ mp_warn(mp,S);
 
 (k=='&')||(k=='>')||(k=='<')
 
-/*:26*/
 )){
 append_string("&#");
 mp_svg_store_int(mp,k);
@@ -890,7 +839,6 @@ mp_svg_endtag(mp,"text",false);
 mp_svg_endtag(mp,"g",true);
 }
 
-/*:51*//*53:*/
 
 void mp_svg_stroke_out(MP mp,mp_graphic_object*h,
 mp_pen_info*pen,boolean fill_also){
@@ -1007,7 +955,6 @@ mp_svg_endtag(mp,"g",true);
 }
 }
 
-/*:53*//*55:*/
 
 void mp_svg_fill_out(MP mp,mp_gr_knot p,mp_graphic_object*h){
 mp_svg_open_starttag(mp,"path");
@@ -1023,7 +970,6 @@ mp_svg_close_starttag(mp);
 mp_svg_endtag(mp,"path",false);
 }
 
-/*:55*//*59:*/
 
 void mp_svg_clip_out(MP mp,mp_clip_object*p){
 mp->svg->clipid++;
@@ -1059,7 +1005,6 @@ mp_svg_close_starttag(mp);
 
 
 
-/*:59*//*61:*/
 
 int mp_svg_gr_ship_out(mp_edge_object*hh,int qprologues,int standalone){
 mp_graphic_object*p;
@@ -1087,7 +1032,6 @@ mp_svg_print_glyph_defs(mp,hh);
 p= hh->body;
 while(p!=NULL){
 if(gr_has_scripts(p)){
-/*64:*/
 
 {
 if(gr_type(p)==mp_fill_code){do_write_prescript(p,mp_fill_object);}
@@ -1096,7 +1040,6 @@ else if(gr_type(p)==mp_text_code){do_write_prescript(p,mp_text_object);}
 }
 
 
-/*:64*/
 ;
 }
 switch(gr_type(p)){
@@ -1151,14 +1094,12 @@ mp_svg_print_ln(mp);
 break;
 }
 if(gr_has_scripts(p)){
-/*65:*/
 
 {
 if(gr_type(p)==mp_fill_code){do_write_postscript(p,mp_fill_object);}
 else if(gr_type(p)==mp_stroked_code){do_write_postscript(p,mp_stroked_object);}
 else if(gr_type(p)==mp_text_code){do_write_postscript(p,mp_text_object);}
 }
-/*:65*/
 ;
 }
 p= gr_link(p);
@@ -1169,10 +1110,8 @@ mp_svg_print_ln(mp);
 return 1;
 }
 
-/*:61*//*63:*/
 
 int mp_svg_ship_out(mp_edge_object*hh,int prologues){
 return mp_svg_gr_ship_out(hh,prologues,(int)true);
 }
 
-/*:63*/

@@ -1,4 +1,3 @@
-/*5:*/
 
 
 #ifdef DEBUGENVELOPE
@@ -52,6 +51,7 @@ static int DEBUGENVELOPECOUNTER= 0;
 #include "mpmathdouble.h"       
 #include "mpmathdecimal.h"      
 
+
 #include "mpstrings.h"          
 
 mp_number dx_ap;
@@ -62,13 +62,15 @@ mp_number ueps_ap;
 boolean is_dxdy,is_dxindyin;
 
 
-/*:5*//*6:*/
 
 extern const char*COMPILED_CAIRO_VERSION_STRING;
 extern const char*cairo_version_string(void);
 extern const char*COMPILED_MPFR_VERSION_STRING;
 extern const char*mpfr_get_version(void);
+extern const char*COMPILED_MPFI_VERSION_STRING;
+extern const char*mpfi_get_version(void);
 extern void*mp_initialize_binary_math(MP mp);
+extern void*mp_initialize_interval_math(MP mp);
 extern int COMPILED__GNU_MP_VERSION;
 extern int COMPILED__GNU_MP_VERSION_MINOR;
 extern int COMPILED__GNU_MP_VERSION_PATCHLEVEL;
@@ -84,10 +86,9 @@ extern void mp_svg_backend_free(MP mp);
 extern int mp_svg_ship_out(mp_edge_object*hh,int prologues);
 extern int mp_svg_gr_ship_out(mp_edge_object*hh,int prologues,int standalone);
 
-/*:6*//*7:*/
 
 extern font_number mp_read_font_info(MP mp,char*fname);
-#define default_banner "This is MetaPost, Version 2.02"
+#define default_banner "This is MetaPost, Version 2.10"
 #define true 1
 #define false 0 \
 
@@ -453,7 +454,10 @@ mp_free_value_node(a,b) ; \
 #define convert_scaled_to_angle(A) (((math_data*) (mp->math) ) ->scaled_to_angle) (&(A) ) ;
 #define convert_angle_to_scaled(A) (((math_data*) (mp->math) ) ->angle_to_scaled) (&(A) ) ;
 #define convert_fraction_to_scaled(A) (((math_data*) (mp->math) ) ->fraction_to_scaled) (&(A) ) ;
-#define convert_scaled_to_fraction(A) (((math_data*) (mp->math) ) ->scaled_to_fraction) (&(A) ) ; \
+#define convert_scaled_to_fraction(A) (((math_data*) (mp->math) ) ->scaled_to_fraction) (&(A) ) ;
+#define m_get_left_endpoint(R,A) (((math_data*) (mp->math) ) ->m_get_left_endpoint) (mp,&(R) ,A) 
+#define m_get_right_endpoint(R,A) (((math_data*) (mp->math) ) ->m_get_right_endpoint) (mp,&(R) ,A) 
+#define m_interval_set(R,A,B) (((math_data*) (mp->math) ) ->m_interval_set) (mp,&(R) ,A,B)  \
 
 #define number_zero(A) number_equal(A,zero_t) 
 #define number_infinite(A) number_equal(A,inf_t) 
@@ -1111,12 +1115,16 @@ if(mp_pre_script(p) !=NULL) gr_pre_script(q) = mp_xstrdup(mp,mp_str(mp,mp_pre_sc
 if(mp_post_script(p) !=NULL) gr_post_script(q) = mp_xstrdup(mp,mp_str(mp,mp_post_script(p) ) ) ; \
 
 
-/*10:*/
 
 MP_options*mp_options(void);
 MP mp_initialize(MP_options*opt);
 
-/*:10*//*50:*/
+
+static void mp_stub_m_get_left_endpoint(MP mp,mp_number*r,mp_number a);
+static void mp_stub_m_get_right_endpoint(MP mp,mp_number*r,mp_number a);
+static void mp_stub_m_interval_set(MP mp,mp_number*r,mp_number a,mp_number b);
+
+
 
 static char*mp_find_file(MP mp,const char*fname,const char*fmode,int ftype);
 static void*mp_open_file(MP mp,const char*fname,const char*fmode,int ftype);
@@ -1130,23 +1138,18 @@ static void mp_write_binary_file(MP mp,void*f,void*s,size_t t);
 static char*mp_run_script(MP mp,const char*str,size_t len);
 static char*mp_make_text(MP mp,const char*str,size_t len,int mode);
 
-/*:50*//*75:*/
 
 static boolean mp_init_terminal(MP mp);
 
-/*:75*//*89:*/
 
 static void mp_print_visible_char(MP mp,ASCII_code s);
 
-/*:89*//*100:*/
 
 static void mp_print_dd(MP mp,integer n);
 
-/*:100*//*106:*/
 
 static void mp_print_err(MP mp,const char*A);
 
-/*:106*//*112:*/
 
 static void mp_get_next(MP mp);
 static void mp_term_input(MP mp);
@@ -1155,11 +1158,9 @@ static void mp_begin_file_reading(MP mp);
 static void mp_open_log_file(MP mp);
 static void mp_clear_for_error_prompt(MP mp);
 
-/*:112*//*126:*/
 
 static void mp_run_editor(MP mp,char*fname,int fline);
 
-/*:126*//*182:*/
 
 #if DEBUG
 static void do_set_mp_sym_info(MP mp,mp_node A,halfword B);
@@ -1168,22 +1169,18 @@ static void do_set_mp_sym_sym(MP mp,mp_node A,mp_sym B);
 static mp_sym get_mp_sym_sym(MP mp,mp_node p);
 #endif
 
-/*:182*//*192:*/
 
 static void mp_print_type(MP mp,quarterword t);
 
-/*:192*//*210:*/
 
 static void mp_fix_date_and_time(MP mp);
 
-/*:210*//*211:*/
 
 static void mp_begin_diagnostic(MP mp);
 static void mp_end_diagnostic(MP mp,boolean blank_line);
 static void mp_print_diagnostic(MP mp,const char*s,const char*t,
 boolean nuline);
 
-/*:211*//*219:*/
 
 #if DEBUG
 static mp_string do_get_text(MP mp,mp_sym A);
@@ -1193,18 +1190,15 @@ static mp_node do_get_equiv_node(MP mp,mp_sym A);
 static mp_sym do_get_equiv_sym(MP mp,mp_sym A);
 #endif
 
-/*:219*//*222:*/
 
 static int comp_symbols_entry(void*p,const void*pa,const void*pb);
 static void*copy_symbols_entry(const void*p);
 static void*delete_symbols_entry(void*p);
 
 
-/*:222*//*228:*/
 
 static mp_sym new_symbols_entry(MP mp,unsigned char*nam,size_t len);
 
-/*:228*//*245:*/
 
 #if DEBUG
 static mp_number do_get_value_number(MP mp,mp_token_node A);
@@ -1213,272 +1207,212 @@ static mp_node do_get_value_node(MP mp,mp_token_node A);
 static mp_string do_get_value_str(MP mp,mp_token_node A);
 static mp_knot do_get_value_knot(MP mp,mp_token_node A);
 #endif
- static void do_set_value_sym(MP mp,mp_token_node A,mp_sym B);
+static void do_set_value_sym(MP mp,mp_token_node A,mp_sym B);
 static void do_set_value_number(MP mp,mp_token_node A,mp_number B);
 static void do_set_value_node(MP mp,mp_token_node A,mp_node B);
 static void do_set_value_str(MP mp,mp_token_node A,mp_string B);
 static void do_set_value_knot(MP mp,mp_token_node A,mp_knot B);
 
-/*:245*//*248:*/
 
 static void mp_free_token_node(MP mp,mp_node p);
 
-/*:248*//*251:*/
 
 static void mp_show_token_list(MP mp,mp_node p,mp_node q,integer l,
 integer null_tally);
 
-/*:251*//*253:*/
 
 static void mp_print_capsule(MP mp,mp_node p);
 
-/*:253*//*260:*/
 
 static mp_node do_get_subscr_head(MP mp,mp_value_node A);
 static mp_node do_get_attr_head(MP mp,mp_value_node A);
 static void do_set_attr_head(MP mp,mp_value_node A,mp_node d);
 static void do_set_subscr_head(MP mp,mp_value_node A,mp_node d);
 
-/*:260*//*262:*/
 
 static mp_node mp_get_value_node(MP mp);
 #if DEBUG >  1
 static void debug_dump_value_node(mp_node x);
 #endif
 
-/*:262*//*271:*/
 
 void mp_free_pair_node(MP mp,mp_node p);
 
-/*:271*//*286:*/
 
 static void mp_print_variable_name(MP mp,mp_node p);
 
-/*:286*//*291:*/
 
 void mp_flush_cur_exp(MP mp,mp_value v);
 
-/*:291*//*293:*/
 
 static void mp_flush_below_variable(MP mp,mp_node p);
 
-/*:293*//*309:*/
 
 static void mp_pr_path(MP mp,mp_knot h);
 
-/*:309*//*317:*/
 
 static void mp_print_path(MP mp,mp_knot h,const char*s,boolean nuline);
 
-/*:317*//*319:*/
 
 static mp_knot mp_new_knot(MP mp);
 
-/*:319*//*321:*/
 
 static mp_gr_knot mp_gr_new_knot(MP mp);
 
-/*:321*//*333:*/
 
 static void mp_toss_knot_list(MP mp,mp_knot p);
 static void mp_toss_knot(MP mp,mp_knot p);
 static void mp_free_knot(MP mp,mp_knot p);
 
-/*:333*//*354:*/
 
 static void mp_reallocate_paths(MP mp,int l);
 
-/*:354*//*356:*/
 
 static void mp_solve_choices(MP mp,mp_knot p,mp_knot q,halfword n);
 
-/*:356*//*366:*/
 
 void mp_reduce_angle(MP mp,mp_number*a);
 
 
-/*:366*//*371:*/
 
 static void mp_curl_ratio(MP mp,mp_number*ret,mp_number gamma,mp_number a_tension,
 mp_number b_tension);
 
-/*:371*//*377:*/
 
 static void mp_set_controls(MP mp,mp_knot p,mp_knot q,integer k);
 
-/*:377*//*411:*/
 
 static void mp_solve_rising_cubic(MP mp,mp_number*ret,mp_number a,mp_number b,mp_number c,mp_number x);
 
-/*:411*//*425:*/
 
 static void mp_pr_pen(MP mp,mp_knot h);
 
-/*:425*//*429:*/
 
 static void mp_print_pen(MP mp,mp_knot h,const char*s,boolean nuline);
 
-/*:429*//*440:*/
 
 static mp_knot mp_convex_hull(MP mp,mp_knot h);
 
-/*:440*//*446:*/
 
 static void mp_move_knot(MP mp,mp_knot p,mp_knot q);
 
-/*:446*//*475:*/
 
 static void mp_sqrt_det(MP mp,mp_number*ret,mp_number a,mp_number b,mp_number c,mp_number d);
 
-/*:475*//*492:*/
 
 static void mp_flush_dash_list(MP mp,mp_edge_header_node h);
 static mp_edge_header_node mp_toss_gr_object(MP mp,mp_node p);
 static void mp_toss_edges(MP mp,mp_edge_header_node h);
 
-/*:492*//*498:*/
 
 static mp_edge_header_node mp_copy_objects(MP mp,mp_node p,mp_node q);
 
-/*:498*//*503:*/
 
 static void mp_print_edges(MP mp,mp_node h,const char*s,boolean nuline);
 
-/*:503*//*508:*/
 
 static void mp_print_obj_color(MP mp,mp_node p);
 
-/*:508*//*512:*/
 
 static void mp_dash_offset(MP mp,mp_number*x,mp_dash_node h);
 
-/*:512*//*519:*/
 
 static void mp_x_retrace_error(MP mp);
 
-/*:519*//*540:*/
 
 static void mp_set_bbox(MP mp,mp_edge_header_node h,boolean top_level);
 
 
-/*:540*//*559:*/
 
 static void mp_split_cubic(MP mp,mp_knot p,mp_number t);
 
-/*:559*//*561:*/
 
 static void mp_remove_cubic(MP mp,mp_knot p);
 
-/*:561*//*564:*/
 
 static mp_knot mp_pen_walk(MP mp,mp_knot w,integer k);
 
-/*:564*//*568:*/
 
 static void mp_fin_offset_prep(MP mp,mp_knot p,mp_knot w,mp_number
 x0,mp_number x1,mp_number x2,mp_number y0,
 mp_number y1,mp_number y2,integer rise,
 integer turn_amt);
 
-/*:568*//*575:*/
 
 static integer mp_get_turn_amt(MP mp,mp_knot w,mp_number dx,
 mp_number dy,boolean ccw);
 
-/*:575*//*595:*/
 
 static mp_knot mp_insert_knot(MP mp,mp_knot q,mp_number x,mp_number y);
 
-/*:595*//*630:*/
 
 void mp_new_indep(MP mp,mp_node p);
 
 
-/*:630*//*633:*/
 
 static mp_node get_dep_info(MP mp,mp_value_node p);
 
-/*:633*//*635:*/
 
 static void mp_free_dep_node(MP mp,mp_value_node p);
 
-/*:635*//*639:*/
 
 static void mp_print_dependency(MP mp,mp_value_node p,quarterword t);
 
-/*:639*//*644:*/
 
 static mp_value_node mp_p_plus_fq(MP mp,mp_value_node p,mp_number f,
 mp_value_node q,mp_variable_type t,
 mp_variable_type tt);
 
-/*:644*//*648:*/
 
 static mp_value_node mp_p_over_v(MP mp,mp_value_node p,mp_number v,quarterword
 t0,quarterword t1);
 
-/*:648*//*651:*/
 
 static void mp_val_too_big(MP mp,mp_number x);
 
-/*:651*//*653:*/
 
 static void mp_make_known(MP mp,mp_value_node p,mp_value_node q);
 
-/*:653*//*655:*/
 
 static void mp_fix_dependencies(MP mp);
 
-/*:655*//*669:*/
 
 static void mp_ring_delete(MP mp,mp_node p);
 
-/*:669*//*674:*/
 
 static void exclaim_redundant_equation(MP mp);
 
-/*:674*//*678:*/
 
 static void mp_print_cmd_mod(MP mp,integer c,integer m);
 
-/*:678*//*688:*/
 
 static void mp_reallocate_input_stack(MP mp,int newsize);
 
-/*:688*//*697:*/
 
 static integer mp_true_line(MP mp);
 
-/*:697*//*716:*/
 
 static void mp_back_input(MP mp);
 
-/*:716*//*718:*/
 
 static void mp_back_error(MP mp,const char*msg,const char**hlp,boolean deletions_allowed);
 
-/*:718*//*734:*/
 
 static void mp_runaway(MP mp);
 
-/*:734*//*736:*/
 
 static void mp_firm_up_the_line(MP mp);
 
-/*:736*//*739:*/
 
 static int move_to_next_line(MP mp);
 
-/*:739*//*746:*/
 
 static void mp_t_next(MP mp);
 static void mp_start_mpx_input(MP mp);
 
-/*:746*//*758:*/
 
 void mp_print_sym(mp_sym sym);
 
-/*:758*//*773:*/
 
 static void mp_scan_primary(MP mp);
 static void mp_scan_secondary(MP mp);
@@ -1492,50 +1426,39 @@ static void mp_begin_iteration(MP mp);
 static void mp_resume_iteration(MP mp);
 static void mp_stop_iteration(MP mp);
 
-/*:773*//*792:*/
 
 static void mp_get_x_next(MP mp);
 
-/*:792*//*795:*/
 
 static void mp_macro_call(MP mp,mp_node def_ref,mp_node arg_list,
 mp_sym macro_name);
 
-/*:795*//*798:*/
 
 static void mp_print_macro_name(MP mp,mp_node a,mp_sym n);
 
-/*:798*//*800:*/
 
 static void mp_print_arg(MP mp,mp_node q,integer n,halfword b,
 quarterword bb);
 
-/*:800*//*808:*/
 
 static void mp_scan_text_arg(MP mp,mp_sym l_delim,mp_sym r_delim);
 
-/*:808*//*857:*/
 
 static void mp_begin_name(MP mp);
 static boolean mp_more_name(MP mp,ASCII_code c);
 static void mp_end_name(MP mp);
 
-/*:857*//*868:*/
 
 static boolean mp_open_mem_name(MP mp);
 static boolean mp_open_mem_file(MP mp);
 
-/*:868*//*901:*/
 
 static int mp_run_make_mpx(MP mp,char*origname,char*mtxname);
 
-/*:901*//*908:*/
 
 static void mp_open_write_file(MP mp,char*s,readf_index n);
 
-/*:908*//*918:*/
 
-/*927:*/
 
 static void mp_print_dp(MP mp,quarterword t,mp_value_node p,
 quarterword verbosity){
@@ -1548,9 +1471,7 @@ mp_print(mp,"linearform");
 }
 
 
-/*:927*/
 ;
-/*915:*/
 
 static mp_node mp_stash_cur_exp(MP mp){
 mp_node p;
@@ -1587,133 +1508,99 @@ return p;
 }
 
 
-/*:915*//*916:*/
 
 static void mp_unstash_cur_exp(MP mp,mp_node p);
 
-/*:916*/
 ;
 static void mp_print_exp(MP mp,mp_node p,quarterword verbosity);
 
-/*:918*//*929:*/
 
 static void mp_disp_err(MP mp,mp_node p);
 
-/*:929*//*933:*/
 
 static void mp_recycle_value(MP mp,mp_node p);
 
-/*:933*//*936:*/
 
 static void mp_show_transformed_dependency(MP mp,mp_number v,mp_variable_type t,mp_node p);
 
-/*:936*//*962:*/
 
 static void mp_known_pair(MP mp);
 
-/*:962*//*966:*/
 
 static void do_boolean_error(MP mp);
 
-/*:966*//*979:*/
 
 static void mp_bad_color_part(MP mp,quarterword c);
 
-/*:979*//*984:*/
 
 static mp_edge_header_node mp_scale_edges(MP mp,mp_number se_sf,mp_edge_header_node se_pic);
 
-/*:984*//*1045:*/
 
-/*1060:*/
 
 static void mp_do_type_declaration(MP mp);
 
-/*:1060*//*1086:*/
 
 static void mp_do_random_seed(MP mp);
-/*:1086*//*1095:*/
 
 static void mp_do_protection(MP mp);
 
-/*:1095*//*1098:*/
 
 static void mp_def_delims(MP mp);
 
-/*:1098*//*1103:*/
 
 static void mp_do_statement(MP mp);
 static void mp_do_interim(MP mp);
 
-/*:1103*//*1105:*/
 
 static void mp_do_let(MP mp);
 
-/*:1105*//*1113:*/
 
 static void mp_do_show(MP mp);
 
-/*:1113*//*1115:*/
 
 static void mp_disp_token(MP mp);
 
-/*:1115*//*1119:*/
 
 static void mp_do_show_token(MP mp);
 
-/*:1119*//*1121:*/
 
 static void mp_do_show_stats(MP mp);
 
-/*:1121*//*1123:*/
 
 static void mp_disp_var(MP mp,mp_node p);
 
-/*:1123*//*1127:*/
 
 static void mp_do_show_var(MP mp);
 
-/*:1127*//*1129:*/
 
 static void mp_do_show_dependencies(MP mp);
 
-/*:1129*//*1131:*/
 
 static void mp_do_show_whatever(MP mp);
 
-/*:1131*//*1136:*/
 
 static void mp_scan_with_list(MP mp,mp_node p);
 
-/*:1136*//*1138:*/
 
 static mp_edge_header_node mp_find_edges_var(MP mp,mp_node t);
 
-/*:1138*//*1143:*/
 
 static mp_node mp_start_draw_cmd(MP mp,quarterword sep);
 
-/*:1143*//*1145:*/
 
 static void mp_do_bounds(MP mp);
 
-/*:1145*//*1147:*/
 
 static void mp_do_add_to(MP mp);
 
-/*:1147*//*1149:*/
 
-/*1281:*/
 
 static void mp_ship_out(MP mp,mp_node h);
 
-/*:1281*/
 ;
 static void mp_do_ship_out(MP mp);
 
-/*:1149*//*1157:*/
 
-/*1160:*/
 
 static void mp_no_string_err(MP mp,const char*s){
 const char*hlp[]= {s,NULL};
@@ -1724,67 +1611,51 @@ mp_get_x_next(mp);
 }
 
 
-/*:1160*/
 ;
 static void mp_do_message(MP mp);
 
-/*:1157*//*1165:*/
 
 static void mp_do_write(MP mp);
 
-/*:1165*//*1189:*/
 
 static eight_bits mp_get_code(MP mp);
 
-/*:1189*//*1191:*/
 
 static void mp_set_tag(MP mp,halfword c,quarterword t,halfword r);
 
-/*:1191*//*1194:*/
 
 static void mp_do_tfm_command(MP mp);
 
-/*:1194*//*1256:*/
 
 static void mp_do_mapfile(MP mp);
 static void mp_do_mapline(MP mp);
 
-/*:1256*//*1276:*/
 
 static void mp_do_special(MP mp);
 
-/*:1276*/
 
 
 
-/*:1045*//*1048:*/
 
-/*1052:*/
 
 static void mp_make_eq(MP mp,mp_node lhs);
 
-/*:1052*/
 ;
 static void mp_do_equation(MP mp);
 
-/*:1048*//*1050:*/
 
 static void mp_do_assignment(MP mp);
 
-/*:1050*//*1054:*/
 
 static void mp_try_eq(MP mp,mp_node l,mp_node r);
 
-/*:1054*//*1056:*/
 
 static mp_node mp_scan_declared_variable(MP mp);
 
-/*:1056*//*1068:*/
 
 static void mp_reset_stream(mp_stream*str);
 static void mp_free_stream(mp_stream*str);
 
-/*:1068*//*1071:*/
 
 static void*mplib_open_file(MP mp,const char*fname,const char*fmode,
 int ftype);
@@ -1800,56 +1671,43 @@ static int mplib_eof_file(MP mp,void*ff);
 static void mplib_flush_file(MP mp,void*ff);
 static void mplib_shipout_backend(MP mp,void*h);
 
-/*:1071*//*1100:*/
 
 static void mp_check_delimiter(MP mp,mp_sym l_delim,mp_sym r_delim);
 
-/*:1100*//*1107:*/
 
 static void mp_do_new_internal(MP mp);
 
-/*:1107*//*1183:*/
 
 static mp_node mp_tfm_check(MP mp,quarterword m);
 
-/*:1183*//*1246:*/
 
 static font_number mp_find_font(MP mp,char*f);
 
-/*:1246*//*1250:*/
 
 static void mp_lost_warning(MP mp,font_number f,int k);
 
-/*:1250*//*1252:*/
 
 static void mp_set_text_box(MP mp,mp_text_node p);
 
-/*:1252*//*1284:*/
 
 struct mp_edge_object*mp_gr_export(MP mp,mp_edge_header_node h);
 mp_edge_header_node mp_gr_import(MP mp,struct mp_edge_object*h);
 
-/*:1284*//*1286:*/
 
 static void mp_shipout_backend(MP mp,void*h);
 
-/*:1286*//*1295:*/
 
 extern boolean mp_load_preload_file(MP mp);
 
-/*:1295*//*1300:*/
 
 static void mp_close_files_and_terminate(MP mp);
 
-/*:1300*//*1308:*/
 
 static void mp_final_cleanup(MP mp);
 static void mp_init_prim(MP mp);
 static void mp_init_tab(MP mp);
 
-/*:1308*/
 ;
-/*90:*/
 
 void mp_print_ln(MP mp){
 switch(mp->selector){
@@ -1877,7 +1735,6 @@ mp_fputs("\n",mp->wr_file[(mp->selector-write_file)]);
 }
 
 
-/*:90*//*91:*/
 
 static void mp_print_visible_char(MP mp,ASCII_code s){
 switch(mp->selector){
@@ -1927,16 +1784,14 @@ incr(mp->tally);
 }
 
 
-/*:91*//*92:*/
 
 void mp_print_char(MP mp,ASCII_code k){
 if(mp->utf8_mode||mp->selector<pseudo||mp->selector>=write_file){
 mp_print_visible_char(mp,k);
-}else if(/*83:*/
+}else if(/*85:*/
 
 (k<' ')||(k==127)
 
-/*:83*/
 ){
 mp_print(mp,"^^");
 if(k<0100){
@@ -1956,7 +1811,6 @@ mp_print_visible_char(mp,k);
 }
 
 
-/*:92*//*93:*/
 
 static void mp_do_print(MP mp,const char*ss,size_t len){
 if(len==0)
@@ -1976,7 +1830,6 @@ j++;
 }
 
 
-/*:93*//*94:*/
 
 void mp_print(MP mp,const char*ss){
 assert(ss!=NULL);
@@ -1998,7 +1851,6 @@ mp_do_print(mp,(const char*)s->str,s->len);
 }
 
 
-/*:94*//*96:*/
 
 void mp_print_nl(MP mp,const char*s){
 switch(mp->selector){
@@ -2023,7 +1875,6 @@ mp_print(mp,s);
 }
 
 
-/*:96*//*97:*/
 
 void mp_print_int(MP mp,integer n){
 char s[12];
@@ -2036,7 +1887,6 @@ mp_snprintf(s,12,"%p",n);
 mp_print(mp,s);
 }
 
-/*:97*//*152:*/
 
 void mp_print_two(MP mp,mp_number x,mp_number y){
 mp_print_char(mp,xord('('));
@@ -2047,7 +1897,6 @@ mp_print_char(mp,xord(')'));
 }
 
 
-/*:152*//*193:*/
 
 static const char*mp_type_string(quarterword t){
 const char*s= NULL;
@@ -2205,7 +2054,6 @@ mp_print(mp,"unknown");
 }
 
 
-/*:193*//*212:*/
 
 void mp_begin_diagnostic(MP mp){
 mp->old_setting= mp->selector;
@@ -2226,7 +2074,6 @@ mp->selector= mp->old_setting;
 }
 
 
-/*:212*//*214:*/
 
 void mp_print_diagnostic(MP mp,const char*s,const char*t,boolean nuline){
 mp_begin_diagnostic(mp);
@@ -2241,7 +2088,6 @@ mp_print_char(mp,xord(':'));
 }
 
 
-/*:214*//*861:*/
 
 static void mp_print_file_name(MP mp,char*n,char*a,char*e){
 boolean must_quote= false;
@@ -2259,9 +2105,7 @@ mp_print_char(mp,(ASCII_code)'"');
 }
 
 
-/*:861*/
 ;
-/*117:*/
 
 void mp_jump_out(MP mp){
 if(mp->internal!=NULL&&mp->history<mp_system_error_stop)
@@ -2269,7 +2113,6 @@ mp_close_files_and_terminate(mp);
 longjmp(*(mp->jump_buf),1);
 }
 
-/*:117*//*119:*/
 
 void mp_warn(MP mp,const char*msg){
 unsigned saved_selector= mp->selector;
@@ -2280,7 +2123,6 @@ mp_print_ln(mp);
 mp->selector= saved_selector;
 }
 
-/*:119*//*137:*/
 
 void mp_fatal_error(MP mp,const char*s){
 const char*hlp[]= {s,NULL};
@@ -2295,7 +2137,6 @@ mp_jump_out(mp);
 }
 
 
-/*:137*//*140:*/
 
 void mp_overflow(MP mp,const char*s,integer n){
 char msg[256];
@@ -2315,7 +2156,6 @@ mp_jump_out(mp);
 }
 
 
-/*:140*//*142:*/
 
 void mp_confusion(MP mp,const char*s){
 char msg[256];
@@ -2342,10 +2182,8 @@ mp_jump_out(mp);
 }
 
 
-/*:142*/
 
 
-/*:7*//*9:*/
 
 #if DEBUG
 void do_debug_printf(MP mp,const char*prefix,const char*fmt,...);
@@ -2359,13 +2197,13 @@ vfprintf(mp->log_file,fmt,ap);
 }
 va_end(ap);
 #endif
- va_start(ap,fmt);
+va_start(ap,fmt);
 #if 0
 if(mp->term_out&&!ferror((FILE*)mp->term_out)){
 #else
- if(false){
+if(false){
 #endif
- fputs(prefix,mp->term_out);
+fputs(prefix,mp->term_out);
 vfprintf(mp->term_out,fmt,ap);
 }else{
 fputs(prefix,stdout);
@@ -2375,7 +2213,6 @@ va_end(ap);
 }
 #endif
 
-/*:9*//*11:*/
 
 MP_options*mp_options(void){
 MP_options*opt;
@@ -2388,7 +2225,25 @@ return opt;
 }
 
 
-/*:11*//*13:*/
+
+static void mp_stub_m_get_left_endpoint(MP mp,mp_number*r,mp_number a){
+number_clone(*r,a);
+}
+static void mp_stub_m_get_right_endpoint(MP mp,mp_number*r,mp_number a){
+number_clone(*r,a);
+}
+static void mp_stub_m_interval_set(MP mp,mp_number*r,mp_number a,mp_number b){
+mp_number x;
+new_number(x);
+number_add(x,a);number_add(x,b);number_half(x);
+number_clone(*r,x);
+free_number(x);
+}
+
+
+
+
+
 
 static MP mp_do_new(jmp_buf*buf){
 MP mp= malloc(sizeof(MP_instance));
@@ -2402,27 +2257,21 @@ return mp;
 }
 
 
-/*:13*//*14:*/
 
 static void mp_free(MP mp){
 int k;
-/*30:*/
 
 xfree(mp->banner);
 
-/*:30*//*67:*/
 
 xfree(mp->buffer);
 
-/*:67*//*80:*/
 
 mp_dealloc_strings(mp);
 
-/*:80*//*85:*/
 
 xfree(mp->trick_buf);
 
-/*:85*//*158:*/
 
 {
 int i;
@@ -2431,7 +2280,6 @@ free_number(mp->randoms[i]);
 }
 }
 
-/*:158*//*173:*/
 
 while(mp->value_nodes){
 mp_node p= mp->value_nodes;
@@ -2459,14 +2307,12 @@ mp->knot_nodes= p->next;
 mp_free_knot(mp,p);
 }
 
-/*:173*//*227:*/
 
 if(mp->symbols!=NULL)
 avl_destroy(mp->symbols);
 if(mp->frozen_symbols!=NULL)
 avl_destroy(mp->frozen_symbols);
 
-/*:227*//*348:*/
 
 {
 int k;
@@ -2482,7 +2328,6 @@ xfree(mp->delta);
 xfree(mp->psi);
 }
 
-/*:348*//*353:*/
 
 {
 int k;
@@ -2498,7 +2343,6 @@ xfree(mp->vv);
 xfree(mp->ww);
 }
 
-/*:353*//*376:*/
 
 free_number(mp->st);
 free_number(mp->ct);
@@ -2506,7 +2350,6 @@ free_number(mp->sf);
 free_number(mp->cf);
 
 
-/*:376*//*393:*/
 
 {
 int i;
@@ -2517,7 +2360,6 @@ free_number(mp->bbmax[i]);
 }
 
 
-/*:393*//*439:*/
 
 for(k= 0;k<=7;k++){
 free_number(mp->half_cos[k]);
@@ -2525,12 +2367,10 @@ free_number(mp->d_cos[k]);
 }
 
 
-/*:439*//*456:*/
 
 free_number(mp->cur_x);
 free_number(mp->cur_y);
 
-/*:456*//*615:*/
 
 {
 int i;
@@ -2540,24 +2380,20 @@ free_number(mp->bisect_stack[i]);
 }
 xfree(mp->bisect_stack);
 
-/*:615*//*620:*/
 
 free_number(mp->cur_t);
 free_number(mp->cur_tt);
 free_number(mp->max_t);
 
-/*:620*//*624:*/
 
 free_number(mp->delx);
 free_number(mp->dely);
 free_number(mp->appr_t);
 free_number(mp->appr_tt);
 
-/*:624*//*684:*/
 
 xfree(mp->input_stack);
 
-/*:684*//*691:*/
 
 {
 int l;
@@ -2575,29 +2411,23 @@ xfree(mp->iarea_stack);
 xfree(mp->mpx_name);
 
 
-/*:691*//*696:*/
 
 xfree(mp->param_stack);
 
-/*:696*//*855:*/
 
 xfree(mp->cur_area);
 xfree(mp->cur_name);
 xfree(mp->cur_ext);
 
-/*:855*//*867:*/
 
 xfree(mp->mem_name);
 
-/*:867*//*881:*/
 
 xfree(mp->job_name);
 
-/*:881*//*888:*/
 
 xfree(mp->log_name);
 
-/*:888*//*940:*/
 
 {
 int i;
@@ -2606,7 +2436,6 @@ free_number(mp->max_c[i]);
 }
 }
 
-/*:940*//*1076:*/
 
 mp_free_stream(&(mp->run_data.term_in));
 mp_free_stream(&(mp->run_data.term_out));
@@ -2614,7 +2443,6 @@ mp_free_stream(&(mp->run_data.log_out));
 mp_free_stream(&(mp->run_data.error_out));
 mp_free_stream(&(mp->run_data.ship_out));
 
-/*:1076*//*1110:*/
 
 for(k= 0;k<=mp->max_internal;k++){
 free_number(mp->internal[k].v.data.n);
@@ -2623,7 +2451,6 @@ xfree(internal_name(k));
 xfree(mp->internal);
 
 
-/*:1110*//*1181:*/
 
 xfree(mp->header_byte);
 xfree(mp->lig_kern);
@@ -2642,16 +2469,13 @@ free_number(mp->param[i]);
 xfree(mp->param);
 }
 
-/*:1181*//*1211:*/
 
 free_number(mp->perturbation);
 
-/*:1211*//*1225:*/
 
 free_number(mp->max_tfm_dimen);
 
 
-/*:1225*//*1241:*/
 
 for(k= 1;k<=(int)mp->last_fnum;k++){
 xfree(mp->font_enc_name[k]);
@@ -2683,19 +2507,16 @@ xfree(mp->height_base);
 xfree(mp->depth_base);
 xfree(mp->font_sizes);
 
-/*:1241*//*1269:*/
 
 xfree(mp->first_file_name);
 xfree(mp->last_file_name);
 
-/*:1269*//*1293:*/
 
 mp_ps_backend_free(mp);
 mp_svg_backend_free(mp);
 mp_png_backend_free(mp);
 
 
-/*:1293*//*1302:*/
 
 for(k= 0;k<(int)mp->max_read_files;k++){
 if(mp->rd_fname[k]!=NULL){
@@ -2715,56 +2536,44 @@ xfree(mp->wr_file);
 xfree(mp->wr_fname);
 
 
-/*:1302*/
 ;
 if(mp->noninteractive){
-/*1077:*/
 
 xfree(mp->term_out);
 xfree(mp->term_in);
 xfree(mp->err_out);
 
-/*:1077*/
 ;
 }
 xfree(mp->jump_buf);
-/*188:*/
 
 mp_free_symbolic_node(mp,mp->spec_head);
 mp_free_symbolic_node(mp,mp->temp_head);
 mp_free_symbolic_node(mp,mp->hold_head);
 
-/*:188*//*266:*/
 
 mp_free_attr_node(mp,mp->end_attr);
 
-/*:266*//*487:*/
 
 mp_free_node(mp,(mp_node)mp->null_dash,dash_node_size);
 
-/*:487*//*637:*/
 
 mp_free_dep_node(mp,mp->dep_head);
 
-/*:637*//*677:*/
 
 mp_free_symbolic_node(mp,mp->cur_mod_);
 
-/*:677*//*772:*/
 
 mp_free_value_node(mp,mp->bad_vardef);
 
 
-/*:772*//*913:*/
 
 free_number(mp->cur_exp.data.n);
 
-/*:913*//*983:*/
 
 mp_free_value_node(mp,mp->temp_val);
 
 
-/*:983*//*1013:*/
 
 free_number(mp->txx);
 free_number(mp->txy);
@@ -2774,42 +2583,33 @@ free_number(mp->tx);
 free_number(mp->ty);
 
 
-/*:1013*//*1206:*/
 
 mp_free_value_node(mp,mp->inf_val);
 
-/*:1206*//*1220:*/
 
 mp_free_value_node(mp,mp->zero_val);
 
-/*:1220*/
 ;
 free_math();
 xfree(mp);
 }
 
 
-/*:14*//*15:*/
 
 static void mp_do_initialize(MP mp){
-/*38:*/
 
 integer i;
 
-/*:38*//*154:*/
 
 integer k;
 
-/*:154*/
 ;
-/*41:*/
 
 for(i= 0;i<=0377;i++){
 xchr(i)= (text_char)i;
 }
 
 
-/*:41*//*42:*/
 
 for(i= 0;i<=255;i++){
 xord(xchr(i))= 0177;
@@ -2822,11 +2622,9 @@ xord(xchr(i))= (ASCII_code)i;
 }
 
 
-/*:42*//*204:*/
 
 mp->int_ptr= max_given_internal;
 
-/*:204*//*216:*/
 
 for(k= '0';k<='9';k++)
 mp->char_class[k]= digit_class;
@@ -2875,11 +2673,9 @@ for(i= 127;i<=255;i++){
 mp->char_class[i]= mp->utf8_mode?letter_class:invalid_class;
 }
 
-/*:216*//*299:*/
 
 mp->save_ptr= NULL;
 
-/*:299*//*438:*/
 
 for(k= 0;k<=7;k++){
 new_fraction(mp->half_cos[k]);
@@ -2902,60 +2698,48 @@ number_clone(mp->half_cos[k],mp->half_cos[8-k]);
 number_clone(mp->d_cos[k],mp->d_cos[8-k]);
 }
 
-/*:438*//*554:*/
 
 mp->spec_p1= NULL;
 mp->spec_p2= NULL;
 
-/*:554*//*643:*/
 
 mp->fix_needed= false;
 mp->watch_coefs= true;
 
-/*:643*//*775:*/
 
 mp->expand_depth= 10000;
 
-/*:775*//*820:*/
 
 mp->cond_ptr= NULL;
 mp->if_limit= normal;
 mp->cur_if= 0;
 mp->if_line= 0;
 
-/*:820*//*835:*/
 
 mp->loop_ptr= NULL;
 
-/*:835*//*854:*/
 
 mp->cur_name= xstrdup("");
 mp->cur_area= xstrdup("");
 mp->cur_ext= xstrdup("");
 
-/*:854*//*912:*/
 
 memset(&mp->cur_exp.data,0,sizeof(mp_value));
 new_number(mp->cur_exp.data.n);
 
-/*:912*//*942:*/
 
 mp->var_flag= 0;
 
-/*:942*//*999:*/
 
 mp->eof_line= mp_rtsl(mp,"\0",1);
 mp->eof_line->refs= MAX_STR_REF;
 
-/*:999*//*1154:*/
 
 mp->start_sym= NULL;
 
-/*:1154*//*1163:*/
 
 mp->long_help_seen= false;
 
-/*:1163*//*1182:*/
 
 for(k= 0;k<=255;k++){
 mp->tfm_width[k]= 0;
@@ -2980,7 +2764,6 @@ mp->bch_label= undefined_label;
 mp->label_loc[0]= -1;
 mp->label_ptr= 0;
 
-/*:1182*//*1244:*/
 
 mp->font_dsize[null_font]= 0;
 mp->font_bc[null_font]= 1;
@@ -3002,7 +2785,6 @@ mp->font_ps_name_fixed[null_font]= false;
 mp->font_enc_name[null_font]= NULL;
 mp->font_sizes[null_font]= NULL;
 
-/*:1244*//*1260:*/
 
 mp->ten_pow[0]= 1;
 for(i= 1;i<=9;i++){
@@ -3010,7 +2792,6 @@ mp->ten_pow[i]= 10*mp->ten_pow[i-1];
 }
 
 
-/*:1260*//*1268:*/
 
 mp->first_file_name= xstrdup("");
 mp->last_file_name= xstrdup("");
@@ -3018,11 +2799,9 @@ mp->first_output_code= 32768;
 mp->last_output_code= -32768;
 mp->total_shipped= 0;
 
-/*:1268*/
 ;
 }
 
-/*:15*//*18:*/
 
 MP mp_initialize(MP_options*opt){
 MP mp;
@@ -3055,7 +2834,6 @@ mp->banner= xstrdup(default_banner);
 if(opt->command_line&&*(opt->command_line))
 mp->command_line= xstrdup(opt->command_line);
 if(mp->noninteractive){
-/*1073:*/
 
 {
 mp->open_file= mplib_open_file;
@@ -3070,7 +2848,6 @@ mp->shipout_backend= mplib_shipout_backend;
 }
 
 
-/*:1073*/
 ;
 }
 
@@ -3079,16 +2856,22 @@ t_open_out();
 setvbuf(stdout,(char*)NULL,_IONBF,0);
 setvbuf(mp->term_out,(char*)NULL,_IONBF,0);
 #endif
- if(opt->math_mode==mp_math_scaled_mode){
+if(opt->math_mode==mp_math_scaled_mode){
 mp->math= mp_initialize_scaled_math(mp);
 }else if(opt->math_mode==mp_math_decimal_mode){
 mp->math= mp_initialize_decimal_math(mp);
 }else if(opt->math_mode==mp_math_binary_mode){
 mp->math= mp_initialize_binary_math(mp);
+}else if(opt->math_mode==mp_math_interval_mode){
+mp->math= mp_initialize_interval_math(mp);
 }else{
 mp->math= mp_initialize_double_math(mp);
 }
-/*866:*/
+if(opt->math_mode!=mp_math_interval_mode){
+((math_data*)mp->math)->m_get_left_endpoint= mp_stub_m_get_left_endpoint;
+((math_data*)mp->math)->m_get_right_endpoint= mp_stub_m_get_right_endpoint;
+((math_data*)mp->math)->m_interval_set= mp_stub_m_interval_set;
+}
 
 if(!opt->ini_version){
 mp->mem_name= xstrdup(opt->mem_name);
@@ -3111,9 +2894,7 @@ mp_jump_out(mp);
 
 
 
-/*:866*/
 ;
-/*31:*/
 
 mp->param_size= 4;
 mp->max_in_open= 0;
@@ -3128,28 +2909,22 @@ mp->halt_on_error= (opt->halt_on_error?true:false);
 mp->ini_version= (opt->ini_version?true:false);
 mp->utf8_mode= (opt->utf8_mode?true:false);
 
-/*:31*//*54:*/
 
 mp->print_found_names= (opt->print_found_names> 0?true:false);
 
-/*:54*//*56:*/
 
 mp->file_line_error_style= (opt->file_line_error_style> 0?true:false);
 
-/*:56*//*66:*/
 
 mp->buf_size= 200;
 mp->buffer= xmalloc((mp->buf_size+1),sizeof(ASCII_code));
 
-/*:66*//*79:*/
 
 mp_initialize_strings(mp);
 
-/*:79*//*84:*/
 
 mp->trick_buf= xmalloc((mp->error_line+1),sizeof(ASCII_code));
 
-/*:84*//*105:*/
 
 mp->interaction= opt->interaction;
 if(mp->interaction==mp_unspecified_mode
@@ -3158,24 +2933,19 @@ mp->interaction= mp_error_stop_mode;
 if(mp->interaction<mp_unspecified_mode)
 mp->interaction= mp_batch_mode;
 
-/*:105*//*115:*/
 
 mp->use_err_help= false;
 
-/*:115*//*125:*/
 
 set_callback_option(run_editor);
 
-/*:125*//*144:*/
 
 mp->OK_to_interrupt= true;
 mp->finished= false;
 
-/*:144*//*148:*/
 
 mp->arith_error= false;
 
-/*:148*//*157:*/
 
 mp->random_seed= opt->random_seed;
 {
@@ -3185,11 +2955,9 @@ new_fraction(mp->randoms[i]);
 }
 }
 
-/*:157*//*169:*/
 
 mp->math_mode= opt->math_mode;
 
-/*:169*//*172:*/
 
 mp->token_nodes= NULL;
 mp->num_token_nodes= 0;
@@ -3202,7 +2970,6 @@ mp->num_value_nodes= 0;
 mp->symbolic_nodes= NULL;
 mp->num_symbolic_nodes= 0;
 
-/*:172*//*201:*/
 
 mp->max_internal= 2*max_given_internal;
 mp->internal= xmalloc((mp->max_internal+1),sizeof(mp_internal));
@@ -3225,7 +2992,6 @@ set_internal_type(mp_number_system,mp_string_type);
 set_internal_type(mp_job_name,mp_string_type);
 mp->troff_mode= (opt->troff_mode> 0?true:false);
 
-/*:201*//*226:*/
 
 mp->symbols= avl_create(comp_symbols_entry,
 copy_symbols_entry,
@@ -3234,7 +3000,6 @@ mp->frozen_symbols= avl_create(comp_symbols_entry,
 copy_symbols_entry,
 delete_symbols_entry,malloc,free,NULL);
 
-/*:226*//*614:*/
 
 mp->bisect_stack= xmalloc((bistack_size+1),sizeof(mp_number));
 {
@@ -3244,20 +3009,16 @@ new_number(mp->bisect_stack[i]);
 }
 }
 
-/*:614*//*683:*/
 
 mp->stack_size= 16;
 mp->input_stack= xmalloc((mp->stack_size+1),sizeof(in_state_record));
 
-/*:683*//*690:*/
 
 mp_reallocate_input_stack(mp,file_bottom+4);
 
-/*:690*//*694:*/
 
 mp->param_stack= xmalloc((mp->param_size+1),sizeof(mp_node));
 
-/*:694*//*879:*/
 
 mp->job_name= mp_xstrdup(mp,opt->job_name);
 
@@ -3277,11 +3038,9 @@ mp->job_name= mp_xstrdup(mp,mp->mem_name);
 }
 mp->log_opened= false;
 
-/*:879*//*900:*/
 
 set_callback_option(run_make_mpx);
 
-/*:900*//*906:*/
 
 mp->max_read_files= 8;
 mp->rd_file= xmalloc((mp->max_read_files+1),sizeof(void*));
@@ -3293,40 +3052,33 @@ mp->wr_fname= xmalloc((mp->max_write_files+1),sizeof(char*));
 memset(mp->wr_fname,0,sizeof(char*)*(mp->max_write_files+1));
 
 
-/*:906*//*1180:*/
 
 mp->header_last= 7;
 mp->header_size= 128;
 mp->header_byte= xmalloc(mp->header_size,sizeof(char));
 
-/*:1180*//*1240:*/
 
 mp->font_mem_size= 10000;
 mp->font_info= xmalloc((mp->font_mem_size+1),sizeof(font_data));
 memset(mp->font_info,0,sizeof(font_data)*(mp->font_mem_size+1));
 mp->last_fnum= null_font;
 
-/*:1240*//*1292:*/
 
 mp_ps_backend_initialize(mp);
 mp_svg_backend_initialize(mp);
 mp_png_backend_initialize(mp);
 
-/*:1292*/
 ;
 mp_reallocate_paths(mp,1000);
 mp_reallocate_fonts(mp,8);
 mp->history= mp_fatal_error_stop;
-/*33:*/
 
 mp->bad= 0;
 
-/*:33*//*616:*/
 
 if(int_packets+(17+2)*int_increment> bistack_size)
 mp->bad= 19;
 
-/*:616*/
 ;
 if(mp->bad> 0){
 char ss[256];
@@ -3344,31 +3096,28 @@ set_internal_string(mp_number_system,mp_intern(mp,"scaled"));
 set_internal_string(mp_number_system,mp_intern(mp,"decimal"));
 }else if(opt->math_mode==mp_math_binary_mode){
 set_internal_string(mp_number_system,mp_intern(mp,"binary"));
+}else if(opt->math_mode==mp_math_interval_mode){
+set_internal_string(mp_number_system,mp_intern(mp,"interval"));
 }else{
 set_internal_string(mp_number_system,mp_intern(mp,"double"));
 }
 mp_init_prim(mp);
 mp_fix_date_and_time(mp);
 if(!mp->noninteractive){
-/*86:*/
 
 mp->selector= term_only;
 mp->tally= 0;
 mp->term_offset= 0;
 mp->file_offset= 0;
 
-/*:86*//*95:*/
 
 wterm(mp->banner);
 mp_print_ln(mp);
 update_terminal();
 
-/*:95*/
 ;
-/*1310:*/
 
 {
-/*725:*/
 
 {
 mp->input_ptr= 0;
@@ -3393,11 +3142,9 @@ mp->first= mp->last+1;
 }
 
 
-/*:725*//*728:*/
 
 mp->scanner_status= normal;
 
-/*:728*/
 ;
 if(!mp->ini_version){
 if(!mp_load_preload_file(mp)){
@@ -3405,7 +3152,6 @@ mp->history= mp_fatal_error_stop;
 return mp;
 }
 }
-/*1311:*/
 
 mp->buffer[limit]= (ASCII_code)'%';
 mp_fix_date_and_time(mp);
@@ -3418,14 +3164,11 @@ if(loc<limit)
 if(mp->buffer[loc]!='\\')
 mp_start_input(mp);
 
-/*:1311*/
 ;
 }
 
 
-/*:1310*/
 ;
-/*19:*/
 
 mp_open_log_file(mp);
 mp_set_job_id(mp);
@@ -3440,9 +3183,7 @@ set_cur_sym(mp->start_sym);
 mp_back_input(mp);
 }
 
-/*:19*/
 ;
-/*880:*/
 
 if(mp->job_name!=NULL){
 if(internal_string(mp_job_name)!=0)
@@ -3450,7 +3191,6 @@ delete_str_ref(internal_string(mp_job_name));
 set_internal_string(mp_job_name,mp_rts(mp,mp->job_name));
 }
 
-/*:880*/
 ;
 }else{
 mp->history= mp_spotless;
@@ -3460,14 +3200,12 @@ return mp;
 }
 
 
-/*:18*//*21:*/
 
 int mp_status(MP mp){
 return mp->history;
 }
 
 
-/*:21*//*22:*/
 
 boolean mp_finished(MP mp){
 return mp->finished;
@@ -3475,14 +3213,12 @@ return mp->finished;
 
 
 
-/*:22*//*23:*/
 
 void*mp_userdata(MP mp){
 return mp->userdata;
 }
 
 
-/*:23*//*47:*/
 
 static char*mp_find_file(MP mp,const char*fname,const char*fmode,
 int ftype){
@@ -3493,21 +3229,18 @@ return mp_strdup(fname);
 return NULL;
 }
 
-/*:47*//*48:*/
 
 static char*mp_run_script(MP mp,const char*str,size_t len){
 (void)mp;
 return mp_strldup(str,len);
 }
 
-/*:48*//*49:*/
 
 static char*mp_make_text(MP mp,const char*str,size_t len,int mode){
 (void)mp;
 return mp_strldup(str,len);
 }
 
-/*:49*//*51:*/
 
 void*mp_open_file(MP mp,const char*fname,const char*fmode,int ftype){
 char realmode[3];
@@ -3526,7 +3259,6 @@ return NULL;
 }
 
 
-/*:51*//*57:*/
 
 static boolean mp_do_open_file(MP mp,void**f,int ftype,const char*mode){
 if(mp->print_found_names||mp->file_line_error_style){
@@ -3561,7 +3293,6 @@ return mp_do_open_file(mp,f,ftype,"w");
 }
 
 
-/*:57*//*58:*/
 
 static char*mp_read_ascii_file(MP mp,void*ff,size_t*size){
 int c;
@@ -3599,7 +3330,6 @@ return s;
 }
 
 
-/*:58*//*59:*/
 
 void mp_write_ascii_file(MP mp,void*f,const char*s){
 (void)mp;
@@ -3609,7 +3339,6 @@ fputs(s,(FILE*)f);
 }
 
 
-/*:59*//*60:*/
 
 void mp_read_binary_file(MP mp,void*f,void**data,size_t*size){
 size_t len= 0;
@@ -3620,7 +3349,6 @@ len= fread(*data,1,*size,(FILE*)f);
 }
 
 
-/*:60*//*61:*/
 
 void mp_write_binary_file(MP mp,void*f,void*s,size_t size){
 (void)mp;
@@ -3629,7 +3357,6 @@ if(f!=NULL)
 }
 
 
-/*:61*//*62:*/
 
 void mp_close_file(MP mp,void*f){
 (void)mp;
@@ -3638,7 +3365,6 @@ fclose((FILE*)f);
 }
 
 
-/*:62*//*63:*/
 
 int mp_eof_file(MP mp,void*f){
 (void)mp;
@@ -3649,7 +3375,6 @@ return 1;
 }
 
 
-/*:63*//*64:*/
 
 void mp_flush_file(MP mp,void*f){
 (void)mp;
@@ -3658,7 +3383,6 @@ fflush((FILE*)f);
 }
 
 
-/*:64*//*68:*/
 
 static void mp_reallocate_buffer(MP mp,size_t l){
 ASCII_code*buffer;
@@ -3673,7 +3397,6 @@ mp->buf_size= l;
 }
 
 
-/*:68*//*69:*/
 
 static boolean mp_input_ln(MP mp,void*f){
 
@@ -3698,7 +3421,6 @@ return true;
 }
 
 
-/*:69*//*74:*/
 
 boolean mp_init_terminal(MP mp){
 t_open_in();
@@ -3732,7 +3454,6 @@ mp_fputs("Please type the name of your input file.\n",mp->term_out);
 }
 
 
-/*:74*//*99:*/
 
 static void mp_print_dd(MP mp,integer n){
 n= MPOST_ABS(n)%100;
@@ -3741,7 +3462,6 @@ mp_print_char(mp,xord('0'+(n%10)));
 }
 
 
-/*:99*//*101:*/
 
 void mp_term_input(MP mp){
 size_t k;
@@ -3769,7 +3489,6 @@ incr(mp->selector);
 }
 
 
-/*:101*//*107:*/
 
 static void mp_print_err(MP mp,const char*A){
 if(mp->interaction==mp_error_stop_mode)
@@ -3792,7 +3511,6 @@ mp_print(mp,A);
 }
 
 
-/*:107*//*120:*/
 
 void mp_error(MP mp,const char*msg,const char**hlp,boolean deletions_allowed){
 ASCII_code c;
@@ -3823,7 +3541,6 @@ mp->history= mp_fatal_error_stop;
 mp_jump_out(mp);
 }
 if((!mp->noninteractive)&&(mp->interaction==mp_error_stop_mode)){
-/*122:*/
 
 while(true){
 CONTINUE:
@@ -3835,7 +3552,6 @@ return;
 c= mp->buffer[mp->first];
 if(c>='a')
 c= (ASCII_code)(c+'A'-'a');
-/*128:*/
 
 switch(c){
 case'0':
@@ -3849,7 +3565,6 @@ case'7':
 case'8':
 case'9':
 if(deletions_allowed){
-/*132:*/
 
 {
 s1= cur_cmd();
@@ -3863,13 +3578,11 @@ else
 c= (ASCII_code)(c-'0');
 while(c> 0){
 mp_get_next(mp);
-/*824:*/
 
 if(cur_cmd()==mp_string_token){
 delete_str_ref(cur_mod_str());
 }
 
-/*:824*/
 ;
 c--;
 };
@@ -3885,7 +3598,6 @@ goto CONTINUE;
 }
 
 
-/*:132*/
 ;
 }
 break;
@@ -3900,11 +3612,9 @@ mp_jump_out(mp);
 }
 break;
 case'H':
-/*133:*/
 
 {
 if(mp->use_err_help){
-/*134:*/
 
 {
 size_t j= 0;
@@ -3924,7 +3634,6 @@ j++;
 }
 
 
-/*:134*/
 ;
 mp->use_err_help= false;
 }else{
@@ -3948,11 +3657,9 @@ goto CONTINUE;
 }
 
 
-/*:133*/
 ;
 
 case'I':
-/*131:*/
 
 {
 mp_begin_file_reading(mp);
@@ -3970,13 +3677,11 @@ return;
 }
 
 
-/*:131*/
 ;
 
 case'Q':
 case'R':
 case'S':
-/*130:*/
 
 {
 mp->error_count= 0;
@@ -4003,7 +3708,6 @@ return;
 }
 
 
-/*:130*/
 ;
 
 case'X':
@@ -4013,7 +3717,6 @@ break;
 default:
 break;
 }
-/*129:*/
 
 {
 mp_print(mp,"Type <return> to proceed, S to scroll future error messages,");
@@ -4029,16 +3732,13 @@ mp_print_nl(mp,"H for help, X to quit.");
 }
 
 
-/*:129*/
 
 
 
-/*:128*/
 ;
 }
 
 
-/*:122*/
 ;
 }
 incr(mp->error_count);
@@ -4048,7 +3748,6 @@ mp_print_nl(mp,"(That makes 100 errors; please try again.)");
 mp->history= mp_fatal_error_stop;
 mp_jump_out(mp);
 }
-/*135:*/
 
 if(!mp->noninteractive){
 if(mp->interaction> mp_batch_mode){
@@ -4057,7 +3756,6 @@ decr(mp->selector);
 }
 if(mp->use_err_help){
 mp_print_nl(mp,"");
-/*134:*/
 
 {
 size_t j= 0;
@@ -4077,7 +3775,6 @@ j++;
 }
 
 
-/*:134*/
 ;
 }else{
 while(help_ptr> 0){
@@ -4093,12 +3790,10 @@ mp_print_ln(mp);
 }
 
 
-/*:135*/
 ;
 }
 
 
-/*:120*//*127:*/
 
 void mp_run_editor(MP mp,char*fname,int fline){
 char*s= xmalloc(256,1);
@@ -4108,7 +3803,6 @@ wterm_ln(s);
 }
 
 
-/*:127*//*136:*/
 
 void mp_normalize_selector(MP mp){
 if(mp->log_opened)
@@ -4122,7 +3816,6 @@ decr(mp->selector);
 }
 
 
-/*:136*//*145:*/
 
 static void mp_pause_for_instructions(MP mp){
 const char*hlp[]= {"You rang?",
@@ -4140,7 +3833,6 @@ mp->interrupt= 0;
 }
 
 
-/*:145*//*149:*/
 
 static void mp_clear_arith(MP mp){
 const char*hlp[]= {
@@ -4155,7 +3847,6 @@ mp->arith_error= false;
 }
 
 
-/*:149*//*160:*/
 
 void mp_new_randoms(MP mp){
 int k;
@@ -4177,7 +3868,6 @@ free_number(x);
 mp->j_random= 54;
 }
 
-/*:160*//*161:*/
 
 
 
@@ -4189,7 +3879,6 @@ mp->j_random= 54;
 
 
 
-/*:161*//*162:*/
 
 
 
@@ -4220,7 +3909,6 @@ mp->j_random= 54;
 
 
 
-/*:162*//*163:*/
 
 
 
@@ -4264,7 +3952,6 @@ mp->j_random= 54;
 
 
 
-/*:163*//*175:*/
 
 void*do_alloc_node(MP mp,size_t size){
 void*p;
@@ -4276,7 +3963,6 @@ return p;
 }
 
 
-/*:175*//*176:*/
 
 void mp_xfree(void*x){
 if(x!=NULL)
@@ -4306,7 +3992,7 @@ mp->history= mp_fatal_error_stop;
 mp_jump_out(mp);
 }
 #endif
- w= calloc(nmem,size);
+w= calloc(nmem,size);
 if(w==NULL){
 mp_fputs("Out of memory!\n",mp->err_out);
 mp->history= mp_system_error_stop;
@@ -4315,7 +4001,6 @@ mp_jump_out(mp);
 return w;
 }
 
-/*:176*//*181:*/
 
 #if DEBUG
 #define mp_sym_info(A)       get_mp_sym_info(mp,(A))
@@ -4351,7 +4036,6 @@ return pp->data.sym;
 #define set_mp_sym_sym(A,B)  (A)->data.sym =  (mp_sym)(B)
 #endif
 
-/*:181*//*183:*/
 
 static mp_node mp_get_symbolic_node(MP mp){
 mp_symbolic_node p;
@@ -4372,7 +4056,6 @@ return(mp_node)p;
 }
 
 
-/*:183*//*184:*/
 
 void mp_free_node(MP mp,mp_node p,size_t siz){
 FUNCTION_TRACE3("mp_free_node(%p,%d)\n",p,(int)siz);
@@ -4426,7 +4109,6 @@ xfree(p);
 }
 
 
-/*:184*//*189:*/
 
 static void mp_flush_node_list(MP mp,mp_node p){
 mp_node q;
@@ -4442,7 +4124,6 @@ mp_free_symbolic_node(mp,q);
 }
 
 
-/*:189*//*196:*/
 
 static void mp_print_op(MP mp,quarterword c){
 if(c<=mp_numeric_type){
@@ -4758,6 +4439,16 @@ break;
 case mp_glyph_infont:
 mp_print(mp,"glyph");
 break;
+
+case mp_m_get_left_endpoint_op:
+mp_print(mp,"interval_get_left_endpoint");
+break;
+case mp_m_get_right_endpoint_op:
+mp_print(mp,"interval_get_right_endpoint");
+break;
+case mp_interval_set_op:
+mp_print(mp,"interval_set");
+break;
 default:
 mp_print(mp,"..");
 break;
@@ -4766,19 +4457,17 @@ break;
 }
 
 
-/*:196*//*203:*/
 
 int mp_troff_mode(MP mp){
 return mp->troff_mode;
 }
 
 
-/*:203*//*209:*/
 
 #if defined(_MSC_VER)
 #define strtoull _strtoui64
 #endif
- static void mp_fix_date_and_time(MP mp){
+static void mp_fix_date_and_time(MP mp){
 char*source_date_epoch;
 time_t epoch;
 char*endptr;
@@ -4796,7 +4485,7 @@ source_date_epoch);
 if(epoch> 32535291599ULL)
 epoch= 32535291599ULL;
 #endif
- tmptr= gmtime(&epoch);
+tmptr= gmtime(&epoch);
 }else{
 epoch= time((time_t*)0);
 tmptr= localtime(&epoch);
@@ -4816,7 +4505,6 @@ number_multiply_int(internal_value(mp_year),(tmptr->tm_year+1900));
 }
 
 
-/*:209*//*218:*/
 
 #if DEBUG
 #define text(A)         do_get_text(mp, (A))
@@ -4852,7 +4540,6 @@ return(mp_sym)A->v.data.node;
 #define equiv_sym(A)    (mp_sym)(A)->v.data.node
 #endif
 
-/*:218*//*223:*/
 
 static int comp_symbols_entry(void*p,const void*pa,const void*pb){
 const mp_symbol_entry*a= (const mp_symbol_entry*)pa;
@@ -4866,7 +4553,6 @@ a->text->len);
 }
 
 
-/*:223*//*224:*/
 
 static void*copy_symbols_entry(const void*p){
 MP mp;
@@ -4889,7 +4575,6 @@ return ff;
 }
 
 
-/*:224*//*225:*/
 
 static void*delete_symbols_entry(void*p){
 MP mp;
@@ -4903,7 +4588,6 @@ return NULL;
 }
 
 
-/*:225*//*229:*/
 
 static mp_sym new_symbols_entry(MP mp,unsigned char*nam,size_t len){
 mp_sym ff;
@@ -4921,7 +4605,6 @@ return ff;
 }
 
 
-/*:229*//*233:*/
 
 static mp_sym mp_do_id_lookup(MP mp,avl_tree symbols,char*j,
 size_t l,boolean insert_new){
@@ -4947,7 +4630,6 @@ return mp_do_id_lookup(mp,mp->frozen_symbols,j,l,insert_new);
 }
 
 
-/*:233*//*234:*/
 
 double mp_get_numeric_value(MP mp,const char*s,size_t l){
 char*ss= mp_xstrdup(mp,s);
@@ -5029,7 +4711,6 @@ mp_xfree(ss);
 return NULL;
 }
 
-/*:234*//*236:*/
 
 static void mp_primitive(MP mp,const char*ss,halfword c,halfword o){
 char*s= mp_xstrdup(mp,ss);
@@ -5040,7 +4721,6 @@ set_equiv(cur_sym(),o);
 }
 
 
-/*:236*//*237:*/
 
 static mp_sym mp_frozen_primitive(MP mp,const char*ss,halfword c,
 halfword o){
@@ -5053,7 +4733,6 @@ return str;
 }
 
 
-/*:237*//*238:*/
 
 static boolean mp_is_frozen(MP mp,mp_sym sym){
 mp_sym temp= mp_frozen_id_lookup(mp,(char*)sym->text->str,sym->text->len,false);
@@ -5063,7 +4742,6 @@ return(temp==sym);
 }
 
 
-/*:238*//*243:*/
 
 #if DEBUG
 #define value_sym(A)    do_get_value_sym(mp,(mp_token_node)(A))
@@ -5079,7 +4757,7 @@ return(temp==sym);
 #define value_str(A)    ((mp_token_node)(A))->data.str
 #define value_knot(A)   ((mp_token_node)(A))->data.p
 #endif
- static void do_set_value_sym(MP mp,mp_token_node A,mp_sym B){
+static void do_set_value_sym(MP mp,mp_token_node A,mp_sym B){
 FUNCTION_TRACE3("set_value_sym(%p,%p)\n",(A),(B));
 A->data.sym= (B);
 }
@@ -5118,7 +4796,6 @@ number_clone(A->data.n,zero_t);
 }
 
 
-/*:243*//*244:*/
 
 #if DEBUG
 static mp_sym do_get_value_sym(MP mp,mp_token_node A){
@@ -5148,7 +4825,6 @@ return A->data.n;
 }
 #endif
 
-/*:244*//*246:*/
 
 static mp_node mp_get_token_node(MP mp){
 mp_node p;
@@ -5167,7 +4843,6 @@ FUNCTION_TRACE2("%p = mp_get_token_node()\n",p);
 return(mp_node)p;
 }
 
-/*:246*//*247:*/
 
 static void mp_free_token_node(MP mp,mp_node p){
 FUNCTION_TRACE2("mp_free_token_node(%p)\n",p);
@@ -5185,7 +4860,6 @@ free_number(((mp_value_node)p)->data.n);
 xfree(p);
 }
 
-/*:247*//*249:*/
 
 static mp_node mp_new_num_tok(MP mp,mp_number v){
 mp_node p;
@@ -5198,7 +4872,6 @@ return p;
 }
 
 
-/*:249*//*250:*/
 
 static void mp_flush_token_list(MP mp,mp_node p){
 mp_node q;
@@ -5240,7 +4913,6 @@ mp_free_token_node(mp,q);
 }
 
 
-/*:250*//*252:*/
 
 void mp_show_token_list(MP mp,mp_node p,mp_node q,integer l,
 integer null_tally){
@@ -5347,7 +5019,6 @@ return;
 }
 
 
-/*:252*//*256:*/
 
 static void mp_delete_mac_ref(MP mp,mp_node p){
 
@@ -5359,7 +5030,6 @@ decr_mac_ref(p);
 }
 
 
-/*:256*//*257:*/
 
 static void mp_show_macro(MP mp,mp_node p,mp_node q,integer l){
 mp_node r;
@@ -5406,7 +5076,6 @@ mp_show_token_list(mp,mp_link(p),q,l-mp->tally,0);
 }
 
 
-/*:257*//*259:*/
 
 static mp_node do_get_attr_head(MP mp,mp_value_node A){
 assert(A->type==mp_structured);
@@ -5429,7 +5098,6 @@ assert(A->type==mp_structured);
 A->subscr_head_= d;
 }
 
-/*:259*//*261:*/
 
 static mp_node mp_get_value_node(MP mp){
 mp_value_node p;
@@ -5482,7 +5150,6 @@ fprintf(stdout,"  subscr_head=%p\n\n",qq->subscr_head_);
 }
 #endif
 
-/*:261*//*263:*/
 
 #if DEBUG
 #define hashloc(A)       do_get_hashloc(mp,(mp_value_node)(A))
@@ -5514,7 +5181,6 @@ A->parent_= d;
 #define set_parent(A,B)  ((mp_value_node)(A))->parent_ =  B
 #endif
 
-/*:263*//*264:*/
 
 static mp_value_node mp_get_attr_node(MP mp){
 mp_value_node p= (mp_value_node)mp_get_value_node(mp);
@@ -5523,7 +5189,6 @@ return p;
 }
 
 
-/*:264*//*267:*/
 
 static void do_set_subscript(MP mp,mp_value_node A,mp_number B){
 FUNCTION_TRACE3("set_subscript(%p,%p)\n",(A),(B));
@@ -5531,7 +5196,6 @@ assert((A)->type==mp_subscr_node_type||(A)->name_type==mp_subscr);
 number_clone(A->subscript_,B);
 }
 
-/*:267*//*268:*/
 
 static mp_value_node mp_get_subscr_node(MP mp){
 mp_value_node p= (mp_value_node)mp_get_value_node(mp);
@@ -5540,7 +5204,6 @@ return p;
 }
 
 
-/*:268*//*270:*/
 
 static mp_node mp_get_pair_node(MP mp){
 mp_node p;
@@ -5557,7 +5220,6 @@ FUNCTION_TRACE2("get_pair_node(): %p\n",p);
 return(mp_node)p;
 }
 
-/*:270*//*272:*/
 
 void mp_free_pair_node(MP mp,mp_node p){
 FUNCTION_TRACE2("mp_free_pair_node(%p)\n",p);
@@ -5573,7 +5235,6 @@ xfree(p);
 }
 
 
-/*:272*//*273:*/
 
 static void mp_init_pair_node(MP mp,mp_node p){
 mp_node q;
@@ -5591,7 +5252,6 @@ set_value_node(p,q);
 }
 
 
-/*:273*//*275:*/
 
 static mp_node mp_get_transform_node(MP mp){
 mp_transform_node p= (mp_transform_node)malloc_node(transform_node_size);
@@ -5600,7 +5260,6 @@ return(mp_node)p;
 }
 
 
-/*:275*//*276:*/
 
 static void mp_init_transform_node(MP mp,mp_node p){
 mp_node q;
@@ -5634,7 +5293,6 @@ set_value_node(p,q);
 }
 
 
-/*:276*//*278:*/
 
 static mp_node mp_get_color_node(MP mp){
 mp_color_node p= (mp_color_node)malloc_node(color_node_size);
@@ -5644,7 +5302,6 @@ return(mp_node)p;
 }
 
 
-/*:278*//*279:*/
 
 static void mp_init_color_node(MP mp,mp_node p){
 mp_node q;
@@ -5666,7 +5323,6 @@ set_value_node(p,q);
 }
 
 
-/*:279*//*281:*/
 
 static mp_node mp_get_cmykcolor_node(MP mp){
 mp_cmykcolor_node p= (mp_cmykcolor_node)malloc_node(cmykcolor_node_size);
@@ -5676,7 +5332,6 @@ return(mp_node)p;
 }
 
 
-/*:281*//*282:*/
 
 static void mp_init_cmykcolor_node(MP mp,mp_node p){
 mp_node q;
@@ -5702,7 +5357,6 @@ set_value_node(p,q);
 }
 
 
-/*:282*//*284:*/
 
 static mp_node mp_id_transform(MP mp){
 mp_node p,q;
@@ -5727,7 +5381,6 @@ return p;
 }
 
 
-/*:284*//*285:*/
 
 static void mp_new_root(MP mp,mp_sym x){
 mp_node p;
@@ -5739,7 +5392,6 @@ set_equiv_node(x,p);
 }
 
 
-/*:285*//*287:*/
 
 void mp_print_variable_name(MP mp,mp_node p){
 mp_node q;
@@ -5802,7 +5454,6 @@ mp_show_token_list(mp,r,NULL,max_integer,mp->tally);
 mp_flush_token_list(mp,r);
 }
 
-/*:287*//*288:*/
 
 static boolean mp_interesting(MP mp,mp_node p){
 mp_name_type_type t;
@@ -5864,7 +5515,6 @@ return(t!=mp_capsule);
 }
 
 
-/*:288*//*289:*/
 
 static mp_node mp_new_structure(MP mp,mp_node p){
 mp_node q,r= NULL;
@@ -5955,7 +5605,6 @@ set_hashloc(qqr,collective_subscript);
 return r;
 }
 
-/*:289*//*290:*/
 
 static mp_node mp_find_variable(MP mp,mp_node t){
 mp_node p,q,r,s;
@@ -6088,7 +5737,6 @@ return p;
 }
 
 
-/*:290*//*292:*/
 
 static void mp_flush_variable(MP mp,mp_node p,mp_node t,
 boolean discard_suffixes){
@@ -6139,7 +5787,6 @@ mp_recycle_value(mp,p);
 }
 
 
-/*:292*//*294:*/
 
 void mp_flush_below_variable(MP mp,mp_node p){
 mp_node q,r;
@@ -6169,7 +5816,6 @@ mp_type(p)= mp_undefined;
 }
 
 
-/*:294*//*295:*/
 
 static quarterword mp_und_type(MP mp,mp_node p){
 (void)mp;
@@ -6209,7 +5855,6 @@ return 0;
 }
 
 
-/*:295*//*296:*/
 
 static void mp_clear_symbol(MP mp,mp_sym p,boolean saving){
 mp_node q;
@@ -6241,7 +5886,6 @@ set_eq_type(p,mp->frozen_undefined->type);
 }
 
 
-/*:296*//*300:*/
 
 static void mp_save_boundary(MP mp){
 mp_save_data*p;
@@ -6253,7 +5897,6 @@ mp->save_ptr= p;
 }
 
 
-/*:300*//*301:*/
 
 static void mp_save_variable(MP mp,mp_sym q){
 mp_save_data*p;
@@ -6290,7 +5933,6 @@ mp_name_type(pp)= mp_root;
 }
 }
 
-/*:301*//*302:*/
 
 static void mp_save_internal(MP mp,halfword q){
 mp_save_data*p;
@@ -6330,7 +5972,6 @@ free_number(mp->internal[q].v.data.n);
 mp->internal[q]= saved;
 }
 
-/*:302*//*303:*/
 
 static void mp_unsave(MP mp){
 mp_save_data*p;
@@ -6351,7 +5992,6 @@ mp->save_ptr= p;
 }
 
 
-/*:303*//*310:*/
 
 void mp_pr_path(MP mp,mp_knot h){
 mp_knot p,q;
@@ -6363,7 +6003,6 @@ mp_print_nl(mp,"???");
 return;
 
 }
-/*311:*/
 
 mp_print_two(mp,p->x_coord,p->y_coord);
 switch(mp_right_type(p)){
@@ -6376,7 +6015,6 @@ q= NULL;
 goto DONE1;
 break;
 case mp_explicit:
-/*314:*/
 
 {
 mp_print(mp,"..controls ");
@@ -6392,23 +6030,19 @@ goto DONE1;
 }
 
 
-/*:314*/
 ;
 break;
 case mp_open:
-/*315:*/
 
 if((mp_left_type(p)!=mp_explicit)&&(mp_left_type(p)!=mp_open)){
 mp_print(mp,"{open?}");
 
 }
 
-/*:315*/
 ;
 break;
 case mp_curl:
 case mp_given:
-/*316:*/
 
 {
 if(mp_left_type(p)==mp_open)
@@ -6433,7 +6067,6 @@ mp_print_char(mp,xord('}'));
 }
 
 
-/*:316*/
 ;
 break;
 default:
@@ -6445,7 +6078,6 @@ if(mp_left_type(q)<=mp_explicit){
 mp_print(mp,"..control?");
 
 }else if((!number_equal(p->right_tension,unity_t))||(!number_equal(q->left_tension,unity_t))){
-/*313:*/
 
 {
 mp_number v1;
@@ -6468,16 +6100,13 @@ free_number(v1);
 }
 
 
-/*:313*/
 ;
 }
 
-/*:311*/
 ;
 DONE1:
 p= q;
 if(p&&((p!=h)||(mp_left_type(h)!=mp_endpoint))){
-/*312:*/
 
 {
 mp_number n_sin,n_cos;
@@ -6501,7 +6130,6 @@ free_number(n_cos);
 }
 
 
-/*:312*/
 ;
 }
 }while(p!=h);
@@ -6510,7 +6138,6 @@ mp_print(mp,"cycle");
 }
 
 
-/*:310*//*318:*/
 
 void mp_print_path(MP mp,mp_knot h,const char*s,boolean nuline){
 mp_print_diagnostic(mp,"Path",s,nuline);
@@ -6521,7 +6148,6 @@ mp_end_diagnostic(mp,true);
 }
 
 
-/*:318*//*320:*/
 
 static mp_knot mp_new_knot(MP mp){
 mp_knot q;
@@ -6543,7 +6169,6 @@ return q;
 }
 
 
-/*:320*//*322:*/
 
 static mp_gr_knot mp_gr_new_knot(MP mp){
 mp_gr_knot q= mp_xmalloc(mp,1,sizeof(struct mp_gr_knot_data));
@@ -6551,7 +6176,6 @@ return q;
 }
 
 
-/*:322*//*323:*/
 
 static mp_knot mp_copy_knot(MP mp,mp_knot p){
 mp_knot q;
@@ -6581,7 +6205,6 @@ mp_next_knot(q)= NULL;
 return q;
 }
 
-/*:323*//*324:*/
 
 static mp_gr_knot mp_export_knot(MP mp,mp_knot p){
 mp_gr_knot q;
@@ -6600,7 +6223,6 @@ return q;
 }
 
 
-/*:324*//*325:*/
 
 static mp_knot mp_copy_path(MP mp,mp_knot p){
 mp_knot q,pp,qq;
@@ -6618,7 +6240,6 @@ mp_next_knot(qq)= q;
 return q;
 }
 
-/*:325*//*326:*/
 
 static mp_gr_knot mp_export_path(MP mp,mp_knot p){
 mp_knot pp;
@@ -6637,7 +6258,6 @@ mp_gr_next_knot(qq)= q;
 return q;
 }
 
-/*:326*//*327:*/
 
 static mp_knot mp_import_knot(MP mp,mp_gr_knot p){
 mp_knot q;
@@ -6656,7 +6276,6 @@ return q;
 }
 
 
-/*:327*//*328:*/
 
 static mp_knot mp_import_path(MP mp,mp_gr_knot p){
 mp_gr_knot pp;
@@ -6676,7 +6295,6 @@ return q;
 }
 
 
-/*:328*//*330:*/
 
 static mp_gr_knot mp_export_knot_list(MP mp,mp_knot p){
 mp_gr_knot q;
@@ -6693,7 +6311,6 @@ p= mp_import_path(mp,q);
 return p;
 }
 
-/*:330*//*331:*/
 
 static mp_knot mp_htap_ypoc(MP mp,mp_knot p){
 mp_knot q,pp,qq,rr;
@@ -6723,7 +6340,6 @@ pp= mp_next_knot(pp);
 }
 
 
-/*:331*//*334:*/
 
 void mp_free_knot(MP mp,mp_knot q){
 free_number(q->x_coord);
@@ -6785,23 +6401,19 @@ q= r;
 }
 
 
-/*:334*//*335:*/
 
 void mp_make_choices(MP mp,mp_knot knots){
 mp_knot h;
 mp_knot p,q;
-/*349:*/
 
 int k,n;
 mp_knot s,t;
 
-/*:349*/
 ;
 FUNCTION_TRACE1("make_choices()\n");
 check_arith();
 if(number_positive(internal_value(mp_tracing_choices)))
 mp_print_path(mp,knots,", before choices",true);
-/*338:*/
 
 p= knots;
 do{
@@ -6827,9 +6439,7 @@ number_clone(q->left_y,p->y_coord);
 p= q;
 }while(p!=knots)
 
-/*:338*/
 ;
-/*339:*/
 
 h= knots;
 while(1){
@@ -6845,20 +6455,16 @@ break;
 }
 
 
-/*:339*/
 ;
 p= h;
 do{
-/*340:*/
 
 q= mp_next_knot(p);
 if(mp_right_type(p)>=mp_given){
 while((mp_left_type(q)==mp_open)&&(mp_right_type(q)==mp_open)){
 q= mp_next_knot(q);
 }
-/*346:*/
 
-/*350:*/
 
 {
 mp_number sine,cosine;
@@ -6913,9 +6519,7 @@ free_number(cosine);
 }
 
 
-/*:350*/
 ;
-/*351:*/
 
 {
 mp_number delx,dely;
@@ -6947,15 +6551,12 @@ free_number(delx);
 free_number(dely);
 }
 
-/*:351*/
 ;
 mp_solve_choices(mp,p,q,n)
 
 
-/*:346*/
 ;
 }else if(mp_right_type(p)==mp_endpoint){
-/*341:*/
 
 {
 number_clone(p->right_x,p->x_coord);
@@ -6965,18 +6566,15 @@ number_clone(q->left_y,q->y_coord);
 }
 
 
-/*:341*/
 ;
 }
 p= q
 
-/*:340*/
 ;
 }while(p!=h);
 if(number_positive(internal_value(mp_tracing_choices)))
 mp_print_path(mp,knots,", after choices",true);
 if(mp->arith_error){
-/*337:*/
 
 {
 const char*hlp[]= {
@@ -6990,12 +6588,10 @@ mp->arith_error= false;
 }
 
 
-/*:337*/
 ;
 }
 }
 
-/*:335*//*355:*/
 
 void mp_reallocate_paths(MP mp,int l){
 int k;
@@ -7021,7 +6617,6 @@ mp->path_size= l;
 }
 
 
-/*:355*//*357:*/
 
 void mp_solve_choices(MP mp,mp_knot p,mp_knot q,halfword n){
 int k;
@@ -7035,12 +6630,10 @@ r= 0;
 while(1){
 t= mp_next_knot(s);
 if(k==0){
-/*358:*/
 
 switch(mp_right_type(s)){
 case mp_given:
 if(mp_left_type(t)==mp_given){
-/*380:*/
 
 {
 mp_number arg1;
@@ -7061,10 +6654,8 @@ return;
 }
 
 
-/*:380*/
 
 }else{
-/*368:*/
 
 {
 mp_number narg;
@@ -7078,13 +6669,11 @@ set_number_to_zero(mp->ww[0]);
 }
 
 
-/*:368*/
 ;
 }
 break;
 case mp_curl:
 if(mp_left_type(t)==mp_curl){
-/*381:*/
 
 {
 mp_number lt,rt;
@@ -7165,10 +6754,8 @@ free_number(rt);
 return;
 }
 
-/*:381*/
 
 }else{
-/*369:*/
 
 {
 mp_number lt,rt,cc;
@@ -7204,7 +6791,6 @@ free_number(cc);
 }
 
 
-/*:369*/
 ;
 }
 break;
@@ -7217,13 +6803,11 @@ break;
 }
 
 
-/*:358*/
 
 }else{
 switch(mp_left_type(s)){
 case mp_end_cycle:
 case mp_open:
-/*360:*/
 
 {
 mp_number aa,bb,cc,acc;
@@ -7234,7 +6818,6 @@ new_fraction(cc);
 new_fraction(acc);
 new_number(dd);
 new_number(ee);
-/*361:*/
 
 {
 mp_number absval;
@@ -7300,9 +6883,7 @@ set_number_from_substraction(cc,fraction_one_t,r1);
 free_number(r1);
 }
 
-/*:361*/
 ;
-/*362:*/
 
 {
 mp_number rt,lt;
@@ -7340,10 +6921,8 @@ free_number(arg2);
 }
 
 
-/*:362*/
 ;
 take_fraction(mp->uu[k],ff,bb);
-/*363:*/
 
 take_fraction(acc,mp->psi[k+1],mp->uu[k]);
 number_negate(acc);
@@ -7380,10 +6959,8 @@ free_number(r1);
 }
 
 
-/*:363*/
 ;
 if(mp_left_type(s)==mp_end_cycle){
-/*364:*/
 
 {
 mp_number arg2,r1;
@@ -7421,7 +6998,6 @@ goto FOUND;
 }
 
 
-/*:364*/
 ;
 }
 free_number(aa);
@@ -7433,11 +7009,9 @@ free_number(ee);
 }
 
 
-/*:360*/
 ;
 break;
 case mp_curl:
-/*370:*/
 
 {
 mp_number lt,rt,cc;
@@ -7485,11 +7059,9 @@ goto FOUND;
 }
 
 
-/*:370*/
 ;
 break;
 case mp_given:
-/*367:*/
 
 {
 mp_number narg;
@@ -7502,7 +7074,6 @@ goto FOUND;
 }
 
 
-/*:367*/
 ;
 break;
 }
@@ -7512,7 +7083,6 @@ s= t;
 incr(k);
 }
 FOUND:
-/*373:*/
 
 {
 mp_number r1;
@@ -7543,13 +7113,11 @@ free_number(arg);
 }
 
 
-/*:373*/
 ;
 free_number(ff);
 }
 
 
-/*:357*//*365:*/
 
 void mp_reduce_angle(MP mp,mp_number*a){
 mp_number abs_a;
@@ -7567,7 +7135,6 @@ number_add(*a,three_sixty_deg_t);
 free_number(abs_a);
 }
 
-/*:365*//*372:*/
 
 void mp_curl_ratio(MP mp,mp_number*ret,mp_number gamma_orig,mp_number a_tension,mp_number b_tension){
 mp_number alpha,beta,gamma,num,denom,ff;
@@ -7624,7 +7191,6 @@ free_number(arg1);
 }
 
 
-/*:372*//*378:*/
 
 void mp_set_controls(MP mp,mp_knot p,mp_knot q,integer k){
 mp_number rr,ss;
@@ -7647,7 +7213,6 @@ new_fraction(ss);
 velocity(rr,mp->st,mp->ct,mp->sf,mp->cf,rt);
 velocity(ss,mp->sf,mp->cf,mp->st,mp->ct,lt);
 if(number_negative(p->right_tension)||number_negative(q->left_tension)){
-/*379:*/
 
 if((number_nonnegative(mp->st)&&number_nonnegative(mp->sf))||(number_nonpositive(mp->st)&&number_nonpositive(mp->sf))){
 mp_number r1,r2,arg1;
@@ -7694,7 +7259,6 @@ free_number(r2);
 free_number(ab_vs_cd);
 }
 
-/*:379*/
 ;
 }
 take_fraction(r1,mp->delta_x[k],mp->ct);
@@ -7730,7 +7294,6 @@ free_number(sine);
 }
 
 
-/*:378*//*382:*/
 
 #define TOO_LARGE(a) (fabs((a))> 4096.0)
 #define PI 3.1415926535897932384626433832795028841971
@@ -7942,7 +7505,6 @@ return mp_set_knot_direction(mp,q,x2,y2);
 return 0;
 }
 
-/*:382*//*383:*/
 
 static int path_needs_fixing(mp_knot source);
 static int path_needs_fixing(mp_knot source){
@@ -7981,7 +7543,6 @@ void mp_free_path(MP mp,mp_knot p){
 mp_toss_knot_list(mp,p);
 }
 
-/*:383*//*385:*/
 
 mp_number mp_knot_x_coord(MP mp,mp_knot p){return p->x_coord;}
 mp_number mp_knot_y_coord(MP mp,mp_knot p){return p->y_coord;}
@@ -7996,7 +7557,6 @@ double mp_number_as_double(MP mp,mp_number n){
 return number_to_double(n);
 }
 
-/*:385*//*389:*/
 
 static void mp_eval_cubic(MP mp,mp_number*r,mp_knot p,mp_knot q,quarterword c,
 mp_number t){
@@ -8022,7 +7582,6 @@ free_number(x3);
 }
 
 
-/*:389*//*394:*/
 
 static void mp_bound_cubic(MP mp,mp_knot p,mp_knot q,quarterword c){
 boolean wavy;
@@ -8043,16 +7602,13 @@ new_number(del2);
 new_number(del3);
 new_number(del);
 new_number(dmax);
-/*395:*/
 
 if(number_less(x,mp->bbmin[c]))
 number_clone(mp->bbmin[c],x);
 if(number_greater(x,mp->bbmax[c]))
 number_clone(mp->bbmax[c],x)
 
-/*:395*/
 ;
-/*396:*/
 
 wavy= true;
 if(c==mp_x_code){
@@ -8070,7 +7626,6 @@ wavy= false;
 }
 
 
-/*:396*/
 ;
 if(wavy){
 if(c==mp_x_code){
@@ -8082,7 +7637,6 @@ set_number_from_substraction(del1,p->right_y,p->y_coord);
 set_number_from_substraction(del2,q->left_y,p->right_y);
 set_number_from_substraction(del3,q->y_coord,q->left_y);
 }
-/*397:*/
 
 if(number_nonzero(del1)){
 number_clone(del,del1);
@@ -8115,7 +7669,6 @@ number_double(del3);
 free_number(absval1);
 }
 
-/*:397*/
 ;
 if(number_negative(del)){
 number_negate(del1);
@@ -8124,18 +7677,15 @@ number_negate(del3);
 }
 crossing_point(t,del1,del2,del3);
 if(number_less(t,fraction_one_t)){
-/*398:*/
 
 {
 mp_eval_cubic(mp,&x,p,q,c,t);
-/*395:*/
 
 if(number_less(x,mp->bbmin[c]))
 number_clone(mp->bbmin[c],x);
 if(number_greater(x,mp->bbmax[c]))
 number_clone(mp->bbmax[c],x)
 
-/*:395*/
 ;
 set_number_from_of_the_way(del2,t,del2,del3);
 
@@ -8154,7 +7704,6 @@ free_number(arg2);
 free_number(arg3);
 }
 if(number_less(tt,fraction_one_t)){
-/*399:*/
 
 {
 mp_number arg;
@@ -8162,25 +7711,21 @@ new_number(arg);
 set_number_from_of_the_way(arg,t,tt,fraction_one_t);
 mp_eval_cubic(mp,&x,p,q,c,arg);
 free_number(arg);
-/*395:*/
 
 if(number_less(x,mp->bbmin[c]))
 number_clone(mp->bbmin[c],x);
 if(number_greater(x,mp->bbmax[c]))
 number_clone(mp->bbmax[c],x)
 
-/*:395*/
 ;
 }
 
 
-/*:399*/
 ;
 }
 }
 
 
-/*:398*/
 ;
 }
 }
@@ -8195,7 +7740,6 @@ free_number(tt);
 }
 
 
-/*:394*//*400:*/
 
 static void mp_path_bbox(MP mp,mp_knot h){
 mp_knot p,q;
@@ -8215,7 +7759,6 @@ p= q;
 }
 
 
-/*:400*//*403:*/
 
 static void mp_arc_test(MP mp,mp_number*ret,mp_number dx0,mp_number dy0,mp_number dx1,
 mp_number dy1,mp_number dx2,mp_number dy2,mp_number v0,
@@ -8240,7 +7783,6 @@ new_number(v022);
 new_number(simply);
 new_number(tol);
 number_clone(tol,tol_orig);
-/*407:*/
 
 set_number_from_addition(dx01,dx0,dx1);
 number_half(dx01);
@@ -8255,9 +7797,7 @@ number_half(dy12);
 set_number_from_addition(dy02,dy01,dy12);
 number_half(dy02);
 
-/*:407*/
 ;
-/*408:*/
 
 {
 mp_number tmp,arg1,arg2;
@@ -8319,9 +7859,7 @@ goto DONE;
 }
 
 
-/*:408*/
 ;
-/*409:*/
 
 simple= ((number_nonnegative(dx0)&&number_nonnegative(dx1)&&number_nonnegative(dx2))||
 (number_nonpositive(dx0)&&number_nonpositive(dx1)&&number_nonpositive(dx2)));
@@ -8352,7 +7890,6 @@ free_number(neg_dx2);
 }
 }
 
-/*:409*/
 ;
 
 set_number_from_addition(simply,v0,v2);
@@ -8366,7 +7903,6 @@ if(simple&&number_lessequal(simply,tol)){
 if(number_less(arc,a_goal)){
 number_clone(*ret,arc);
 }else{
-/*410:*/
 
 {
 mp_number tmp;
@@ -8419,11 +7955,9 @@ goto DONE;
 }
 
 
-/*:410*/
 ;
 }
 }else{
-/*404:*/
 
 {
 mp_number a_new,a_aux;
@@ -8432,7 +7966,6 @@ mp_number half_v02;
 new_number(a_new);
 new_number(a_aux);
 new_number(half_v02);
-/*405:*/
 
 set_number_to_inf(a_aux);
 number_substract(a_aux,a_goal);
@@ -8445,7 +7978,6 @@ set_number_to_zero(a_aux);
 }
 
 
-/*:405*/
 ;
 {
 mp_number halfp_tol;
@@ -8467,14 +7999,12 @@ number_substract(*ret,a);
 number_halfp(*ret);
 number_negate(*ret);
 }else{
-/*406:*/
 
 if(number_greater(a,a_aux)){
 number_substract(a_aux,a);
 number_add(a_new,a_aux);
 }
 
-/*:406*/
 ;
 new_number(b);
 mp_arc_test(mp,&b,dx02,dy02,dx12,dy12,dx2,dy2,
@@ -8506,7 +8036,6 @@ goto DONE;
 }
 
 
-/*:404*/
 ;
 }
 DONE:
@@ -8525,7 +8054,6 @@ free_number(tol);
 }
 
 
-/*:403*//*412:*/
 
 void mp_solve_rising_cubic(MP mp,mp_number*ret,mp_number a_orig,mp_number b_orig,mp_number c_orig,mp_number x_orig){
 mp_number abc;
@@ -8560,7 +8088,6 @@ set_number_to_zero(*ret);
 set_number_to_unity(*ret);
 }else{
 number_clone(t,epsilon_t);
-/*414:*/
 
 while(number_greater(a,one_third_inf_t)||
 number_greater(b,one_third_inf_t)||
@@ -8572,11 +8099,9 @@ number_halfp(x);
 }
 
 
-/*:414*/
 ;
 do{
 number_add(t,t);
-/*413:*/
 
 set_number_from_addition(ab,a,b);
 number_half(ab);
@@ -8585,7 +8110,6 @@ number_half(bc);
 set_number_from_addition(ac,ab,bc);
 number_half(ac);
 
-/*:413*/
 ;
 number_clone(xx,x);
 number_substract(xx,a);
@@ -8620,7 +8144,6 @@ free_number(neg_x);
 }
 
 
-/*:412*//*415:*/
 
 static void mp_do_arc_test(MP mp,mp_number*ret,mp_number dx0,mp_number dy0,mp_number dx1,
 mp_number dy1,mp_number dx2,mp_number dy2,mp_number a_goal){
@@ -8666,7 +8189,6 @@ free_number(v2);
 }
 
 
-/*:415*//*416:*/
 
 static void mp_get_arc_length(MP mp,mp_number*ret,mp_knot h){
 mp_knot p,q;
@@ -8714,7 +8236,6 @@ free_number(a_tot);
 }
 
 
-/*:416*//*417:*/
 
 static void mp_get_arc_time(MP mp,mp_number*ret,mp_knot h,mp_number arc0_orig){
 mp_knot p,q;
@@ -8723,7 +8244,6 @@ mp_number t;
 mp_number arc,arc0;
 mp_number arg1,arg2,arg3,arg4,arg5,arg6;
 if(number_negative(arc0_orig)){
-/*419:*/
 
 {
 if(mp_left_type(h)==mp_endpoint){
@@ -8744,7 +8264,6 @@ return;
 }
 
 
-/*:419*/
 ;
 }
 new_number(t_tot);
@@ -8772,7 +8291,6 @@ set_number_from_substraction(arg4,q->left_y,p->right_y);
 set_number_from_substraction(arg5,q->x_coord,q->left_x);
 set_number_from_substraction(arg6,q->y_coord,q->left_y);
 mp_do_arc_test(mp,&t,arg1,arg2,arg3,arg4,arg5,arg6,arc);
-/*418:*/
 
 if(number_negative(t)){
 number_add(t_tot,t);
@@ -8784,10 +8302,8 @@ number_substract(arc,t);
 }
 
 
-/*:418*/
 ;
 if(q==h){
-/*420:*/
 
 if(number_positive(arc)){
 mp_number n,n1,d1,v1;
@@ -8823,7 +8339,6 @@ free_number(d1);
 free_number(v1);
 }
 
-/*:420*/
 ;
 }
 p= q;
@@ -8844,7 +8359,6 @@ free_number(arg6);
 }
 
 
-/*:417*//*422:*/
 
 static mp_knot mp_make_pen(MP mp,mp_knot h,boolean need_hull){
 mp_knot p,q;
@@ -8856,7 +8370,6 @@ mp_prev_knot(q)= p;
 }while(q!=h);
 if(need_hull){
 h= mp_convex_hull(mp,h);
-/*424:*/
 
 if(pen_is_elliptical(h)){
 number_clone(h->left_x,h->x_coord);
@@ -8865,14 +8378,12 @@ number_clone(h->right_x,h->x_coord);
 number_clone(h->right_y,h->y_coord);
 }
 
-/*:424*/
 ;
 }
 return h;
 }
 
 
-/*:422*//*423:*/
 
 static mp_knot mp_get_pen_circle(MP mp,mp_number diam){
 mp_knot h;
@@ -8890,12 +8401,10 @@ return h;
 }
 
 
-/*:423*//*426:*/
 
 void mp_pr_pen(MP mp,mp_knot h){
 mp_knot p,q;
 if(pen_is_elliptical(h)){
-/*428:*/
 
 {
 mp_number v1;
@@ -8921,14 +8430,12 @@ free_number(v1);
 }
 
 
-/*:428*/
 ;
 }else{
 p= h;
 do{
 mp_print_two(mp,p->x_coord,p->y_coord);
 mp_print_nl(mp," .. ");
-/*427:*/
 
 q= mp_next_knot(p);
 if((q==NULL)||(mp_prev_knot(q)!=p)){
@@ -8938,7 +8445,6 @@ return;
 }
 p= q
 
-/*:427*/
 ;
 }while(p!=h);
 mp_print(mp,"cycle");
@@ -8946,7 +8452,6 @@ mp_print(mp,"cycle");
 }
 
 
-/*:426*//*430:*/
 
 void mp_print_pen(MP mp,mp_knot h,const char*s,boolean nuline){
 mp_print_diagnostic(mp,"Pen",s,nuline);
@@ -8957,22 +8462,18 @@ mp_end_diagnostic(mp,true);
 }
 
 
-/*:430*//*431:*/
 
 static void mp_make_path(MP mp,mp_knot h){
 mp_knot p;
 quarterword k;
-/*435:*/
 
 integer kk;
 
 
-/*:435*/
 ;
 FUNCTION_TRACE1("make_path()\n");
 if(pen_is_elliptical(h)){
 FUNCTION_TRACE1("make_path(elliptical)\n");
-/*433:*/
 
 {
 mp_number center_x,center_y;
@@ -8987,7 +8488,6 @@ new_number(height_x);
 new_number(height_y);
 new_number(dx);
 new_number(dy);
-/*434:*/
 
 number_clone(center_x,h->x_coord);
 number_clone(center_y,h->y_coord);
@@ -8996,11 +8496,9 @@ set_number_from_substraction(width_y,h->left_y,center_y);
 set_number_from_substraction(height_x,h->right_x,center_x);
 set_number_from_substraction(height_y,h->right_y,center_y);
 
-/*:434*/
 ;
 p= h;
 for(k= 0;k<=7;k++){
-/*436:*/
 
 kk= (k+6)%8;
 {
@@ -9036,7 +8534,6 @@ mp_left_type(p)= mp_explicit;
 mp_right_type(p)= mp_explicit;
 mp_originator(p)= mp_program_code
 
-/*:436*/
 ;
 if(k==7)
 mp_next_knot(p)= h;
@@ -9055,14 +8552,12 @@ free_number(height_y);
 }
 
 
-/*:433*/
 ;
 }else{
 p= h;
 do{
 mp_left_type(p)= mp_explicit;
 mp_right_type(p)= mp_explicit;
-/*432:*/
 
 number_clone(p->left_x,p->x_coord);
 number_clone(p->left_y,p->y_coord);
@@ -9070,7 +8565,6 @@ number_clone(p->right_x,p->x_coord);
 number_clone(p->right_y,p->y_coord)
 
 
-/*:432*/
 ;
 p= mp_next_knot(p);
 }while(p!=h);
@@ -9078,7 +8572,6 @@ p= mp_next_knot(p);
 }
 
 
-/*:431*//*441:*/
 
 mp_knot mp_convex_hull(MP mp,mp_knot h){
 mp_knot l,r;
@@ -9091,7 +8584,6 @@ new_number(dy);
 if(pen_is_elliptical(h)){
 ret= h;
 }else{
-/*442:*/
 
 l= h;
 p= mp_next_knot(h);
@@ -9104,9 +8596,7 @@ p= mp_next_knot(p);
 }
 
 
-/*:442*/
 ;
-/*443:*/
 
 r= h;
 p= mp_next_knot(h);
@@ -9119,11 +8609,9 @@ p= mp_next_knot(p);
 }
 
 
-/*:443*/
 ;
 if(l!=r){
 s= mp_next_knot(r);
-/*444:*/
 
 {
 mp_number ab_vs_cd;
@@ -9149,9 +8637,7 @@ free_number(arg2);
 }
 
 
-/*:444*/
 ;
-/*448:*/
 
 {
 mp_number ab_vs_cd;
@@ -9175,9 +8661,7 @@ free_number(arg2);
 }
 
 
-/*:448*/
 ;
-/*449:*/
 
 p= mp_next_knot(l);
 while(p!=r){
@@ -9199,9 +8683,7 @@ mp_move_knot(mp,mp_prev_knot(p),q);
 }
 
 
-/*:449*/
 ;
-/*450:*/
 
 p= mp_next_knot(r);
 while(p!=l){
@@ -9223,11 +8705,9 @@ mp_move_knot(mp,mp_prev_knot(p),q);
 }
 
 
-/*:450*/
 ;
 }
 if(l!=mp_next_knot(l)){
-/*451:*/
 
 {
 mp_number ab_vs_cd;
@@ -9249,7 +8729,6 @@ set_number_from_substraction(arg1,q->y_coord,p->y_coord);
 set_number_from_substraction(arg2,q->x_coord,p->x_coord);
 ab_vs_cd(ab_vs_cd,dx,arg1,dy,arg2);
 if(number_nonpositive(ab_vs_cd)){
-/*452:*/
 
 {
 s= mp_prev_knot(p);
@@ -9265,7 +8744,6 @@ q= s;
 }
 
 
-/*:452*/
 ;
 }
 }
@@ -9276,7 +8754,6 @@ free_number(arg2);
 }
 
 
-/*:451*/
 ;
 }
 ret= l;
@@ -9287,7 +8764,6 @@ return ret;
 }
 
 
-/*:441*//*447:*/
 
 void mp_move_knot(MP mp,mp_knot p,mp_knot q){
 (void)mp;
@@ -9300,7 +8776,6 @@ mp_prev_knot(mp_next_knot(p))= p;
 }
 
 
-/*:447*//*453:*/
 
 static void mp_find_offset(MP mp,mp_number x_orig,mp_number y_orig,mp_knot h){
 mp_knot p,q;
@@ -9315,7 +8790,6 @@ new_number(wy);
 new_number(hx);
 new_number(hy);
 new_fraction(d);
-/*457:*/
 
 if(number_zero(x_orig)&&number_zero(y_orig)){
 number_clone(mp->cur_x,h->x_coord);
@@ -9328,7 +8802,6 @@ new_number(abs_x);
 new_number(abs_y);
 number_clone(x,x_orig);
 number_clone(y,y_orig);
-/*458:*/
 
 {
 set_number_from_substraction(wx,h->left_x,h->x_coord);
@@ -9338,7 +8811,6 @@ set_number_from_substraction(hy,h->right_y,h->y_coord);
 }
 
 
-/*:458*/
 ;
 number_clone(abs_x,x);
 number_clone(abs_y,y);
@@ -9352,7 +8824,6 @@ number_clone(abs_y,y);
 number_abs(abs_x);
 number_abs(abs_y);
 }
-/*459:*/
 
 {
 mp_number r1,r2,arg1;
@@ -9389,7 +8860,6 @@ number_clone(yy,ret);
 free_number(ret);
 }
 
-/*:459*/
 ;
 {
 mp_number r1,r2;
@@ -9413,7 +8883,6 @@ free_number(y);
 }
 
 
-/*:457*/
 
 free_number(xx);
 free_number(yy);
@@ -9452,12 +8921,10 @@ free_number(arg2);
 }
 
 
-/*:453*//*460:*/
 
 static void mp_pen_bbox(MP mp,mp_knot h){
 mp_knot p;
 if(pen_is_elliptical(h)){
-/*461:*/
 
 {
 mp_number arg1,arg2;
@@ -9480,7 +8947,6 @@ free_number(arg2);
 }
 
 
-/*:461*/
 ;
 }else{
 number_clone(mp_minx,h->x_coord);
@@ -9503,7 +8969,6 @@ p= mp_next_knot(p);
 }
 
 
-/*:460*//*467:*/
 
 static mp_node mp_new_fill_node(MP mp,mp_knot p){
 mp_fill_node t= malloc_node(fill_node_size);
@@ -9534,7 +8999,6 @@ number_clone(t->miterlim,internal_value(mp_miterlimit));
 return(mp_node)t;
 }
 
-/*:467*//*468:*/
 
 static void mp_free_fill_node(MP mp,mp_fill_node p){
 mp_toss_knot_list(mp,mp_path_p(p));
@@ -9554,7 +9018,6 @@ mp_free_node(mp,(mp_node)p,fill_node_size);
 
 
 
-/*:468*//*471:*/
 
 static mp_node mp_new_stroked_node(MP mp,mp_knot p){
 mp_stroked_node t= malloc_node(stroked_node_size);
@@ -9593,7 +9056,6 @@ t->lcap= 0;
 return(mp_node)t;
 }
 
-/*:471*//*472:*/
 
 static mp_edge_header_node mp_free_stroked_node(MP mp,mp_stroked_node p){
 mp_edge_header_node e= NULL;
@@ -9615,7 +9077,6 @@ mp_free_node(mp,(mp_node)p,stroked_node_size);
 return e;
 }
 
-/*:472*//*474:*/
 
 void mp_sqrt_det(MP mp,mp_number*ret,mp_number a_orig,mp_number b_orig,mp_number c_orig,mp_number d_orig){
 mp_number a,b,c,d;
@@ -9703,7 +9164,6 @@ free_number(d);
 }
 
 
-/*:474*//*478:*/
 
 static mp_node mp_new_text_node(MP mp,char*f,mp_string s){
 mp_text_node t= malloc_node(text_node_size);
@@ -9735,7 +9195,6 @@ mp_set_text_box(mp,t);
 return(mp_node)t;
 }
 
-/*:478*//*479:*/
 
 static void mp_free_text_node(MP mp,mp_text_node p){
 
@@ -9759,7 +9218,6 @@ free_number(p->tyy);
 mp_free_node(mp,(mp_node)p,text_node_size);
 }
 
-/*:479*//*482:*/
 
 static mp_node mp_new_bounds_node(MP mp,mp_knot p,quarterword c){
 
@@ -9796,7 +9254,6 @@ return NULL;
 }
 
 
-/*:482*//*483:*/
 
 static void mp_free_start_clip_node(MP mp,mp_start_clip_node p){
 mp_toss_knot_list(mp,mp_path_p(p));
@@ -9814,7 +9271,6 @@ mp_free_node(mp,(mp_node)p,stop_bounds_size);
 }
 
 
-/*:483*//*488:*/
 
 static mp_dash_node mp_get_dash_node(MP mp){
 mp_dash_node p= (mp_dash_node)malloc_node(dash_node_size);
@@ -9827,7 +9283,6 @@ return p;
 }
 
 
-/*:488*//*490:*/
 
 static void mp_init_bbox(MP mp,mp_edge_header_node h){
 
@@ -9841,7 +9296,6 @@ set_number_to_neg_inf(h->maxy);
 }
 
 
-/*:490*//*491:*/
 
 static mp_edge_header_node mp_get_edge_header_node(MP mp){
 mp_edge_header_node p= (mp_edge_header_node)malloc_node(edge_header_size);
@@ -9866,7 +9320,6 @@ mp_init_bbox(mp,h);
 }
 
 
-/*:491*//*493:*/
 
 void mp_toss_edges(MP mp,mp_edge_header_node h){
 mp_node p,q;
@@ -9932,7 +9385,6 @@ return e;
 }
 
 
-/*:493*//*494:*/
 
 static mp_edge_header_node mp_private_edges(MP mp,mp_edge_header_node h){
 
@@ -9944,7 +9396,6 @@ return h;
 }else{
 decr(edge_ref_count(h));
 hh= (mp_edge_header_node)mp_copy_objects(mp,mp_link(edge_list(h)),NULL);
-/*495:*/
 
 pp= (mp_dash_node)hh;
 p= dash_list(h);
@@ -9959,9 +9410,7 @@ mp_link(pp)= (mp_node)mp->null_dash;
 number_clone(hh->dash_y,h->dash_y)
 
 
-/*:495*/
 ;
-/*497:*/
 
 number_clone(hh->minx,h->minx);
 number_clone(hh->miny,h->miny);
@@ -9979,14 +9428,12 @@ pp= (mp_dash_node)mp_link(pp);
 }
 bblast(hh)= (mp_node)pp
 
-/*:497*/
 ;
 return hh;
 }
 }
 
 
-/*:494*//*496:*/
 
 static mp_dash_object*mp_export_dashes(MP mp,mp_stroked_node q,mp_number w){
 mp_dash_object*d;
@@ -10049,7 +9496,6 @@ return d;
 }
 
 
-/*:496*//*499:*/
 
 mp_edge_header_node mp_copy_objects(MP mp,mp_node p,mp_node q){
 mp_edge_header_node hh;
@@ -10060,7 +9506,6 @@ set_dash_list(hh,mp->null_dash);
 edge_ref_count(hh)= 0;
 pp= edge_list(hh);
 while(p!=q){
-/*500:*/
 
 {
 switch(mp_type(p)){
@@ -10092,7 +9537,6 @@ mp_link(pp)= malloc_node((size_t)k);
 pp= mp_link(pp);
 memcpy(pp,p,(size_t)k);
 pp->link= NULL;
-/*501:*/
 
 switch(mp_type(p)){
 case mp_start_clip_node_type:
@@ -10179,13 +9623,11 @@ break;
 }
 
 
-/*:501*/
 ;
 p= mp_link(p);
 }
 
 
-/*:500*/
 ;
 }
 obj_tail(hh)= pp;
@@ -10194,7 +9636,6 @@ return hh;
 }
 
 
-/*:499*//*502:*/
 
 static mp_node mp_skip_1component(MP mp,mp_node p){
 integer lev;
@@ -10213,7 +9654,6 @@ return p;
 }
 
 
-/*:502*//*504:*/
 
 void mp_print_edges(MP mp,mp_node h,const char*s,boolean nuline){
 mp_node p;
@@ -10226,7 +9666,6 @@ while(mp_link(p)!=NULL){
 p= mp_link(p);
 mp_print_ln(mp);
 switch(mp_type(p)){
-/*505:*/
 
 case mp_fill_node_type:
 mp_print(mp,"Filled contour ");
@@ -10236,7 +9675,6 @@ mp_print_ln(mp);
 mp_pr_path(mp,mp_path_p((mp_fill_node)p));
 mp_print_ln(mp);
 if((mp_pen_p((mp_fill_node)p)!=NULL)){
-/*506:*/
 
 switch(((mp_stroked_node)p)->ljoin){
 case 0:
@@ -10256,7 +9694,6 @@ break;
 }
 
 
-/*:506*/
 ;
 mp_print(mp," with pen");
 mp_print_ln(mp);
@@ -10264,7 +9701,6 @@ mp_pr_pen(mp,mp_pen_p((mp_fill_node)p));
 }
 break;
 
-/*:505*//*510:*/
 
 case mp_stroked_node_type:
 mp_print(mp,"Filled pen stroke ");
@@ -10274,7 +9710,6 @@ mp_print_ln(mp);
 mp_pr_path(mp,mp_path_p((mp_stroked_node)p));
 if(mp_dash_p(p)!=NULL){
 mp_print_nl(mp,"dashed (");
-/*511:*/
 
 {
 mp_dash_node ppd,hhd;
@@ -10320,11 +9755,9 @@ mp_print(mp," (this will be ignored)");
 }
 }
 
-/*:511*/
 ;
 }
 mp_print_ln(mp);
-/*507:*/
 
 switch(((mp_stroked_node)p)->lcap){
 case 0:
@@ -10342,7 +9775,6 @@ break;
 
 }
 mp_print(mp," ends, ");
-/*506:*/
 
 switch(((mp_stroked_node)p)->ljoin){
 case 0:
@@ -10362,11 +9794,9 @@ break;
 }
 
 
-/*:506*/
 
 
 
-/*:507*/
 ;
 mp_print(mp," with pen");
 mp_print_ln(mp);
@@ -10378,7 +9808,6 @@ mp_pr_pen(mp,mp_pen_p((mp_stroked_node)p));
 }
 break;
 
-/*:510*//*514:*/
 
 case mp_text_node_type:
 {
@@ -10407,7 +9836,6 @@ mp_print_char(mp,xord(')'));
 }
 break;
 
-/*:514*//*515:*/
 
 case mp_start_clip_node_type:
 mp_print(mp,"clipping path:");
@@ -10418,7 +9846,6 @@ case mp_stop_clip_node_type:
 mp_print(mp,"stop clipping");
 break;
 
-/*:515*//*516:*/
 
 case mp_start_bounds_node_type:
 mp_print(mp,"setbounds path:");
@@ -10429,7 +9856,6 @@ case mp_stop_bounds_node_type:
 mp_print(mp,"end of setbounds");
 break;
 
-/*:516*/
 ;
 default:
 mp_print(mp,"[unknown object type!]");
@@ -10445,7 +9871,6 @@ free_number(scf);
 }
 
 
-/*:504*//*509:*/
 
 void mp_print_obj_color(MP mp,mp_node p){
 mp_stroked_node p0= (mp_stroked_node)p;
@@ -10486,7 +9911,6 @@ mp_print_char(mp,xord(')'));
 }
 
 
-/*:509*//*513:*/
 
 void mp_dash_offset(MP mp,mp_number*x,mp_dash_node h){
 if(dash_list(h)==mp->null_dash||number_negative(h->dash_y))
@@ -10504,7 +9928,6 @@ number_add(*x,h->dash_y);
 }
 
 
-/*:513*//*517:*/
 
 static mp_edge_header_node mp_make_dashes(MP mp,mp_edge_header_node h){
 mp_node p;
@@ -10512,13 +9935,11 @@ mp_node p0;
 mp_knot pp,qq,rr;
 mp_dash_node d,dd;
 mp_number y0;
-/*528:*/
 
 mp_dash_node dln;
 mp_edge_header_node hh;
 mp_node ds;
 
-/*:528*/
 ;
 if(dash_list(h)!=mp->null_dash)
 return h;
@@ -10527,7 +9948,6 @@ p0= NULL;
 p= mp_link(edge_list(h));
 while(p!=NULL){
 if(mp_type(p)!=mp_stroked_node_type){
-/*518:*/
 
 {
 const char*hlp[]= {
@@ -10541,7 +9961,6 @@ goto NOT_FOUND;
 }
 
 
-/*:518*/
 ;
 }
 pp= mp_path_p((mp_stroked_node)p);
@@ -10549,9 +9968,7 @@ if(p0==NULL){
 p0= p;
 number_clone(y0,pp->y_coord);
 }
-/*521:*/
 
-/*523:*/
 
 if(!number_equal(((mp_stroked_node)p)->red,((mp_stroked_node)p0)->red)||
 !number_equal(((mp_stroked_node)p)->black,((mp_stroked_node)p0)->black)||
@@ -10568,14 +9985,12 @@ mp_get_x_next(mp);
 goto NOT_FOUND;
 }
 
-/*:523*/
 ;
 rr= pp;
 if(mp_next_knot(pp)!=pp){
 do{
 qq= rr;
 rr= mp_next_knot(rr);
-/*522:*/
 
 {
 mp_number x0,x1,x2,x3;
@@ -10633,7 +10048,6 @@ free_number(x2);
 free_number(x3);
 }
 
-/*:522*/
 ;
 }while(mp_right_type(rr)!=mp_endpoint);
 }
@@ -10651,9 +10065,7 @@ number_clone(d->stop_x,pp->x_coord);
 }
 
 
-/*:521*/
 ;
-/*524:*/
 
 number_clone(mp->null_dash->start_x,d->stop_x);
 dd= (mp_dash_node)h;
@@ -10668,13 +10080,11 @@ goto NOT_FOUND;
 mp_link(d)= mp_link(dd);
 mp_link(dd)= (mp_node)d
 
-/*:524*/
 ;
 p= mp_link(p);
 }
 if(dash_list(h)==mp->null_dash)
 goto NOT_FOUND;
-/*527:*/
 
 {
 mp_number hsf;
@@ -10697,7 +10107,6 @@ d= (mp_dash_node)mp_link(d);
 if(dash_list(hh)==NULL)
 mp_confusion(mp,"dash1");
 ;
-/*529:*/
 
 {
 mp_number xoff;
@@ -10720,7 +10129,6 @@ take_scaled(r1,hsf,dd->start_x);
 take_scaled(r2,hsf,hh->dash_y);
 set_number_from_addition(mp->null_dash->start_x,r1,r2);
 number_clone(mp->null_dash->stop_x,mp->null_dash->start_x);
-/*530:*/
 
 {
 mp_number r1;
@@ -10735,10 +10143,8 @@ number_add(r1,xoff);
 free_number(r1);
 }
 
-/*:530*/
 ;
 while(number_lessequal(dln->start_x,dln->stop_x)){
-/*531:*/
 
 if(dd==mp->null_dash){
 mp_number ret;
@@ -10749,9 +10155,7 @@ number_add(xoff,ret);
 free_number(ret);
 }
 
-/*:531*/
 ;
-/*532:*/
 
 {
 mp_number r1;
@@ -10780,7 +10184,6 @@ number_clone(d->stop_x,r1);
 free_number(r1);
 }
 
-/*:532*/
 ;
 dd= (mp_dash_node)mp_link(dd);
 take_scaled(r1,hsf,dd->start_x);
@@ -10794,7 +10197,6 @@ mp_free_node(mp,(mp_node)dln,dash_node_size);
 }
 
 
-/*:529*/
 ;
 }
 }
@@ -10802,9 +10204,7 @@ mp_free_node(mp,(mp_node)dln,dash_node_size);
 free_number(hsf);
 }
 
-/*:527*/
 ;
-/*525:*/
 
 d= dash_list(h);
 while((mp_link(d)!=(mp_node)mp->null_dash))
@@ -10825,24 +10225,20 @@ mp_free_node(mp,(mp_node)dd,dash_node_size);
 }
 free_number(absval);
 }
-/*:525*/
 ;
 free_number(y0);
 return h;
 NOT_FOUND:
 free_number(y0);
-/*526:*/
 
 mp_flush_dash_list(mp,h);
 delete_edge_ref(h);
 return NULL
 
-/*:526*/
 ;
 }
 
 
-/*:517*//*520:*/
 
 void mp_x_retrace_error(MP mp){
 const char*hlp[]= {
@@ -10855,7 +10251,6 @@ mp_get_x_next(mp);
 }
 
 
-/*:520*//*533:*/
 
 static void mp_adjust_bbox(MP mp,mp_edge_header_node h){
 if(number_less(mp_minx,h->minx))
@@ -10869,7 +10264,6 @@ number_clone(h->maxy,mp_maxy);
 }
 
 
-/*:533*//*534:*/
 
 static void mp_box_ends(MP mp,mp_knot p,mp_knot pp,mp_edge_header_node h){
 mp_knot q;
@@ -10887,7 +10281,6 @@ new_number(d);
 if(mp_right_type(p)!=mp_endpoint){
 q= mp_next_knot(p);
 while(1){
-/*535:*/
 
 if(q==mp_next_knot(p)){
 set_number_from_substraction(dx,p->x_coord,p->right_x);
@@ -10908,11 +10301,9 @@ set_number_from_substraction(dx,p->x_coord,q->x_coord);
 set_number_from_substraction(dy,p->y_coord,q->y_coord);
 
 
-/*:535*/
 ;
 pyth_add(d,dx,dy);
 if(number_positive(d)){
-/*536:*/
 
 {
 mp_number arg1,r;
@@ -10931,10 +10322,8 @@ number_clone(xx,mp->cur_x);
 number_clone(yy,mp->cur_y);
 }
 
-/*:536*/
 ;
 for(i= 1;i<=2;i++){
-/*537:*/
 
 {
 mp_number r1,r2,arg1;
@@ -10969,7 +10358,6 @@ free_number(r2);
 free_number(arg1);
 }
 
-/*:537*/
 ;
 number_negate(dx);
 number_negate(dy);
@@ -10978,14 +10366,12 @@ number_negate(dy);
 if(mp_right_type(p)==mp_endpoint){
 goto DONE;
 }else{
-/*538:*/
 
 do{
 q= p;
 p= mp_next_knot(p);
 }while(mp_right_type(p)!=mp_endpoint)
 
-/*:538*/
 ;
 }
 }
@@ -11000,7 +10386,6 @@ free_number(d);
 }
 
 
-/*:534*//*539:*/
 
 void mp_set_bbox(MP mp,mp_edge_header_node h,boolean top_level){
 mp_node p;
@@ -11031,7 +10416,6 @@ else
 return;
 ;
 break;
-/*541:*/
 
 case mp_fill_node_type:
 mp_path_bbox(mp,mp_path_p((mp_fill_node)p));
@@ -11058,7 +10442,6 @@ free_number(y1a);
 mp_adjust_bbox(mp,h);
 break;
 
-/*:541*//*542:*/
 
 case mp_start_bounds_node_type:
 if(number_positive(internal_value(mp_true_corners))){
@@ -11067,7 +10450,6 @@ h->bbtype= bounds_unset;
 h->bbtype= bounds_set;
 mp_path_bbox(mp,mp_path_p((mp_start_bounds_node)p));
 mp_adjust_bbox(mp,h);
-/*543:*/
 
 lev= 1;
 while(lev!=0){
@@ -11083,7 +10465,6 @@ decr(lev);
 }
 bblast(h)= p
 
-/*:543*/
 ;
 }
 break;
@@ -11093,7 +10474,6 @@ mp_confusion(mp,"bbox2");
 ;
 break;
 
-/*:542*//*544:*/
 
 case mp_stroked_node_type:
 mp_path_bbox(mp,mp_path_p((mp_stroked_node)p));
@@ -11124,7 +10504,6 @@ mp_box_ends(mp,mp_path_p((mp_stroked_node)p),
 mp_pen_p((mp_stroked_node)p),h);
 break;
 
-/*:544*//*545:*/
 
 case mp_text_node_type:
 {
@@ -11180,7 +10559,6 @@ free_number(arg1);
 }
 break;
 
-/*:545*//*546:*/
 
 case mp_start_clip_node_type:
 {
@@ -11204,7 +10582,6 @@ number_clone(sminx,h->minx);
 number_clone(sminy,h->miny);
 number_clone(smaxx,h->maxx);
 number_clone(smaxy,h->maxy);
-/*547:*/
 
 set_number_to_inf(h->minx);
 set_number_to_inf(h->miny);
@@ -11213,9 +10590,7 @@ set_number_to_neg_inf(h->maxy);
 mp_set_bbox(mp,h,false)
 
 
-/*:547*/
 ;
-/*548:*/
 
 if(number_less(h->minx,x0a))
 number_clone(h->minx,x0a);
@@ -11226,7 +10601,6 @@ number_clone(h->maxx,x1a);
 if(number_greater(h->maxy,y1a))
 number_clone(h->maxy,y1a);
 
-/*:548*/
 ;
 number_clone(mp_minx,sminx);
 number_clone(mp_miny,sminy);
@@ -11244,7 +10618,6 @@ free_number(y1a);
 }
 break;
 
-/*:546*/
 ;
 default:
 break;
@@ -11255,7 +10628,6 @@ mp_confusion(mp,"bbox");
 }
 
 
-/*:539*//*552:*/
 
 static mp_knot mp_offset_prep(MP mp,mp_knot c,mp_knot h){
 int n;
@@ -11266,7 +10638,6 @@ mp_number dxin,dyin;
 int turn_amt;
 mp_number max_coef;
 mp_number ss;
-/*566:*/
 
 mp_number x0,x1,x2,y0,y1,y2;
 mp_number t0,t1,t2;
@@ -11280,12 +10651,10 @@ mp_number dy_m;
 mp_number dxin_m;
 
 
-/*:566*//*581:*/
 
 mp_number u0,u1,v0,v1;
 int d_sign;
 
-/*:581*/
 ;
 new_number(max_coef);
 new_number(dxin);
@@ -11326,7 +10695,6 @@ new_number(ueps_ap);
 new_fraction(ss);
 new_fraction(s);
 new_fraction(t);
-/*555:*/
 
 n= 0;
 p= h;
@@ -11335,9 +10703,7 @@ incr(n);
 p= mp_next_knot(p);
 }while(p!=h)
 
-/*:555*/
 ;
-/*556:*/
 
 {
 mp_knot hn= mp_next_knot(h);
@@ -11351,7 +10717,6 @@ set_number_from_substraction(dyin,h->x_coord,hp->x_coord);
 }
 w0= h
 
-/*:556*/
 ;
 p= c;
 c0= c;
@@ -11362,7 +10727,7 @@ dbg_str(return{);dbg_nl;
 dbg_n(w0->x_coord);
 dbg_n(w0->y_coord);
 #endif
- do{
+do{
 q= mp_next_knot(p);
 #ifdef DEBUGENVELOPE
 dbg_nl;dbg_open_t;dbg_str(--[==[begin loop]==]);dbg_nl;
@@ -11373,7 +10738,6 @@ dbg_n(q->x_coord);dbg_n(q->y_coord);
 dbg_n(w0->x_coord);
 dbg_n(w0->y_coord);
 #endif
-/*563:*/
 
 #ifdef DEBUGENVELOPE
 dbg_comment(Split the cubic between|p|and|q|);dbg_nl;
@@ -11381,12 +10745,11 @@ dbg_key(Split the cubic);dbg_open_t;dbg_nl;
 dbg_key_ival(pre info p,mp_knot_info(p));dbg_comma;
 dbg_n(w0->x_coord);dbg_n(w0->y_coord);
 #endif
- mp_knot_info(p)= zero_off+k_needed;
+mp_knot_info(p)= zero_off+k_needed;
 #ifdef DEBUGENVELOPE
 dbg_key_ival(post info p,mp_knot_info(p));dbg_close_t;dbg_comma;dbg_nl;
 #endif
- k_needed= 0;
-/*567:*/
+k_needed= 0;
 
 set_number_from_substraction(x0,p->right_x,p->x_coord);
 set_number_from_substraction(x2,q->x_coord,q->left_x);
@@ -11445,16 +10808,14 @@ number_double(y2);
 }
 
 
-/*:567*/
 ;
-/*572:*/
 
 #ifdef DEBUGENVELOPE
 dbg_nl;
 dbg_comment(Find the initial direction|(dx,dy)|);dbg_nl;
 dbg_n(w0->x_coord);dbg_n(w0->y_coord);
 #endif
- number_clone(dx_m,zero_t);
+number_clone(dx_m,zero_t);
 number_clone(dy_m,zero_t);
 number_clone(dx,x0);
 number_clone(dy,y0);
@@ -11510,9 +10871,7 @@ dbg_n(dx);dbg_n(dy);dbg_n(dx_ap);dbg_n(dy_ap);dbg_close_t;dbg_comma;dbg_nl;
 
 
 
-/*:572*/
 ;
-/*574:*/
 
 {
 mp_number ab_vs_cd;
@@ -11525,7 +10884,7 @@ dbg_key(mp_get_turn_amt_dx_dy);dbg_open_t;dbg_str(--[==[call mp_get_turn_amt]==]
 dbg_n(w0->x_coord);dbg_n(w0->y_coord);dbg_n(dx);dbg_n(dy);dbg_in(number_nonnegative(ab_vs_cd));
 dbg_n(ab_vs_cd);
 #endif
- is_dxdy= true;
+is_dxdy= true;
 turn_amt= mp_get_turn_amt(mp,w0,dx,dy,number_nonnegative(ab_vs_cd));
 is_dxdy= false;
 #ifdef DEBUGENVELOPE
@@ -11533,14 +10892,14 @@ dbg_dn(turn_amt);
 dbg_close_t;dbg_comma;
 dbg_nl;
 #endif
- free_number(ab_vs_cd);
+free_number(ab_vs_cd);
 #ifdef DEBUGENVELOPE
 dbg_key(w0 before walk);dbg_open_t;dbg_nl;
 dbg_n(w0->x_coord);dbg_n(w0->y_coord);
 dbg_dn(turn_amt);
 dbg_close_t;dbg_comma;
 #endif
- w= mp_pen_walk(mp,w0,turn_amt);
+w= mp_pen_walk(mp,w0,turn_amt);
 w0= w;
 #ifdef DEBUGENVELOPE
 dbg_key(w0 after walk);dbg_open_t;dbg_nl;
@@ -11548,15 +10907,13 @@ dbg_n(w0->x_coord);dbg_n(w0->y_coord);
 dbg_close_t;dbg_comma;
 dbg_open_t;dbg_in(mp_knot_info(p));
 #endif
- mp_knot_info(p)= mp_knot_info(p)+turn_amt;
+mp_knot_info(p)= mp_knot_info(p)+turn_amt;
 #ifdef DEBUGENVELOPE
 dbg_in(mp_knot_info(p));dbg_close_t;dbg_comma;
 #endif
 }
 
-/*:574*/
 ;
-/*573:*/
 
 number_clone(dxin,x2);
 number_clone(dyin,y2);
@@ -11587,9 +10944,7 @@ dbg_close_t;dbg_comma;
 #endif
 
 
-/*:573*/
 ;
-/*582:*/
 
 {
 mp_number ab_vs_cd;
@@ -11600,7 +10955,7 @@ new_number(ab_vs_cd);
 dbg_sp;
 dbg_key(Decide on the net change in pen offsets and set turn_amt);dbg_open_t;dbg_nl;
 #endif
- ab_vs_cd(ab_vs_cd,dx,dyin,dxin,dy);
+ab_vs_cd(ab_vs_cd,dx,dyin,dxin,dy);
 #ifdef DEBUGENVELOPE
 dbg_n(ab_vs_cd);dbg_n(dx);dbg_n(dyin);dbg_n(dxin);dbg_n(dy);
 #endif
@@ -11620,7 +10975,6 @@ free_number(ab_vs_cd);
 free_number(t_ap);
 }
 if(d_sign==0){
-/*583:*/
 
 {
 mp_number ab_vs_cd1,ab_vs_cd2,t;
@@ -11644,7 +10998,6 @@ free_number(ab_vs_cd1);
 free_number(ab_vs_cd2);
 }
 
-/*:583*/
 
 }
 if(d_sign==0){
@@ -11660,7 +11013,6 @@ else
 d_sign= -1;
 }
 }
-/*584:*/
 
 {
 mp_number r1,r2,arg1;
@@ -11673,7 +11025,7 @@ take_fraction(r2,x2,y0);
 dbg_sp;
 dbg_open_t;dbg_dn(d_sign);dbg_close_t;dbg_comma;dbg_nl;
 #endif
- number_half(r1);
+number_half(r1);
 number_half(r2);
 set_number_from_substraction(t0,r1,r2);
 set_number_from_addition(arg1,y0,y2);
@@ -11737,7 +11089,7 @@ dbg_n(ss);dbg_close_t;dbg_comma;
 dbg_key(patch ss after);dbg_open_t;
 dbg_n(ss);dbg_close_t;dbg_comma;
 #endif
- free_number(abs_ss);
+free_number(abs_ss);
 free_number(eps_ss);
 
 free_number(arg1);
@@ -11748,7 +11100,6 @@ free_number(tmp2);
 }
 
 
-/*:584*/
 ;
 #ifdef DEBUGENVELOPE
 dbg_nl;
@@ -11756,7 +11107,7 @@ dbg_key(Make|ss|negative if and only if);dbg_open_t;dbg_nl;
 dbg_key(mp_get_turn_amt_dxin_dyin);dbg_open_t;dbg_str(--[==[call mp_get_turn_amt]==]);dbg_nl;;
 dbg_n(w->x_coord);dbg_n(w->y_coord);dbg_n(dxin);dbg_n(dyin);dbg_in((d_sign> 0));
 #endif
- is_dxindyin= true;
+is_dxindyin= true;
 turn_amt= mp_get_turn_amt(mp,w,dxin,dyin,(d_sign> 0));
 is_dxindyin= false;
 #ifdef DEBUGENVELOPE
@@ -11765,7 +11116,7 @@ dbg_key_nval(ss,ss);dbg_comma;dbg_nl;
 dbg_key_ival(d_sign,d_sign);dbg_comma;dbg_nl;
 dbg_key_ival(n,n);dbg_comma;dbg_nl;
 #endif
- if(number_negative(ss))
+if(number_negative(ss))
 turn_amt= turn_amt-d_sign*n;
 #ifdef DEBUGENVELOPE
 dbg_key_dval(turn_amt 2,turn_amt);dbg_comma;dbg_nl;
@@ -11774,9 +11125,7 @@ dbg_close_t;dbg_comma;dbg_nl;
 #endif
 
 
-/*:582*/
 ;
-/*578:*/
 
 ww= mp_prev_knot(w);
 #ifdef DEBUGENVELOPE
@@ -11785,7 +11134,6 @@ dbg_n(w->x_coord);dbg_n(w->y_coord);
 dbg_n(ww->x_coord);dbg_n(ww->y_coord);
 dbg_close_t;dbg_comma;dbg_nl;
 #endif
-/*570:*/
 
 {
 mp_number abs_du,abs_dv;
@@ -11794,7 +11142,7 @@ new_number(abs_dv);
 #ifdef DEBUGENVELOPE
 dbg_key(Compute test coefficients|(t0,t1,t2)|for $d(t)$ versus...);dbg_open_t;dbg_nl;
 #endif
- set_number_from_substraction(du,ww->x_coord,w->x_coord);
+set_number_from_substraction(du,ww->x_coord,w->x_coord);
 set_number_from_substraction(dv,ww->y_coord,w->y_coord);
 number_clone(abs_du,du);
 number_abs(abs_du);
@@ -11810,7 +11158,7 @@ dbg_n(abs_du);dbg_n(abs_dv);
 dbg_n(du);dbg_n(dv);
 dbg_in(number_greaterequal(abs_du,abs_dv));
 #endif
- if(number_greaterequal(abs_du,abs_dv)){
+if(number_greaterequal(abs_du,abs_dv)){
 mp_number r1;
 new_fraction(r1);
 make_fraction(s,dv,du);
@@ -11854,7 +11202,6 @@ dbg_close_t;dbg_comma;dbg_nl;
 }
 
 
-/*:570*/
 ;
 #ifdef DEBUGENVELOPE
 dbg_key(after Compute test coeff);dbg_open_t;dbg_nl;
@@ -11862,12 +11209,11 @@ dbg_n(w->x_coord);dbg_n(w->y_coord);
 dbg_n(ww->x_coord);dbg_n(ww->y_coord);
 dbg_close_t;dbg_comma;dbg_nl;
 #endif
-/*580:*/
 
 #ifdef DEBUGENVELOPE
 dbg_key(Find the first|t|where);dbg_open_t;dbg_nl;
 #endif
- crossing_point(t,t0,t1,t2);
+crossing_point(t,t0,t1,t2);
 if(turn_amt>=0){
 if(number_negative(t2)){
 number_clone(t,fraction_one_t);
@@ -11907,7 +11253,6 @@ dbg_close_t;dbg_comma;dbg_nl;
 #endif
 
 
-/*:580*/
 ;
 if(number_greater(t,fraction_one_t)){
 #ifdef DEBUGENVELOPE
@@ -11918,7 +11263,7 @@ dbg_n(x0);dbg_n(x1);dbg_n(x2);
 dbg_n(y0);dbg_n(y1);dbg_n(y2);
 dbg_close_t;dbg_comma;dbg_nl;
 #endif
- mp_fin_offset_prep(mp,p,w,x0,x1,x2,y0,y1,y2,1,turn_amt);
+mp_fin_offset_prep(mp,p,w,x0,x1,x2,y0,y1,y2,1,turn_amt);
 }else{
 mp_split_cubic(mp,p,t);
 r= mp_next_knot(p);
@@ -11938,7 +11283,7 @@ dbg_n(x0);dbg_n(x1a);dbg_n(x2a);
 dbg_n(y0);dbg_n(y1a);dbg_n(y2a);
 dbg_close_t;dbg_comma;dbg_nl;
 #endif
- mp_fin_offset_prep(mp,p,w,x0,x1a,x2a,y0,y1a,y2a,1,0);
+mp_fin_offset_prep(mp,p,w,x0,x1a,x2a,y0,y1a,y2a,1,0);
 number_clone(x0,x2a);
 number_clone(y0,y2a);
 mp_knot_info(r)= zero_off-1;
@@ -11960,7 +11305,6 @@ free_number(arg2);
 free_number(arg3);
 if(number_greater(t,fraction_one_t))
 number_clone(t,fraction_one_t);
-/*579:*/
 
 mp_split_cubic(mp,r,t);
 mp_knot_info(mp_next_knot(r))= zero_off+1;
@@ -11974,7 +11318,6 @@ mp_fin_offset_prep(mp,mp_next_knot(r),w,x0a,x1a,x2,y0a,y1a,y2,1,turn_amt);
 number_clone(x2,x0a);
 number_clone(y2,y0a)
 
-/*:579*/
 ;
 mp_fin_offset_prep(mp,r,ww,x0,x1,x2,y0,y1,y2,-1,0);
 }else{
@@ -11989,12 +11332,10 @@ dbg_in(turn_amt);
 dbg_close_t;dbg_comma;dbg_nl;
 #endif
 
-/*:578*/
 ;
 w0= mp_pen_walk(mp,w0,turn_amt)
 
 
-/*:563*/
 ;
 #ifdef DEBUGENVELOPE
 dbg_key(end Split the cubic between|p|and|q|);dbg_open_t;dbg_nl;
@@ -12002,13 +11343,12 @@ dbg_n(w->x_coord);dbg_n(w->y_coord);
 dbg_n(w0->x_coord);dbg_n(w0->y_coord);
 dbg_close_t;dbg_comma;dbg_nl;
 #endif
- NOT_FOUND:
-/*557:*/
+NOT_FOUND:
 
 #ifdef DEBUGENVELOPE
 dbg_comment(Advance|p|to node|q|);dbg_nl;
 #endif
- q0= q;
+q0= q;
 do{
 r= mp_next_knot(p);
 if(number_equal(p->x_coord,p->right_x)&&
@@ -12018,7 +11358,6 @@ number_equal(p->y_coord,r->left_y)&&
 number_equal(p->x_coord,r->x_coord)&&
 number_equal(p->y_coord,r->y_coord)&&
 r!=p&&r!=q){
-/*558:*/
 
 {
 #ifdef DEBUGENVELOPE
@@ -12051,7 +11390,6 @@ dbg_key_ival(post info p,mp_knot_info(p));dbg_close_t;dbg_comma;dbg_nl;
 }
 
 
-/*:558*/
 ;
 }
 p= r;
@@ -12061,7 +11399,6 @@ if((q!=q0)&&(q!=c||c==c0))
 q= mp_next_knot(q)
 
 
-/*:557*/
 ;
 #ifdef DEBUGENVELOPE
 dbg_n(w0->x_coord);dbg_n(w0->y_coord);
@@ -12075,7 +11412,6 @@ dbg_key_ival(info pre,mp_knot_info(p));dbg_comma;dbg_nl;
 dbg_n(c->x_coord);dbg_n(c->y_coord);
 dbg_key_ival(info pre,mp_knot_info(c));dbg_close_t;dbg_comma;dbg_nl;
 #endif
-/*577:*/
 
 mp->spec_offset= mp_knot_info(c)-zero_off;
 if(mp_next_knot(c)==c){
@@ -12099,7 +11435,6 @@ free_number(ab_vs_cd);
 }
 
 
-/*:577*/
 ;
 #ifdef DEBUGENVELOPE
 dbg_n(p->x_coord);dbg_n(p->y_coord);
@@ -12109,7 +11444,7 @@ dbg_key_ival(info post,mp_knot_info(c));
 dbg_close_t;
 dbg_nl;dbg_str(--[==[END]==]);dbg_nl;
 #endif
- free_number(ss);
+free_number(ss);
 free_number(s);
 free_number(dxin);
 free_number(dyin);
@@ -12152,7 +11487,6 @@ return c;
 }
 
 
-/*:552*//*560:*/
 
 void mp_split_cubic(MP mp,mp_knot p,mp_number t){
 mp_number v;
@@ -12181,7 +11515,6 @@ free_number(v);
 }
 
 
-/*:560*//*562:*/
 
 void mp_remove_cubic(MP mp,mp_knot p){
 mp_knot q;
@@ -12194,7 +11527,6 @@ mp_xfree(q);
 }
 
 
-/*:562*//*565:*/
 
 mp_knot mp_pen_walk(MP mp,mp_knot w,integer k){
 
@@ -12211,7 +11543,6 @@ return w;
 }
 
 
-/*:565*//*569:*/
 
 void mp_fin_offset_prep(MP mp,mp_knot p,mp_knot w,mp_number
 x0,mp_number x1,mp_number x2,mp_number y0,mp_number y1,
@@ -12235,7 +11566,7 @@ new_fraction(t);
 #ifdef DEBUGENVELOPE
 dbg_key(mp_fin_offset_prep);dbg_open_t;dbg_nl;
 #endif
- while(1){
+while(1){
 if(rise> 0)
 ww= mp_next_knot(w);
 else
@@ -12249,7 +11580,6 @@ dbg_n(x0);dbg_n(x1);dbg_n(x2);
 dbg_n(y0);dbg_n(y1);dbg_n(y2);
 dbg_in(rise);
 #endif
-/*570:*/
 
 {
 mp_number abs_du,abs_dv;
@@ -12258,7 +11588,7 @@ new_number(abs_dv);
 #ifdef DEBUGENVELOPE
 dbg_key(Compute test coefficients|(t0,t1,t2)|for $d(t)$ versus...);dbg_open_t;dbg_nl;
 #endif
- set_number_from_substraction(du,ww->x_coord,w->x_coord);
+set_number_from_substraction(du,ww->x_coord,w->x_coord);
 set_number_from_substraction(dv,ww->y_coord,w->y_coord);
 number_clone(abs_du,du);
 number_abs(abs_du);
@@ -12274,7 +11604,7 @@ dbg_n(abs_du);dbg_n(abs_dv);
 dbg_n(du);dbg_n(dv);
 dbg_in(number_greaterequal(abs_du,abs_dv));
 #endif
- if(number_greaterequal(abs_du,abs_dv)){
+if(number_greaterequal(abs_du,abs_dv)){
 mp_number r1;
 new_fraction(r1);
 make_fraction(s,dv,du);
@@ -12318,19 +11648,18 @@ dbg_close_t;dbg_comma;dbg_nl;
 }
 
 
-/*:570*/
 ;
 #ifdef DEBUGENVELOPE
 dbg_comment(crossing_point);
 #endif
- crossing_point(t,t0,t1,t2);
+crossing_point(t,t0,t1,t2);
 #ifdef DEBUGENVELOPE
 dbg_n(t);dbg_n(t0);dbg_n(t1);dbg_n(t2);
 dbg_in(number_greaterequal(t,fraction_one_t));
 dbg_in(turn_amt);
 dbg_close_t;dbg_comma;dbg_nl;
 #endif
- if(number_greaterequal(t,fraction_one_t)){
+if(number_greaterequal(t,fraction_one_t)){
 if(turn_amt> 0)
 number_clone(t,fraction_one_t);
 else
@@ -12339,7 +11668,6 @@ goto RETURN;
 #ifdef DEBUGENVELOPE
 dbg_comment(Split the cubic at $t$ and split off another cubic if the derivative crosses back);
 #endif
-/*571:*/
 
 {
 mp_split_cubic(mp,p,t);
@@ -12387,7 +11715,6 @@ set_number_from_of_the_way(y2,t,y1,v);
 }
 
 
-/*:571*/
 ;
 w= ww;
 #ifdef DEBUGENVELOPE
@@ -12399,7 +11726,7 @@ RETURN:
 dbg_comment(RETURN);
 dbg_n(t);
 #endif
- free_number(s);
+free_number(s);
 free_number(t);
 free_number(du);
 free_number(dv);
@@ -12413,7 +11740,6 @@ dbg_close_t;dbg_comma;dbg_nl;
 }
 
 
-/*:569*//*576:*/
 
 integer mp_get_turn_amt(MP mp,mp_knot w,mp_number dx,mp_number dy,boolean ccw){
 mp_knot ww;
@@ -12447,7 +11773,7 @@ dbg_in(number_zero(dx)&&number_zero(arg1)&&number_negative(dy)&&number_positive(
 dbg_in(number_zero(dy)&&number_zero(arg2)&&number_positive(dx)&&number_negative(arg1));
 dbg_nl;
 #endif
- if(number_negative(t))
+if(number_negative(t))
 break;
 incr(s);
 w= ww;
@@ -12467,7 +11793,7 @@ dbg_n(t_ap);dbg_n(dy_ap);dbg_n(dx_ap);dbg_n(dyin_ap);dbg_n(dxin_ap);
 dbg_close_t;dbg_comma;
 dbg_nl;
 #endif
- while(number_negative(t)){
+while(number_negative(t)){
 decr(s);
 w= ww;
 ww= mp_prev_knot(ww);
@@ -12493,7 +11819,6 @@ return s;
 }
 
 
-/*:576*//*585:*/
 
 static void mp_print_spec(MP mp,mp_knot cur_spec,mp_knot cur_pen,
 const char*s){
@@ -12509,7 +11834,6 @@ mp_print_two(mp,w->x_coord,w->y_coord);
 do{
 while(1){
 q= mp_next_knot(p);
-/*587:*/
 
 {
 mp_print_nl(mp,"   ..controls ");
@@ -12521,14 +11845,12 @@ mp_print_two(mp,q->x_coord,q->y_coord);
 }
 
 
-/*:587*/
 ;
 p= q;
 if((p==cur_spec)||(mp_knot_info(p)!=zero_off))
 break;
 }
 if(mp_knot_info(p)!=zero_off){
-/*586:*/
 
 {
 w= mp_pen_walk(mp,w,(mp_knot_info(p)-zero_off));
@@ -12541,14 +11863,13 @@ dbg_in(mp_knot_info(p));
 dbg_close_t;dbg_close_t;dbg_comma;dbg_nl;
 dbg_nl;dbg_str(--[==[STOP]==]);dbg_nl;
 #endif
- if(mp_knot_info(p)> zero_off)
+if(mp_knot_info(p)> zero_off)
 mp_print(mp,"counter");
 mp_print(mp,"clockwise to offset ");
 mp_print_two(mp,w->x_coord,w->y_coord);
 }
 
 
-/*:586*/
 ;
 }
 }while(p!=cur_spec);
@@ -12557,7 +11878,6 @@ mp_end_diagnostic(mp,true);
 }
 
 
-/*:585*//*588:*/
 
 static mp_knot mp_make_envelope(MP mp,mp_knot c,mp_knot h,quarterword ljoin,
 quarterword lcap,mp_number miterlim){
@@ -12567,17 +11887,14 @@ halfword k,k0;
 mp_number qx,qy;
 mp_fraction dxin,dyin,dxout,dyout;
 int join_type= 0;
-/*592:*/
 
 mp_number tmp;
 
-/*:592*//*600:*/
 
 mp_number max_ht;
 halfword kk;
 mp_knot ww;
 
-/*:600*/
 ;
 new_number(max_ht);
 new_number(tmp);
@@ -12589,7 +11906,6 @@ mp->spec_p1= NULL;
 mp->spec_p2= NULL;
 new_number(qx);
 new_number(qy);
-/*603:*/
 
 if(mp_left_type(c)==mp_endpoint){
 mp->spec_p1= mp_htap_ypoc(mp,c);
@@ -12603,7 +11919,6 @@ if(c!=mp_next_knot(c)){
 mp_originator(mp->spec_p2)= mp_program_code;
 mp_remove_cubic(mp,mp->spec_p2);
 }else{
-/*604:*/
 
 {
 mp_left_type(c)= mp_explicit;
@@ -12615,14 +11930,11 @@ number_clone(c->right_y,c->y_coord);
 }
 
 
-/*:604*/
 ;
 }
 }
 
-/*:603*/
 ;
-/*589:*/
 
 c= mp_offset_prep(mp,c,h);
 if(number_positive(internal_value(mp_tracing_specs)))
@@ -12630,7 +11942,6 @@ mp_print_spec(mp,c,h,"");
 h= mp_pen_walk(mp,h,mp->spec_offset)
 
 
-/*:589*/
 ;
 w= h;
 p= c;
@@ -12643,7 +11954,6 @@ k= mp_knot_info(q);
 k0= k;
 w0= w;
 if(k!=zero_off){
-/*590:*/
 
 if(k<zero_off){
 join_type= 2;
@@ -12655,7 +11965,6 @@ join_type= 3;
 else
 join_type= 2-lcap;
 if((join_type==0)||(join_type==3)){
-/*605:*/
 
 {
 set_number_from_substraction(dxin,q->x_coord,q->left_x);
@@ -12683,7 +11992,6 @@ number_clone(dxin,r1);
 make_fraction(r1,dyin,tmp);
 number_clone(dyin,r1);
 free_number(r1);
-/*606:*/
 
 {
 set_number_from_substraction(dxout,q->right_x,q->x_coord);
@@ -12729,16 +12037,13 @@ free_number(r1);
 }
 
 
-/*:606*/
 ;
 }
 }
 
 
-/*:605*/
 ;
 if(join_type==0){
-/*591:*/
 
 {
 mp_number r1,r2;
@@ -12763,17 +12068,14 @@ free_number(r2);
 }
 
 
-/*:591*/
 ;
 }
 }
 }
 
 
-/*:590*/
 ;
 }
-/*593:*/
 
 number_add(p->right_x,w->x_coord);
 number_add(p->right_y,w->y_coord);
@@ -12784,10 +12086,8 @@ number_add(q->y_coord,w->y_coord);
 mp_left_type(q)= mp_explicit;
 mp_right_type(q)= mp_explicit
 
-/*:593*/
 ;
 while(k!=zero_off){
-/*594:*/
 
 if(k> zero_off){
 w= mp_next_knot(w);
@@ -12798,7 +12098,6 @@ incr(k);
 }
 
 
-/*:594*/
 ;
 if((join_type==1)||(k==zero_off)){
 mp_number xtot,ytot;
@@ -12812,13 +12111,11 @@ free_number(ytot);
 }
 }
 if(q!=mp_next_knot(p)){
-/*597:*/
 
 {
 p= mp_next_knot(p);
 if((join_type==0)||(join_type==3)){
 if(join_type==0){
-/*598:*/
 
 {
 mp_number det;
@@ -12865,10 +12162,8 @@ free_number(absdet);
 }
 
 
-/*:598*/
 
 }else{
-/*599:*/
 
 {
 mp_number ht_x,ht_y;
@@ -12896,13 +12191,11 @@ number_clone(ht_y_abs,ht_y);
 number_abs(ht_x_abs);
 number_abs(ht_y_abs);
 }
-/*601:*/
 
 set_number_to_zero(max_ht);
 kk= zero_off;
 ww= w;
 while(1){
-/*602:*/
 
 if(kk> k0){
 ww= mp_next_knot(ww);
@@ -12913,7 +12206,6 @@ incr(kk);
 }
 
 
-/*:602*/
 ;
 if(kk==k0)
 break;
@@ -12934,7 +12226,6 @@ number_clone(max_ht,tmp);
 }
 
 
-/*:601*/
 ;
 {
 mp_number r1,r2;
@@ -12980,7 +12271,6 @@ free_number(ht_y_abs);
 }
 
 
-/*:599*/
 ;
 }
 if(r!=NULL){
@@ -12991,7 +12281,6 @@ number_clone(r->right_y,r->y_coord);
 }
 
 
-/*:597*/
 ;
 }
 p= q;
@@ -13008,7 +12297,6 @@ return c;
 }
 
 
-/*:588*//*596:*/
 
 mp_knot mp_insert_knot(MP mp,mp_knot q,mp_number x,mp_number y){
 
@@ -13031,7 +12319,6 @@ return r;
 }
 
 
-/*:596*//*608:*/
 
 static void mp_find_direction_time(MP mp,mp_number*ret,mp_number x_orig,mp_number y_orig,mp_knot h){
 mp_number max;
@@ -13103,7 +12390,6 @@ while(1){
 if(mp_right_type(p)==mp_endpoint)
 break;
 q= mp_next_knot(p);
-/*609:*/
 
 set_number_to_zero(tt);
 
@@ -13367,7 +12653,6 @@ free_number(tmp);
 DONE:
 
 
-/*:609*/
 ;
 p= q;
 number_add(n,unity_t);
@@ -13401,7 +12686,6 @@ free_number(tt);
 
 
 
-/*:608*//*621:*/
 
 static void mp_cubic_intersection(MP mp,mp_knot p,mp_knot pp){
 mp_knot q,qq;
@@ -13417,7 +12701,6 @@ number_double(x_two_t);number_double(x_two_t);
 set_number_from_double(x_two_t_low_precision,-0.5);
 number_add(x_two_t_low_precision,x_two_t);
 
-/*625:*/
 
 q= mp_next_knot(p);
 qq= mp_next_knot(pp);
@@ -13447,7 +12730,6 @@ mp->three_l= 0;
 set_number_from_scaled(mp->cur_t,1);
 set_number_from_scaled(mp->cur_tt,1)
 
-/*:625*/
 ;
 CONTINUE:
 while(1){
@@ -13491,7 +12773,6 @@ number_double(mp->max_t);
 number_clone(mp->appr_t,mp->cur_t);
 number_clone(mp->appr_tt,mp->cur_tt);
 }
-/*626:*/
 
 number_clone(stack_dx,mp->delx);
 number_clone(stack_dy,mp->dely);
@@ -13541,7 +12822,6 @@ mp->tol= mp->tol-mp->three_l+(integer)mp->tol_step;
 mp->tol+= mp->tol;
 mp->three_l= mp->three_l+(integer)mp->tol_step
 
-/*:626*/
 ;
 goto CONTINUE;
 }
@@ -13611,12 +12891,10 @@ mp->xy= mp->xy+int_packets;
 }
 
 
-/*:621*//*627:*/
 
 static void mp_path_intersection(MP mp,mp_knot h,mp_knot hh){
 mp_knot p,pp;
 mp_number n,nn;
-/*628:*/
 
 if(mp_right_type(h)==mp_endpoint){
 number_clone(h->right_x,h->x_coord);
@@ -13633,7 +12911,6 @@ number_clone(hh->left_y,hh->y_coord);
 mp_right_type(hh)= mp_explicit;
 }
 
-/*:628*/
 ;
 new_number(n);
 new_number(nn);
@@ -13675,7 +12952,6 @@ free_number(nn);
 }
 
 
-/*:627*//*629:*/
 
 void mp_new_indep(MP mp,mp_node p){
 if(mp->serial_no>=max_integer){
@@ -13687,7 +12963,6 @@ set_indep_scale(p,0);
 set_indep_value(p,mp->serial_no);
 }
 
-/*:629*//*632:*/
 
 static mp_node get_dep_info(MP mp,mp_value_node p){
 mp_node d;
@@ -13702,7 +12977,6 @@ p->attr_head_= NULL;
 p->subscr_head_= NULL;
 }
 
-/*:632*//*634:*/
 
 static mp_value_node mp_get_dep_node(MP mp){
 mp_value_node p= (mp_value_node)mp_get_value_node(mp);
@@ -13714,7 +12988,6 @@ mp_free_value_node(mp,(mp_node)p);
 }
 
 
-/*:634*//*640:*/
 
 void mp_print_dependency(MP mp,mp_value_node p,quarterword t){
 mp_number v;
@@ -13760,7 +13033,6 @@ p= (mp_value_node)mp_link(p);
 
 
 
-/*:640*//*641:*/
 
 static void mp_max_coef(MP mp,mp_number*x,mp_value_node p){
 mp_number(absv);
@@ -13778,7 +13050,6 @@ free_number(absv);
 }
 
 
-/*:641*//*645:*/
 
 static mp_value_node mp_p_plus_fq(MP mp,mp_value_node p,mp_number f,
 mp_value_node q,mp_variable_type t,
@@ -13932,7 +13203,6 @@ return(mp_value_node)mp_link(mp->temp_head);
 }
 
 
-/*:645*//*646:*/
 
 static mp_value_node mp_p_plus_q(MP mp,mp_value_node p,mp_value_node q,
 mp_variable_type t){
@@ -14027,7 +13297,6 @@ free_number(threshold);
 return(mp_value_node)mp_link(mp->temp_head);
 }
 
-/*:646*//*647:*/
 
 static mp_value_node mp_p_times_v(MP mp,mp_value_node p,mp_number v,
 quarterword t0,quarterword t1,
@@ -14091,7 +13360,6 @@ return(mp_value_node)mp_link(mp->temp_head);
 }
 
 
-/*:647*//*649:*/
 
 mp_value_node mp_p_over_v(MP mp,mp_value_node p,mp_number v_orig,quarterword
 t0,quarterword t1){
@@ -14171,7 +13439,6 @@ return(mp_value_node)mp_link(mp->temp_head);
 }
 
 
-/*:649*//*650:*/
 
 static mp_value_node mp_p_with_x_becoming_q(MP mp,mp_value_node p,
 mp_node x,mp_node q,
@@ -14203,7 +13470,6 @@ return ret;
 }
 
 
-/*:650*//*652:*/
 
 static void mp_val_too_big(MP mp,mp_number x){
 if(number_positive(internal_value(mp_warning_check))){
@@ -14219,7 +13485,6 @@ mp_error(mp,msg,hlp,true);
 }
 }
 
-/*:652*//*654:*/
 
 void mp_make_known(MP mp,mp_value_node p,mp_value_node q){
 mp_variable_type t;
@@ -14253,7 +13518,6 @@ free_number(absp);
 }
 
 
-/*:654*//*656:*/
 
 static void mp_fix_dependencies(MP mp){
 mp_value_node p,q,r,s,t;
@@ -14308,7 +13572,6 @@ mp->fix_needed= false;
 }
 
 
-/*:656*//*657:*/
 
 static void mp_new_dep(MP mp,mp_node q,mp_variable_type newtype,
 mp_value_node p){
@@ -14324,7 +13587,6 @@ set_mp_link(mp->dep_head,q);
 }
 
 
-/*:657*//*658:*/
 
 static mp_value_node mp_const_dependency(MP mp,mp_number v){
 mp->dep_final= mp_get_dep_node(mp);
@@ -14335,7 +13597,6 @@ return mp->dep_final;
 }
 
 
-/*:658*//*659:*/
 
 static mp_value_node mp_single_dependency(MP mp,mp_node p){
 mp_value_node q,rr;
@@ -14356,7 +13617,6 @@ return q;
 }
 
 
-/*:659*//*660:*/
 
 static mp_value_node mp_copy_dep_list(MP mp,mp_value_node p){
 mp_value_node q;
@@ -14376,7 +13636,6 @@ return q;
 }
 
 
-/*:660*//*661:*/
 
 static mp_value_node find_node_with_largest_coefficient(MP mp,mp_value_node p,mp_number*v);
 static void display_new_dependency(MP mp,mp_value_node p,mp_node x,integer n);
@@ -14427,7 +13686,6 @@ free_number(v);
 }
 
 
-/*:661*//*662:*/
 
 static mp_value_node find_node_with_largest_coefficient(MP mp,mp_value_node p,mp_number*v){
 mp_number vabs;
@@ -14454,7 +13712,6 @@ return q;
 }
 
 
-/*:662*//*663:*/
 
 static mp_value_node divide_p_by_minusv_removing_q(MP mp,mp_value_node p,mp_value_node q,
 mp_value_node*final_node,mp_number v,quarterword t){
@@ -14509,7 +13766,6 @@ return(mp_value_node)mp_link(mp->temp_head);
 }
 
 
-/*:663*//*664:*/
 
 static void display_new_dependency(MP mp,mp_value_node p,mp_node x,integer n){
 if(mp_interesting(mp,x)){
@@ -14528,7 +13784,6 @@ mp_end_diagnostic(mp,false);
 }
 }
 
-/*:664*//*665:*/
 
 static mp_value_node divide_p_by_2_n(MP mp,mp_value_node p,integer n){
 mp_value_node pp= NULL;
@@ -14568,7 +13823,6 @@ free_number(w);
 return pp;
 }
 
-/*:665*//*666:*/
 
 static void change_to_known(MP mp,mp_value_node p,mp_node x,mp_value_node final_node,integer n){
 if(dep_info(p)==NULL){
@@ -14596,7 +13850,6 @@ mp->cur_exp.type= mp_dependent;
 }
 }
 
-/*:666*//*668:*/
 
 static mp_node mp_new_ring_entry(MP mp,mp_node p){
 mp_node q;
@@ -14612,7 +13865,6 @@ return q;
 }
 
 
-/*:668*//*670:*/
 
 void mp_ring_delete(MP mp,mp_node p){
 mp_node q;
@@ -14626,7 +13878,6 @@ set_value_node(q,value_node(p));
 }
 
 
-/*:670*//*671:*/
 
 static void mp_nonlinear_eq(MP mp,mp_value v,mp_node p,boolean flush_p){
 mp_variable_type t;
@@ -14666,7 +13917,6 @@ q= r;
 }
 
 
-/*:671*//*672:*/
 
 static void mp_ring_merge(MP mp,mp_node p,mp_node q){
 mp_node r;
@@ -14684,7 +13934,6 @@ set_value_node(q,r);
 }
 
 
-/*:672*//*673:*/
 
 static void exclaim_redundant_equation(MP mp){
 const char*hlp[]= {
@@ -14695,11 +13944,9 @@ mp_back_error(mp,"Redundant equation",hlp,true);
 mp_get_x_next(mp);
 }
 
-/*:673*//*679:*/
 
 void mp_print_cmd_mod(MP mp,integer c,integer m){
 switch(c){
-/*240:*/
 
 case mp_add_to_command:
 mp_print(mp,"addto");
@@ -14833,7 +14080,6 @@ case mp_write_command:
 mp_print(mp,"write");
 break;
 
-/*:240*//*744:*/
 
 case mp_start_tex:
 if(m==btex_code)
@@ -14848,7 +14094,6 @@ case mp_mpx_break:
 mp_print(mp,"mpxbreak");
 break;
 
-/*:744*//*754:*/
 
 case mp_macro_def:
 if(m<=var_def){
@@ -14877,7 +14122,6 @@ else
 mp_print(mp,"forsuffixes");
 break;
 
-/*:754*//*762:*/
 
 case mp_macro_special:
 switch(m){
@@ -14896,7 +14140,6 @@ break;
 }
 break;
 
-/*:762*//*768:*/
 
 case mp_param_type:
 if(m==mp_expr_param)
@@ -14913,7 +14156,6 @@ else
 mp_print(mp,"tertiary");
 break;
 
-/*:768*//*780:*/
 
 case mp_input:
 if(m==0)
@@ -14922,7 +14164,6 @@ else
 mp_print(mp,"endinput");
 break;
 
-/*:780*//*822:*/
 
 case mp_if_test:
 case mp_fi_or_else:
@@ -14942,7 +14183,6 @@ break;
 }
 break;
 
-/*:822*//*968:*/
 
 case mp_nullary:
 case mp_unary:
@@ -14959,13 +14199,11 @@ case mp_and_command:
 mp_print_op(mp,(quarterword)m);
 break;
 
-/*:968*//*1059:*/
 
 case mp_type_name:
 mp_print_type(mp,(quarterword)m);
 break;
 
-/*:1059*//*1084:*/
 
 case mp_stop:
 if(cur_mod()==0)
@@ -14974,7 +14212,6 @@ else
 mp_print(mp,"dump");
 break;
 
-/*:1084*//*1091:*/
 
 case mp_mode_command:
 switch(m){
@@ -14993,7 +14230,6 @@ break;
 }
 break;
 
-/*:1091*//*1094:*/
 
 case mp_protection_command:
 if(m==0)
@@ -15002,7 +14238,6 @@ else
 mp_print(mp,"outer");
 break;
 
-/*:1094*//*1112:*/
 
 case mp_show_command:
 switch(m){
@@ -15024,7 +14259,6 @@ break;
 }
 break;
 
-/*:1112*//*1118:*/
 
 case mp_left_delimiter:
 case mp_right_delimiter:
@@ -15036,9 +14270,9 @@ mp_print(mp,"right");
 mp_print(mp," delimiter that matches ");
 mp_print_text(m);
 #else
- mp_print(mp," delimiter");
+mp_print(mp," delimiter");
 #endif
- break;
+break;
 case mp_tag_token:
 if(m==0)
 mp_print(mp,"tag");
@@ -15064,7 +14298,6 @@ mp_print(mp,internal_name(m));
 break;
 
 
-/*:1118*//*1135:*/
 
 case mp_thing_to_add:
 if(m==contour_code)
@@ -15095,7 +14328,6 @@ else
 mp_print(mp,"dashed");
 break;
 
-/*:1135*//*1141:*/
 
 case mp_bounds_command:
 if(m==mp_start_clip_node_type)
@@ -15104,7 +14336,6 @@ else
 mp_print(mp,"setbounds");
 break;
 
-/*:1141*//*1156:*/
 
 case mp_message_command:
 if(m<err_message_code)
@@ -15117,7 +14348,6 @@ else
 mp_print(mp,"errhelp");
 break;
 
-/*:1156*//*1188:*/
 
 case mp_tfm_command:
 switch(m){
@@ -15139,7 +14369,6 @@ break;
 }
 break;
 
-/*:1188*//*1198:*/
 
 case mp_lig_kern_token:
 switch(m){
@@ -15173,7 +14402,6 @@ break;
 }
 break;
 
-/*:1198*/
 
 default:
 mp_print(mp,"[unknown command code!]");
@@ -15182,7 +14410,6 @@ break;
 }
 
 
-/*:679*//*680:*/
 
 static void mp_show_cmd_mod(MP mp,integer c,integer m){
 mp_begin_diagnostic(mp);
@@ -15193,7 +14420,6 @@ mp_end_diagnostic(mp,false);
 }
 
 
-/*:680*//*689:*/
 
 static void mp_reallocate_input_stack(MP mp,int newsize){
 int k;
@@ -15216,7 +14442,6 @@ mp->max_in_open= newsize;
 }
 
 
-/*:689*//*695:*/
 
 static void mp_check_param_size(MP mp,int k){
 while(k>=mp->param_size){
@@ -15226,7 +14451,6 @@ mp->param_size= k+k/4;
 }
 
 
-/*:695*//*698:*/
 
 integer mp_true_line(MP mp){
 int k;
@@ -15244,11 +14468,9 @@ return(k> 0?mp->line_stack[(k-1)+file_bottom]:0);
 }
 
 
-/*:698*//*700:*/
 
 void mp_show_context(MP mp){
 unsigned old_setting;
-/*706:*/
 
 int i;
 integer l;
@@ -15257,14 +14479,12 @@ int n;
 integer p;
 integer q;
 
-/*:706*/
 ;
 mp->file_ptr= mp->input_ptr;
 mp->input_stack[mp->file_ptr]= mp->cur_input;
 
 while(1){
 mp->cur_input= mp->input_stack[mp->file_ptr];
-/*701:*/
 
 if((mp->file_ptr==mp->input_ptr)||file_state||
 (token_type!=backed_up)||(nloc!=NULL)){
@@ -15272,7 +14492,6 @@ if((mp->file_ptr==mp->input_ptr)||file_state||
 mp->tally= 0;
 old_setting= mp->selector;
 if(file_state){
-/*702:*/
 
 if(name> max_spec_src){
 mp_print_nl(mp,"l.");
@@ -15290,9 +14509,7 @@ mp_print_nl(mp,"<read>");
 mp_print_char(mp,xord(' '))
 
 
-/*:702*/
 ;
-/*709:*/
 
 begin_pseudoprint;
 if(limit> 0){
@@ -15303,16 +14520,13 @@ mp_print_char(mp,mp->buffer[i]);
 }
 }
 
-/*:709*/
 ;
 }else{
-/*703:*/
 
 {
 if(token_type==forever_text){
 mp_print_nl(mp,"<forever> ");
 }else if(token_type==loop_text){
-/*704:*/
 
 {
 mp_node pp;
@@ -15328,7 +14542,6 @@ mp_print(mp,")> ");
 }
 
 
-/*:704*/
 ;
 }else if(token_type==parameter){
 mp_print_nl(mp,"<argument> ");
@@ -15344,7 +14557,6 @@ mp_print_ln(mp);
 if(name!=NULL)
 mp_print_str(mp,name);
 else
-/*705:*/
 
 {
 mp_node pp= mp->param_stack[param_start];
@@ -15362,7 +14574,6 @@ mp_link(qq)= NULL;
 }
 
 
-/*:705*/
 ;
 mp_print(mp,"->");
 }else{
@@ -15372,9 +14583,7 @@ mp_print_nl(mp,"?");
 }
 
 
-/*:703*/
 ;
-/*710:*/
 
 begin_pseudoprint;
 if(token_type!=macro)
@@ -15383,11 +14592,9 @@ else
 mp_show_macro(mp,nstart,nloc,100000)
 
 
-/*:710*/
 ;
 }
 mp->selector= old_setting;
-/*708:*/
 
 if(mp->trick_count==1000000)
 set_trick_count();
@@ -15422,11 +14629,9 @@ if(m+n> mp->error_line)
 mp_print(mp,"...")
 
 
-/*:708*/
 ;
 }
 
-/*:701*/
 ;
 if(file_state)
 if((name> max_spec_src)||(mp->file_ptr==0))
@@ -15437,7 +14642,6 @@ mp->cur_input= mp->input_stack[mp->input_ptr];
 }
 
 
-/*:700*//*713:*/
 
 static void mp_begin_token_list(MP mp,mp_node p,quarterword t){
 push_input;
@@ -15448,7 +14652,6 @@ nloc= p;
 }
 
 
-/*:713*//*714:*/
 
 static void mp_end_token_list(MP mp){
 mp_node p;
@@ -15478,11 +14681,8 @@ check_interrupt;
 }
 
 
-/*:714*//*715:*/
 
-/*952:*/
 
-/*953:*/
 
 static void mp_encapsulate(MP mp,mp_value_node p){
 mp_node q= mp_get_value_node(mp);
@@ -15492,7 +14692,6 @@ mp_new_dep(mp,q,mp->cur_exp.type,p);
 set_cur_exp_node(q);
 }
 
-/*:953*//*954:*/
 
 static void mp_install(MP mp,mp_node r,mp_node q){
 mp_value_node p;
@@ -15516,7 +14715,6 @@ q)));
 }
 
 
-/*:954*/
 ;
 static void mp_make_exp_copy(MP mp,mp_node p){
 mp_node t;
@@ -15639,7 +14837,6 @@ break;
 }
 
 
-/*:952*/
 ;
 static mp_node mp_cur_tok(MP mp){
 mp_node p;
@@ -15675,7 +14872,6 @@ return p;
 }
 
 
-/*:715*//*717:*/
 
 void mp_back_input(MP mp){
 mp_node p;
@@ -15686,7 +14882,6 @@ back_list(p);
 }
 
 
-/*:717*//*719:*/
 
 static void mp_back_error(MP mp,const char*msg,const char**hlp,boolean deletions_allowed){
 
@@ -15705,7 +14900,6 @@ mp_error(mp,msg,hlp,deletions_allowed);
 }
 
 
-/*:719*//*720:*/
 
 void mp_begin_file_reading(MP mp){
 if(mp->in_open==(mp->max_in_open-1))
@@ -15723,7 +14917,6 @@ name= is_term;
 }
 
 
-/*:720*//*721:*/
 
 static void mp_end_file_reading(MP mp){
 if(mp->reading_preload&&mp->input_ptr==0){
@@ -15755,7 +14948,6 @@ decr(mp->in_open);
 }
 
 
-/*:721*//*722:*/
 
 static boolean mp_begin_mpx_reading(MP mp){
 if(mp->in_open!=iindex+1){
@@ -15784,7 +14976,6 @@ return true;
 }
 
 
-/*:722*//*723:*/
 
 static void mp_end_mpx_reading(MP mp){
 if(mp->in_open!=iindex)
@@ -15807,7 +14998,6 @@ mp->first= (size_t)start;
 pop_input;
 }
 
-/*:723*//*724:*/
 
 void mp_clear_for_error_prompt(MP mp){
 while(file_state&&terminal_input&&(mp->input_ptr> 0)&&(loc==limit))
@@ -15817,14 +15007,12 @@ clear_terminal();
 }
 
 
-/*:724*//*729:*/
 
 static boolean mp_check_outer_validity(MP mp){
 mp_node p;
 if(mp->scanner_status==normal){
 return true;
 }else if(mp->scanner_status==tex_flushing){
-/*730:*/
 
 if(cur_sym()!=NULL){
 return true;
@@ -15841,10 +15029,8 @@ return false;
 }
 
 
-/*:730*/
 ;
 }else{
-/*731:*/
 
 if(cur_sym()!=NULL){
 p= mp_get_symbolic_node(mp);
@@ -15853,10 +15039,8 @@ mp_name_type(p)= cur_sym_mod();
 back_list(p);
 }
 
-/*:731*/
 ;
 if(mp->scanner_status> skipping){
-/*732:*/
 
 {
 char msg[256];
@@ -15876,7 +15060,6 @@ msg_start= "Forbidden token found while scanning";
 
 }
 switch(mp->scanner_status){
-/*733:*/
 
 case flushing:
 mp_snprintf(msg,256,"%s to the end of the statement",msg_start);
@@ -15924,14 +15107,12 @@ hlp[0]= "I suspect you have forgotten an `endfor',";
 set_cur_sym(mp->frozen_end_for);
 break;
 
-/*:733*/
 
 }
 mp_ins_error(mp,msg,hlp,true);
 }
 
 
-/*:732*/
 ;
 }else{
 char msg[256];
@@ -15953,7 +15134,6 @@ return false;
 }
 
 
-/*:729*//*735:*/
 
 void mp_runaway(MP mp){
 if(mp->scanner_status> flushing){
@@ -15977,7 +15157,6 @@ mp_show_token_list(mp,mp_link(mp->hold_head),NULL,mp->error_line-10,
 }
 
 
-/*:735*//*737:*/
 
 void mp_get_next(MP mp){
 
@@ -16154,7 +15333,6 @@ goto RESTART;
 }
 }
 
-/*:737*//*740:*/
 
 static int move_to_next_line(MP mp){
 if(name> max_spec_src){
@@ -16237,7 +15415,6 @@ return 0;
 }
 
 
-/*:740*//*741:*/
 
 void mp_firm_up_the_line(MP mp){
 size_t k;
@@ -16265,16 +15442,13 @@ limit= (halfword)((size_t)start+mp->last-mp->first);
 }
 
 
-/*:741*//*745:*/
 
-/*:745*//*747:*/
 
 static void mp_t_next(MP mp){
 int old_status;
 integer old_info;
 
 if((mp->extensions==1)&&(cur_cmd()==mp_start_tex)){
-/*789:*/
 
 {
 char*txt= NULL;
@@ -16407,7 +15581,6 @@ decr(size);
 
 {
 char*s= mp->make_text(mp,ptr,size,verb);
-/*787:*/
 
 if(s!=NULL){
 int k;
@@ -16433,7 +15606,6 @@ loc= start;
 mp_flush_cur_exp(mp,new_expr);
 }
 
-/*:787*/
 
 free(s);
 }
@@ -16461,14 +15633,12 @@ free(txt);
 }
 }
 
-/*:789*/
 ;
 }else{
 
 while(cur_cmd()<=mp_max_pre_command){
 if(cur_cmd()==mp_mpx_break){
 if(!file_state||(mp->mpx_name[iindex]==absent)){
-/*751:*/
 
 {
 const char*hlp[]= {
@@ -16479,7 +15649,6 @@ mp_error(mp,"Misplaced mpxbreak",hlp,true);
 }
 
 
-/*:751*/
 ;
 }else{
 mp_end_mpx_reading(mp);
@@ -16487,7 +15656,6 @@ goto TEX_FLUSH;
 }
 }else if(cur_cmd()==mp_start_tex){
 if(token_state||(name<=max_spec_src)){
-/*750:*/
 
 {
 const char*hlp[]= {
@@ -16499,10 +15667,8 @@ mp_error(mp,"You can only use `btex' or `verbatimtex' in a file",hlp,true);
 }
 
 
-/*:750*/
 ;
 }else if(mpx_reading){
-/*749:*/
 
 {
 const char*hlp[]= {
@@ -16515,7 +15681,6 @@ mp_error(mp,"An mpx file cannot contain btex or verbatimtex blocks",hlp,true);
 }
 
 
-/*:749*/
 ;
 }else if((cur_mod()!=verbatim_code)&&
 (mp->mpx_name[iindex]!=mpx_finished)){
@@ -16525,7 +15690,6 @@ mp_start_mpx_input(mp);
 goto TEX_FLUSH;
 }
 }else{
-/*752:*/
 
 {
 const char*hlp[]= {
@@ -16535,12 +15699,10 @@ mp_error(mp,"Extra etex will be ignored",hlp,true);
 }
 
 
-/*:752*/
 ;
 }
 goto COMMON_ENDING;
 TEX_FLUSH:
-/*748:*/
 
 old_status= mp->scanner_status;
 old_info= mp->warning_line;
@@ -16552,7 +15714,6 @@ mp_get_next(mp);
 mp->scanner_status= old_status;
 mp->warning_line= old_info
 
-/*:748*/
 ;
 COMMON_ENDING:
 mp_get_next(mp);
@@ -16561,7 +15722,6 @@ mp_get_next(mp);
 }
 
 
-/*:747*//*756:*/
 
 static mp_node mp_scan_toks(MP mp,mp_command_code terminator,
 mp_subst_list_item*subst_list,mp_node tail_end,
@@ -16578,7 +15738,6 @@ while(1){
 get_t_next(mp);
 cur_data= -1;
 if(cur_sym()!=NULL){
-/*759:*/
 
 {
 q= subst_list;
@@ -16594,10 +15753,8 @@ q= q->link;
 }
 
 
-/*:759*/
 ;
 if(cur_cmd()==terminator){
-/*760:*/
 
 if(cur_mod()> 0){
 incr(balance);
@@ -16608,7 +15765,6 @@ break;
 }
 
 
-/*:760*/
 ;
 }else if(cur_cmd()==mp_macro_special){
 
@@ -16639,7 +15795,6 @@ subst_list= q;
 return mp_link(mp->hold_head);
 }
 
-/*:756*//*757:*/
 
 void mp_print_sym(mp_sym sym){
 printf("{type = %d, v = {type = %d, data = {indep = {scale = %d, serial = %d}, n = %d, str = %p, sym = %p, node = %p, p = %p}}, text = %p}\n",sym->type,sym->v.type,(int)sym->v.data.indep.scale,(int)sym->v.data.indep.serial,
@@ -16654,7 +15809,6 @@ printf("{str = %p \"%s\", len = %d, refs = %d}\n",t->str,t->str,(int)t->len,t->r
 }
 }
 
-/*:757*//*763:*/
 
 static void mp_get_symbol(MP mp){
 RESTART:
@@ -16677,7 +15831,6 @@ goto RESTART;
 }
 
 
-/*:763*//*764:*/
 
 static void mp_get_clear_symbol(MP mp){
 mp_get_symbol(mp);
@@ -16685,7 +15838,6 @@ mp_clear_symbol(mp,cur_sym(),false);
 }
 
 
-/*:764*//*765:*/
 
 static void mp_check_equals(MP mp){
 if(cur_cmd()!=mp_equals)
@@ -16703,7 +15855,6 @@ mp_back_error(mp,"Missing `=' has been inserted",hlp,true);
 }
 
 
-/*:765*//*766:*/
 
 static void mp_make_op_def(MP mp){
 mp_command_code m;
@@ -16743,7 +15894,6 @@ mp_get_x_next(mp);
 }
 
 
-/*:766*//*769:*/
 
 static void mp_scan_def(MP mp){
 int m;
@@ -16906,7 +16056,6 @@ mp->scanner_status= normal;
 mp_get_x_next(mp);
 }
 
-/*:769*//*776:*/
 
 static void mp_expansion_depth_error(MP mp){
 const char*hlp[]= {
@@ -16922,7 +16071,6 @@ mp_jump_out(mp);
 }
 
 
-/*:776*//*777:*/
 
 static void mp_expand(MP mp){
 size_t k;
@@ -16936,7 +16084,6 @@ case mp_if_test:
 mp_conditional(mp);
 break;
 case mp_fi_or_else:
-/*832:*/
 
 if(cur_mod()> mp->if_limit){
 if(mp->if_limit==if_code){
@@ -16961,7 +16108,6 @@ mp_error(mp,"Extra elseif",hlp,true);
 }else{
 while(cur_mod()!=fi_code)
 mp_pass_text(mp);
-/*826:*/
 
 {
 mp_node p= mp->cond_ptr;
@@ -16973,16 +16119,13 @@ mp_free_node(mp,p,if_node_size);
 }
 
 
-/*:826*/
 ;
 }
 
 
-/*:832*/
 ;
 break;
 case mp_input:
-/*781:*/
 
 if(cur_mod()> 0)
 mp->force_eof= true;
@@ -16990,12 +16133,10 @@ else
 mp_start_input(mp)
 
 
-/*:781*/
 ;
 break;
 case mp_iteration:
 if(cur_mod()==end_for){
-/*778:*/
 
 {
 const char*hlp[]= {
@@ -17007,14 +16148,12 @@ mp_error(mp,"Extra `endfor'",hlp,true);
 }
 
 
-/*:778*/
 ;
 }else{
 mp_begin_iteration(mp);
 }
 break;
 case mp_repeat_loop:
-/*782:*/
 
 {
 while(token_state&&(nloc==NULL))
@@ -17032,11 +16171,9 @@ mp_resume_iteration(mp);
 }
 
 
-/*:782*/
 ;
 break;
 case mp_exit_test:
-/*783:*/
 
 {
 mp_get_boolean(mp);
@@ -17053,7 +16190,6 @@ else
 mp_back_error(mp,"No loop is in progress",hlp,true);
 ;
 }else{
-/*784:*/
 
 {
 mp_node p= NULL;
@@ -17073,7 +16209,6 @@ mp_stop_iteration(mp);
 }
 
 
-/*:784*/
 ;
 }
 }else if(cur_cmd()!=mp_semicolon){
@@ -17087,13 +16222,11 @@ mp_back_error(mp,"Missing `;' has been inserted",hlp,true);
 }
 
 
-/*:783*/
 ;
 break;
 case mp_relax:
 break;
 case mp_expand_after:
-/*785:*/
 
 {
 mp_node p;
@@ -17108,11 +16241,9 @@ back_list(p);
 }
 
 
-/*:785*/
 ;
 break;
 case mp_scan_tokens:
-/*786:*/
 
 {
 mp_get_x_next(mp);
@@ -17133,7 +16264,6 @@ mp_flush_cur_exp(mp,new_expr);
 }else{
 mp_back_input(mp);
 if(cur_exp_str()->len> 0)
-/*791:*/
 
 {
 mp_value new_expr;
@@ -17162,16 +16292,13 @@ mp_flush_cur_exp(mp,new_expr);
 }
 
 
-/*:791*/
 ;
 }
 }
 
-/*:786*/
 ;
 break;
 case mp_runscript:
-/*788:*/
 
 {
 
@@ -17197,7 +16324,6 @@ mp_flush_cur_exp(mp,new_expr);
 mp_back_input(mp);
 if(cur_exp_str()->len> 0){
 char*s= mp->run_script(mp,(const char*)cur_exp_str()->str,cur_exp_str()->len);
-/*787:*/
 
 if(s!=NULL){
 int k;
@@ -17223,18 +16349,15 @@ loc= start;
 mp_flush_cur_exp(mp,new_expr);
 }
 
-/*:787*/
 
 free(s);
 }
 }
 }
 
-/*:788*/
 ;
 break;
 case mp_maketext:
-/*790:*/
 
 {
 if(mp->extensions==0){
@@ -17259,7 +16382,6 @@ mp_flush_cur_exp(mp,new_expr);
 mp_back_input(mp);
 if(cur_exp_str()->len> 0){
 char*s= mp->make_text(mp,(const char*)cur_exp_str()->str,cur_exp_str()->len,0);
-/*787:*/
 
 if(s!=NULL){
 int k;
@@ -17285,14 +16407,12 @@ loc= start;
 mp_flush_cur_exp(mp,new_expr);
 }
 
-/*:787*/
 
 free(s);
 }
 }
 }
 
-/*:790*/
 ;
 break;
 case mp_defined_macro:
@@ -17305,7 +16425,6 @@ mp->expand_depth_count--;
 }
 
 
-/*:777*//*793:*/
 
 void mp_get_x_next(MP mp){
 mp_node save_exp;
@@ -17324,7 +16443,6 @@ mp_unstash_cur_exp(mp,save_exp);
 }
 
 
-/*:793*//*796:*/
 
 void mp_macro_call(MP mp,mp_node def_ref,mp_node arg_list,mp_sym macro_name){
 
@@ -17338,7 +16456,6 @@ add_mac_ref(def_ref);
 if(arg_list==NULL){
 n= 0;
 }else{
-/*802:*/
 
 {
 n= 1;
@@ -17350,11 +16467,9 @@ tail= mp_link(tail);
 }
 
 
-/*:802*/
 ;
 }
 if(number_positive(internal_value(mp_tracing_macros))){
-/*797:*/
 
 mp_begin_diagnostic(mp);
 mp_print_ln(mp);
@@ -17375,15 +16490,12 @@ p= mp_link(p);
 mp_end_diagnostic(mp,false)
 
 
-/*:797*/
 ;
 }
-/*803:*/
 
 set_cur_cmd(mp_comma+1);
 while(mp_name_type(r)==mp_expr_sym||
 mp_name_type(r)==mp_suffix_sym||mp_name_type(r)==mp_text_sym){
-/*804:*/
 
 if(cur_cmd()!=mp_comma){
 mp_get_x_next(mp);
@@ -17417,7 +16529,6 @@ goto FOUND;
 l_delim= cur_sym();
 r_delim= equiv_sym(cur_sym());
 }
-/*807:*/
 
 if(mp_name_type(r)==mp_text_sym){
 mp_scan_text_arg(mp,l_delim,r_delim);
@@ -17430,10 +16541,8 @@ mp_scan_expression(mp);
 }
 
 
-/*:807*/
 ;
 if(cur_cmd()!=mp_comma)
-/*805:*/
 
 if((cur_cmd()!=mp_right_delimiter)||(equiv_sym(cur_sym())!=l_delim)){
 if(mp_name_type(mp_link(r))==mp_expr_sym||
@@ -17459,10 +16568,8 @@ mp_back_error(mp,msg,hlp,true);
 }
 }
 
-/*:805*/
 ;
 FOUND:
-/*806:*/
 
 {
 p= mp_get_symbolic_node(mp);
@@ -17485,11 +16592,9 @@ incr(n);
 }
 
 
-/*:806*/
 
 
 
-/*:804*/
 ;
 r= mp_link(r);
 }
@@ -17514,7 +16619,6 @@ delete_str_ref(rname);
 mp_error(mp,msg,hlp,true);
 }
 if(mp_sym_info(r)!=mp_general_macro){
-/*812:*/
 
 {
 if(mp_sym_info(r)<mp_text_macro){
@@ -17538,7 +16642,6 @@ case mp_expr_macro:
 mp_scan_expression(mp);
 break;
 case mp_of_macro:
-/*813:*/
 
 {
 mp_scan_expression(mp);
@@ -17576,11 +16679,9 @@ mp_scan_primary(mp);
 }
 
 
-/*:813*/
 ;
 break;
 case mp_suffix_macro:
-/*814:*/
 
 {
 if(cur_cmd()!=mp_left_delimiter){
@@ -17607,7 +16708,6 @@ mp_get_x_next(mp);
 }
 
 
-/*:814*/
 ;
 break;
 case mp_text_macro:
@@ -17615,7 +16715,6 @@ mp_scan_text_arg(mp,NULL,NULL);
 break;
 }
 mp_back_input(mp);
-/*806:*/
 
 {
 p= mp_get_symbolic_node(mp);
@@ -17638,20 +16737,16 @@ incr(n);
 }
 
 
-/*:806*/
 ;
 }
 
 
-/*:812*/
 ;
 }
 r= mp_link(r)
 
 
-/*:803*/
 ;
-/*815:*/
 
 while(token_state&&(nloc==NULL))
 mp_end_token_list(mp);
@@ -17676,12 +16771,10 @@ p= mp_link(p);
 mp_flush_node_list(mp,arg_list);
 }
 
-/*:815*/
 ;
 }
 
 
-/*:796*//*799:*/
 
 void mp_print_macro_name(MP mp,mp_node a,mp_sym n){
 mp_node p,q;
@@ -17703,7 +16796,6 @@ mp_link(q)= NULL;
 }
 
 
-/*:799*//*801:*/
 
 void mp_print_arg(MP mp,mp_node q,integer n,halfword b,quarterword bb){
 if(q&&mp_link(q)==MP_VOID){
@@ -17723,7 +16815,6 @@ mp_show_token_list(mp,q,NULL,1000,0);
 }
 
 
-/*:801*//*809:*/
 
 void mp_scan_text_arg(MP mp,mp_sym l_delim,mp_sym r_delim){
 integer balance;
@@ -17736,7 +16827,6 @@ mp_link(mp->hold_head)= NULL;
 while(1){
 get_t_next(mp);
 if(l_delim==NULL){
-/*811:*/
 
 if(mp_end_of_statement){
 if(balance==1){
@@ -17749,10 +16839,8 @@ decr(balance);
 incr(balance);
 }
 
-/*:811*/
 ;
 }else{
-/*810:*/
 
 if(cur_cmd()==mp_right_delimiter){
 if(equiv_sym(cur_sym())==l_delim){
@@ -17765,7 +16853,6 @@ if(equiv_sym(cur_sym())==r_delim)
 incr(balance);
 }
 
-/*:810*/
 ;
 }
 mp_link(p)= mp_cur_tok(mp);
@@ -17777,7 +16864,6 @@ mp->scanner_status= normal;
 }
 
 
-/*:809*//*816:*/
 
 static void mp_stack_argument(MP mp,mp_node p){
 if(mp->param_ptr==mp->max_param_stack){
@@ -17789,7 +16875,6 @@ incr(mp->param_ptr);
 }
 
 
-/*:816*//*818:*/
 
 static mp_node mp_get_if_node(MP mp){
 mp_if_node p= (mp_if_node)malloc_node(if_node_size);
@@ -17798,7 +16883,6 @@ return(mp_node)p;
 }
 
 
-/*:818*//*823:*/
 
 void mp_pass_text(MP mp){
 integer l= 0;
@@ -17816,13 +16900,11 @@ if(cur_mod()==fi_code)
 decr(l);
 }
 }else{
-/*824:*/
 
 if(cur_cmd()==mp_string_token){
 delete_str_ref(cur_mod_str());
 }
 
-/*:824*/
 ;
 }
 }
@@ -17830,7 +16912,6 @@ mp->scanner_status= normal;
 }
 
 
-/*:823*//*827:*/
 
 static void mp_change_if_limit(MP mp,quarterword l,mp_node p){
 mp_node q;
@@ -17853,7 +16934,6 @@ q= mp_link(q);
 }
 
 
-/*:827*//*828:*/
 
 static void mp_check_colon(MP mp){
 if(cur_cmd()!=mp_colon){
@@ -17867,13 +16947,11 @@ mp_back_error(mp,"Missing `:' has been inserted",hlp,true);
 }
 
 
-/*:828*//*829:*/
 
 void mp_conditional(MP mp){
 mp_node save_cond_ptr;
 int new_if_limit;
 mp_node p;
-/*825:*/
 
 {
 p= mp_get_if_node(mp);
@@ -17888,14 +16966,12 @@ mp->cur_if= if_code;
 }
 
 
-/*:825*/
 ;
 save_cond_ptr= mp->cond_ptr;
 RESWITCH:
 mp_get_boolean(mp);
 new_if_limit= else_if_code;
 if(number_greater(internal_value(mp_tracing_commands),unity_t)){
-/*831:*/
 
 {
 mp_begin_diagnostic(mp);
@@ -17907,7 +16983,6 @@ mp_end_diagnostic(mp,false);
 }
 
 
-/*:831*/
 ;
 }
 FOUND:
@@ -17916,14 +16991,12 @@ if(cur_exp_value_boolean()==mp_true_code){
 mp_change_if_limit(mp,(quarterword)new_if_limit,save_cond_ptr);
 return;
 };
-/*830:*/
 
 while(1){
 mp_pass_text(mp);
 if(mp->cond_ptr==save_cond_ptr)
 goto DONE;
 else if(cur_mod()==fi_code)
-/*826:*/
 
 {
 mp_node p= mp->cond_ptr;
@@ -17935,18 +17008,15 @@ mp_free_node(mp,p,if_node_size);
 }
 
 
-/*:826*/
 ;
 }
 
 
-/*:830*/
 ;
 DONE:
 mp->cur_if= (quarterword)cur_mod();
 mp->if_line= mp_true_line(mp);
 if(cur_mod()==fi_code){
-/*826:*/
 
 {
 mp_node p= mp->cond_ptr;
@@ -17958,7 +17028,6 @@ mp_free_node(mp,p,if_node_size);
 }
 
 
-/*:826*/
 
 }else if(cur_mod()==else_if_code){
 goto RESWITCH;
@@ -17971,7 +17040,6 @@ goto FOUND;
 }
 
 
-/*:829*//*836:*/
 
 static void mp_bad_for(MP mp,const char*s){
 char msg[256];
@@ -17993,7 +17061,6 @@ mp_flush_cur_exp(mp,new_expr);
 }
 
 
-/*:836*//*837:*/
 
 void mp_begin_iteration(MP mp){
 halfword m;
@@ -18030,12 +17097,10 @@ p->value_mod= mp_suffix_sym;
 }
 mp_get_x_next(mp);
 if(p->value_mod==mp_expr_sym&&cur_cmd()==mp_within_token){
-/*850:*/
 
 {
 mp_get_x_next(mp);
 mp_scan_expression(mp);
-/*851:*/
 
 if(mp->cur_exp.type!=mp_picture_type){
 mp_value new_expr;
@@ -18051,7 +17116,6 @@ mp_init_edges(mp,(mp_edge_header_node)mp->cur_exp.data.node);
 mp->cur_exp.type= mp_picture_type;
 }
 
-/*:851*/
 ;
 s->type= mp->cur_exp.data.node;
 mp->cur_exp.type= mp_vacuous;
@@ -18064,10 +17128,8 @@ s->list= q;
 }
 
 
-/*:850*/
 ;
 }else{
-/*838:*/
 
 if((cur_cmd()!=mp_equals)&&(cur_cmd()!=mp_assignment)){
 const char*hlp[]= {
@@ -18079,9 +17141,7 @@ mp_back_error(mp,"Missing `=' has been inserted",hlp,true);
 ;
 }
 
-/*:838*/
 ;
-/*848:*/
 
 s->type= NULL;
 s->list= mp_get_symbolic_node(mp);
@@ -18098,7 +17158,6 @@ goto CONTINUE;
 mp_scan_expression(mp);
 if(cur_cmd()==mp_step_token)
 if(q==s->list){
-/*849:*/
 
 {
 if(mp->cur_exp.type!=mp_known)
@@ -18128,7 +17187,6 @@ break;
 }
 
 
-/*:849*/
 ;
 }
 set_cur_exp_node(mp_stash_cur_exp(mp));
@@ -18145,11 +17203,9 @@ CONTINUE:
 ;
 }while(cur_cmd()==mp_comma)
 
-/*:848*/
 ;
 }
 }
-/*839:*/
 
 if(cur_cmd()!=mp_colon){
 const char*hlp[]= {
@@ -18161,9 +17217,7 @@ mp_back_error(mp,"Missing `:' has been inserted",hlp,true);
 ;
 }
 
-/*:839*/
 ;
-/*841:*/
 
 q= mp_get_symbolic_node(mp);
 set_mp_sym_sym(q,mp->frozen_repeat_loop);
@@ -18174,27 +17228,24 @@ mp->scanner_status= normal;
 s->link= mp->loop_ptr;
 mp->loop_ptr= s
 
-/*:841*/
 ;
 mp_resume_iteration(mp);
 }
 
 
-/*:837*//*843:*/
 
 void mp_resume_iteration(MP mp){
 mp_node p,q;
 p= mp->loop_ptr->type;
 if(p==PROGRESSION_FLAG){
 set_cur_exp_value_number(mp->loop_ptr->value);
-if(/*844:*/
+if(/*846:*/
 
 (number_positive(mp->loop_ptr->step_size)&&number_greater(cur_exp_value_number(),mp->loop_ptr->final_value))
 ||
 (number_negative(mp->loop_ptr->step_size)&&number_less(cur_exp_value_number(),mp->loop_ptr->final_value))
 
 
-/*:844*/
 ){
 mp_stop_iteration(mp);
 return;
@@ -18245,7 +17296,6 @@ mp_free_symbolic_node(mp,p);
 mp_begin_token_list(mp,mp->loop_ptr->info,(quarterword)forever_text);
 return;
 }else{
-/*846:*/
 
 {
 q= mp->loop_ptr->list;
@@ -18266,13 +17316,11 @@ q= mp_stash_cur_exp(mp);
 }
 
 
-/*:846*/
 ;
 }
 mp_begin_token_list(mp,mp->loop_ptr->info,(quarterword)loop_text);
 mp_stack_argument(mp,q);
 if(number_greater(internal_value(mp_tracing_commands),unity_t)){
-/*845:*/
 
 {
 mp_begin_diagnostic(mp);
@@ -18287,7 +17335,6 @@ mp_end_diagnostic(mp,false);
 }
 
 
-/*:845*/
 ;
 }
 return;
@@ -18296,7 +17343,6 @@ mp_stop_iteration(mp);
 }
 
 
-/*:843*//*847:*/
 
 void mp_stop_iteration(MP mp){
 mp_node p,q;
@@ -18334,7 +17380,6 @@ xfree(tmp);
 }
 
 
-/*:847*//*858:*/
 
 void mp_begin_name(MP mp){
 xfree(mp->cur_name);
@@ -18346,12 +17391,11 @@ mp->quoted_filename= false;
 }
 
 
-/*:858*//*859:*/
 
 #ifndef IS_DIR_SEP
 #define IS_DIR_SEP(c) (c=='/' || c=='\\')
 #endif
- boolean mp_more_name(MP mp,ASCII_code c){
+boolean mp_more_name(MP mp,ASCII_code c){
 if(c=='"'){
 mp->quoted_filename= !mp->quoted_filename;
 }else if((c==' '||c=='\t')&&(mp->quoted_filename==false)){
@@ -18369,7 +17413,6 @@ return true;
 }
 
 
-/*:859*//*860:*/
 
 void mp_end_name(MP mp){
 size_t s= 0;
@@ -18395,7 +17438,6 @@ mp_reset_cur_string(mp);
 }
 
 
-/*:860*//*863:*/
 
 void mp_pack_file_name(MP mp,const char*n,const char*a,const char*e){
 integer k;
@@ -18427,7 +17469,6 @@ mp->name_of_file[k]= 0;
 }
 
 
-/*:863*//*869:*/
 
 boolean mp_open_mem_name(MP mp){
 if(mp->mem_name!=NULL){
@@ -18482,7 +17523,6 @@ return false;
 }
 
 
-/*:869*//*871:*/
 
 static mp_string mp_make_name_string(MP mp){
 int k;
@@ -18495,7 +17535,6 @@ return mp_make_string(mp);
 }
 
 
-/*:871*//*872:*/
 
 static void mp_scan_file_name(MP mp){
 mp_begin_name(mp);
@@ -18512,7 +17551,6 @@ mp_end_name(mp);
 }
 
 
-/*:872*//*874:*/
 
 void mp_str_scan_file(MP mp,mp_string s){
 size_t p,q;
@@ -18528,7 +17566,6 @@ mp_end_name(mp);
 }
 
 
-/*:874*//*876:*/
 
 void mp_ptr_scan_file(MP mp,char*s){
 char*p,*q;
@@ -18544,7 +17581,6 @@ mp_end_name(mp);
 }
 
 
-/*:876*//*883:*/
 
 void mp_pack_job_name(MP mp,const char*s){
 xfree(mp->cur_name);
@@ -18557,7 +17593,6 @@ pack_cur_name;
 }
 
 
-/*:883*//*885:*/
 
 void mp_prompt_file_name(MP mp,const char*s,const char*e){
 size_t k;
@@ -18588,7 +17623,6 @@ mp_fatal_error(mp,"*** (job aborted, file error in nonstop mode)");
 saved_cur_name= xstrdup(mp->cur_name);
 clear_terminal();
 prompt_input(": ");
-/*886:*/
 
 {
 mp_begin_name(mp);
@@ -18606,7 +17640,6 @@ mp_end_name(mp);
 }
 
 
-/*:886*/
 ;
 if(strcmp(mp->cur_ext,"")==0)
 mp->cur_ext= xstrdup(e);
@@ -18619,7 +17652,6 @@ pack_cur_name;
 }
 
 
-/*:885*//*887:*/
 
 void mp_open_log_file(MP mp){
 unsigned old_setting;
@@ -18633,7 +17665,6 @@ return;
 old_setting= mp->selector;
 if(mp->job_name==NULL){
 mp->job_name= xstrdup("mpout");
-/*880:*/
 
 if(mp->job_name!=NULL){
 if(internal_string(mp_job_name)!=0)
@@ -18641,12 +17672,10 @@ delete_str_ref(internal_string(mp_job_name));
 set_internal_string(mp_job_name,mp_rts(mp,mp->job_name));
 }
 
-/*:880*/
 ;
 }
 mp_pack_job_name(mp,".log");
 while(!mp_open_out(mp,&mp->log_file,mp_filetype_log)){
-/*889:*/
 
 {
 mp->selector= term_only;
@@ -18654,13 +17683,11 @@ mp_prompt_file_name(mp,"transcript file name",".log");
 }
 
 
-/*:889*/
 ;
 }
 mp->log_name= xstrdup(mp->name_of_file);
 mp->selector= log_only;
 mp->log_opened= true;
-/*890:*/
 
 {
 wlog(mp->banner);
@@ -18680,7 +17707,6 @@ mp_print_dd(mp,round_unscaled(internal_value(mp_minute)));
 }
 
 
-/*:890*/
 ;
 mp->input_stack[mp->input_ptr]= mp->cur_input;
 
@@ -18696,7 +17722,6 @@ mp->selector= old_setting+2;
 }
 
 
-/*:887*//*891:*/
 
 static boolean mp_try_extension(MP mp,const char*ext){
 mp_pack_file_name(mp,mp->cur_name,mp->cur_area,ext);
@@ -18712,11 +17737,9 @@ return mp_open_in(mp,&cur_file,mp_filetype_program);
 }
 
 
-/*:891*//*892:*/
 
 void mp_start_input(MP mp){
 char*fname= NULL;
-/*895:*/
 
 while(token_state&&(nloc==NULL))
 mp_end_token_list(mp);
@@ -18741,7 +17764,6 @@ mp->cur_area= xstrdup("");
 }
 
 
-/*:895*/
 ;
 while(1){
 mp_begin_file_reading(mp);
@@ -18762,7 +17784,6 @@ name= mp_make_name_string(mp);
 fname= xstrdup(mp->name_of_file);
 if(mp->job_name==NULL){
 mp->job_name= xstrdup(mp->cur_name);
-/*880:*/
 
 if(mp->job_name!=NULL){
 if(internal_string(mp_job_name)!=0)
@@ -18770,7 +17791,6 @@ delete_str_ref(internal_string(mp_job_name));
 set_internal_string(mp_job_name,mp_rts(mp,mp->job_name));
 }
 
-/*:880*/
 ;
 }
 if(!mp->log_opened){
@@ -18786,16 +17806,13 @@ incr(mp->open_parens);
 mp_print(mp,fname);
 xfree(fname);
 update_terminal();
-/*893:*/
 
 mp_flush_string(mp,name);
 name= mp_rts(mp,mp->cur_name);
 xfree(mp->cur_name)
 
 
-/*:893*/
 ;
-/*894:*/
 
 {
 line= 1;
@@ -18807,12 +17824,10 @@ loc= start;
 }
 
 
-/*:894*/
 ;
 }
 
 
-/*:892*//*896:*/
 
 void mp_start_mpx_input(MP mp){
 char*origname= NULL;
@@ -18829,7 +17844,6 @@ goto NOT_FOUND;
 name= mp_make_name_string(mp);
 mp->mpx_name[iindex]= name;
 add_str_ref(name);
-/*894:*/
 
 {
 line= 1;
@@ -18841,12 +17855,10 @@ loc= start;
 }
 
 
-/*:894*/
 ;
 xfree(origname);
 return;
 NOT_FOUND:
-/*903:*/
 
 {
 const char*hlp[]= {
@@ -18870,13 +17882,11 @@ mp->history= mp_fatal_error_stop;
 mp_jump_out(mp);
 }
 
-/*:903*/
 ;
 xfree(origname);
 }
 
 
-/*:896*//*902:*/
 
 int mp_run_make_mpx(MP mp,char*origname,char*mtxname){
 (void)mp;
@@ -18886,7 +17896,6 @@ return false;
 }
 
 
-/*:902*//*907:*/
 
 static boolean mp_start_read_input(MP mp,char*s,readf_index n){
 mp_ptr_scan_file(mp,s);
@@ -18906,7 +17915,6 @@ return false;
 }
 
 
-/*:907*//*909:*/
 
 void mp_open_write_file(MP mp,char*s,readf_index n){
 mp_ptr_scan_file(mp,s);
@@ -18917,7 +17925,6 @@ mp->wr_fname[n]= xstrdup(s);
 }
 
 
-/*:909*//*917:*/
 
 void mp_unstash_cur_exp(MP mp,mp_node p){
 mp->cur_exp.type= mp_type(p);
@@ -18969,7 +17976,6 @@ break;
 }
 
 
-/*:917*//*919:*/
 
 void mp_print_exp(MP mp,mp_node p,quarterword verbosity){
 boolean restore_cur_exp;
@@ -18992,7 +17998,6 @@ number_clone(vv,value_number(p));
 }else if(t<mp_independent){
 v= (mp_node)dep_list((mp_value_node)p);
 }
-/*920:*/
 
 switch(t){
 case mp_vacuous:
@@ -19006,7 +18011,6 @@ mp_print(mp,"false");
 break;
 case unknown_types:
 case mp_numeric_type:
-/*928:*/
 
 {
 mp_print_type(mp,t);
@@ -19019,7 +18023,6 @@ mp_print_variable_name(mp,v);
 }
 
 
-/*:928*/
 ;
 break;
 case mp_string_type:
@@ -19030,7 +18033,6 @@ break;
 case mp_pen_type:
 case mp_path_type:
 case mp_picture_type:
-/*926:*/
 
 if(verbosity<=1){
 mp_print_type(mp,t);
@@ -19058,21 +18060,18 @@ break;
 }
 
 
-/*:926*/
 ;
 break;
 case mp_transform_type:
 if(number_zero(vv)&&v==NULL)
 mp_print_type(mp,t);
 else
-/*923:*/
 
 {
 mp_node vvv= v;
 mp_print_char(mp,xord('('));
 assert(vvv);
 v= tx_part(vvv);
-/*921:*/
 
 {
 if(mp_type(v)==mp_known)
@@ -19085,11 +18084,9 @@ verbosity);
 }
 
 
-/*:921*/
 ;
 mp_print_char(mp,xord(','));
 v= ty_part(vvv);
-/*921:*/
 
 {
 if(mp_type(v)==mp_known)
@@ -19102,11 +18099,9 @@ verbosity);
 }
 
 
-/*:921*/
 ;
 mp_print_char(mp,xord(','));
 v= xx_part(vvv);
-/*921:*/
 
 {
 if(mp_type(v)==mp_known)
@@ -19119,11 +18114,9 @@ verbosity);
 }
 
 
-/*:921*/
 ;
 mp_print_char(mp,xord(','));
 v= xy_part(vvv);
-/*921:*/
 
 {
 if(mp_type(v)==mp_known)
@@ -19136,11 +18129,9 @@ verbosity);
 }
 
 
-/*:921*/
 ;
 mp_print_char(mp,xord(','));
 v= yx_part(vvv);
-/*921:*/
 
 {
 if(mp_type(v)==mp_known)
@@ -19153,11 +18144,9 @@ verbosity);
 }
 
 
-/*:921*/
 ;
 mp_print_char(mp,xord(','));
 v= yy_part(vvv);
-/*921:*/
 
 {
 if(mp_type(v)==mp_known)
@@ -19170,27 +18159,23 @@ verbosity);
 }
 
 
-/*:921*/
 ;
 mp_print_char(mp,xord(')'));
 }
 
 
-/*:923*/
 ;
 break;
 case mp_color_type:
 if(number_zero(vv)&&v==NULL)
 mp_print_type(mp,t);
 else
-/*924:*/
 
 {
 mp_node vvv= v;
 mp_print_char(mp,xord('('));
 assert(vvv);
 v= red_part(vvv);
-/*921:*/
 
 {
 if(mp_type(v)==mp_known)
@@ -19203,11 +18188,9 @@ verbosity);
 }
 
 
-/*:921*/
 ;
 mp_print_char(mp,xord(','));
 v= green_part(vvv);
-/*921:*/
 
 {
 if(mp_type(v)==mp_known)
@@ -19220,11 +18203,9 @@ verbosity);
 }
 
 
-/*:921*/
 ;
 mp_print_char(mp,xord(','));
 v= blue_part(vvv);
-/*921:*/
 
 {
 if(mp_type(v)==mp_known)
@@ -19237,27 +18218,23 @@ verbosity);
 }
 
 
-/*:921*/
 ;
 mp_print_char(mp,xord(')'));
 }
 
 
-/*:924*/
 ;
 break;
 case mp_pair_type:
 if(number_zero(vv)&&v==NULL)
 mp_print_type(mp,t);
 else
-/*922:*/
 
 {
 mp_node vvv= v;
 mp_print_char(mp,xord('('));
 assert(vvv);
 v= x_part(vvv);
-/*921:*/
 
 {
 if(mp_type(v)==mp_known)
@@ -19270,11 +18247,9 @@ verbosity);
 }
 
 
-/*:921*/
 ;
 mp_print_char(mp,xord(','));
 v= y_part(vvv);
-/*921:*/
 
 {
 if(mp_type(v)==mp_known)
@@ -19287,27 +18262,23 @@ verbosity);
 }
 
 
-/*:921*/
 ;
 mp_print_char(mp,xord(')'));
 }
 
 
-/*:922*/
 ;
 break;
 case mp_cmykcolor_type:
 if(number_zero(vv)&&v==NULL)
 mp_print_type(mp,t);
 else
-/*925:*/
 
 {
 mp_node vvv= v;
 mp_print_char(mp,xord('('));
 assert(vvv);
 v= cyan_part(vvv);
-/*921:*/
 
 {
 if(mp_type(v)==mp_known)
@@ -19320,11 +18291,9 @@ verbosity);
 }
 
 
-/*:921*/
 ;
 mp_print_char(mp,xord(','));
 v= magenta_part(vvv);
-/*921:*/
 
 {
 if(mp_type(v)==mp_known)
@@ -19337,11 +18306,9 @@ verbosity);
 }
 
 
-/*:921*/
 ;
 mp_print_char(mp,xord(','));
 v= yellow_part(vvv);
-/*921:*/
 
 {
 if(mp_type(v)==mp_known)
@@ -19354,11 +18321,9 @@ verbosity);
 }
 
 
-/*:921*/
 ;
 mp_print_char(mp,xord(','));
 v= black_part(vvv);
-/*921:*/
 
 {
 if(mp_type(v)==mp_known)
@@ -19371,13 +18336,11 @@ verbosity);
 }
 
 
-/*:921*/
 ;
 mp_print_char(mp,xord(')'));
 }
 
 
-/*:925*/
 ;
 break;
 case mp_known:
@@ -19397,7 +18360,6 @@ break;
 }
 
 
-/*:920*/
 ;
 if(restore_cur_exp)
 mp_unstash_cur_exp(mp,p);
@@ -19405,7 +18367,6 @@ free_number(vv);
 }
 
 
-/*:919*//*930:*/
 
 void mp_disp_err(MP mp,mp_node p){
 if(mp->interaction==mp_error_stop_mode)
@@ -19416,7 +18377,6 @@ mp_print_exp(mp,p,1);
 }
 
 
-/*:930*//*932:*/
 
 void mp_flush_cur_exp(MP mp,mp_value v){
 if(is_number(mp->cur_exp.data.n)){
@@ -19452,7 +18412,6 @@ mp->cur_exp.type= mp_known;
 }
 
 
-/*:932*//*934:*/
 
 static void mp_recycle_value(MP mp,mp_node p){
 mp_variable_type t;
@@ -19543,7 +18502,6 @@ mp_flush_node_list(mp,(mp_node)dep_list((mp_value_node)p));
 }
 break;
 case mp_independent:
-/*935:*/
 
 {
 mp_value_node q,r,s;
@@ -19712,7 +18670,6 @@ free_number(v);
 free_number(test);
 }
 
-/*:935*/
 ;
 break;
 case mp_token_list:
@@ -19729,7 +18686,6 @@ break;
 mp_type(p)= mp_undefined;
 }
 
-/*:934*//*937:*/
 
 static void mp_show_transformed_dependency(MP mp,mp_number v,mp_variable_type t,mp_node p)
 {
@@ -19760,7 +18716,6 @@ free_number(vv);
 }
 
 
-/*:937*//*945:*/
 
 static void mp_bad_exp(MP mp,const char*s){
 char msg[256];
@@ -19794,7 +18749,6 @@ mp->var_flag= save_flag;
 }
 
 
-/*:945*//*946:*/
 
 static void mp_stash_in(MP mp,mp_node p){
 mp_value_node q;
@@ -19830,7 +18784,6 @@ mp_free_dep_node(mp,(mp_value_node)cur_exp_node());
 mp->cur_exp.type= mp_vacuous;
 }
 
-/*:946*//*949:*/
 
 static void mp_back_expr(MP mp){
 mp_node p;
@@ -19840,7 +18793,6 @@ back_list(p);
 }
 
 
-/*:949*//*950:*/
 
 static void mp_bad_subscript(MP mp){
 mp_value new_expr;
@@ -19858,7 +18810,6 @@ mp_flush_cur_exp(mp,new_expr);
 }
 
 
-/*:950*//*951:*/
 
 static char*mp_obliterated(MP mp,mp_node q){
 char msg[256];
@@ -19875,7 +18826,6 @@ return xstrdup(msg);
 }
 
 
-/*:951*//*957:*/
 
 static void mp_binary_mac(MP mp,mp_node p,mp_node c,mp_sym n){
 mp_node q,r;
@@ -19888,7 +18838,6 @@ mp_macro_call(mp,c,q,n);
 }
 
 
-/*:957*//*961:*/
 
 static mp_knot mp_pair_to_knot(MP mp){
 mp_knot q;
@@ -19904,7 +18853,6 @@ return q;
 }
 
 
-/*:961*//*963:*/
 
 void mp_known_pair(MP mp){
 mp_value new_expr;
@@ -19965,7 +18913,6 @@ mp_flush_cur_exp(mp,new_expr);
 }
 }
 
-/*:963*//*964:*/
 
 static quarterword mp_scan_direction(MP mp){
 int t;
@@ -20069,9 +19016,7 @@ return(quarterword)t;
 }
 
 
-/*:964*//*969:*/
 
-/*970:*/
 
 static void mp_finish_read(MP mp){
 size_t k;
@@ -20085,7 +19030,6 @@ set_cur_exp_str(mp_make_string(mp));
 }
 
 
-/*:970*/
 ;
 static void mp_do_nullary(MP mp,quarterword c){
 check_arith();
@@ -20140,9 +19084,7 @@ check_arith();
 }
 
 
-/*:969*//*971:*/
 
-/*972:*/
 
 static boolean mp_nice_pair(MP mp,mp_node p,quarterword t){
 (void)mp;
@@ -20156,7 +19098,6 @@ return false;
 }
 
 
-/*:972*//*973:*/
 
 static boolean mp_nice_color_or_pair(MP mp,mp_node p,quarterword t){
 mp_node q;
@@ -20188,7 +19129,6 @@ return false;
 }
 
 
-/*:973*//*974:*/
 
 static void mp_print_known_or_unknown_type(MP mp,quarterword t,mp_node v){
 mp_print_char(mp,xord('('));
@@ -20204,7 +19144,6 @@ mp_print_char(mp,xord(')'));
 }
 
 
-/*:974*//*975:*/
 
 static void mp_bad_unary(MP mp,quarterword c){
 char msg[256];
@@ -20230,7 +19169,6 @@ mp_get_x_next(mp);
 
 
 
-/*:975*//*976:*/
 
 static void mp_negate_dep_list(MP mp,mp_value_node p){
 (void)mp;
@@ -20243,7 +19181,6 @@ p= (mp_value_node)mp_link(p);
 }
 
 
-/*:976*//*977:*/
 
 static void negate_cur_expr(MP mp){
 mp_node p,q,r;
@@ -20307,7 +19244,6 @@ break;
 }
 }
 
-/*:977*//*978:*/
 
 static void mp_pair_to_path(MP mp){
 set_cur_exp_knot(mp_pair_to_knot(mp));
@@ -20316,7 +19252,6 @@ mp->cur_exp.type= mp_path_type;
 
 
 
-/*:978*//*981:*/
 
 static void mp_take_part(MP mp,quarterword c){
 mp_node p;
@@ -20376,7 +19311,6 @@ mp_recycle_value(mp,mp->temp_val);
 }
 
 
-/*:981*//*985:*/
 
 static void mp_take_pict_part(MP mp,quarterword c){
 mp_node p;
@@ -20646,7 +19580,6 @@ break;
 }
 }
 
-/*:985*//*986:*/
 
 static void mp_str_to_num(MP mp,quarterword c){
 integer n;
@@ -20718,7 +19651,6 @@ number_multiply_int(new_expr.data.n,n);
 mp_flush_cur_exp(mp,new_expr);
 }
 
-/*:986*//*987:*/
 
 static void mp_path_length(MP mp,mp_number*n){
 mp_knot p;
@@ -20734,7 +19666,6 @@ number_add(*n,unity_t);
 }
 
 
-/*:987*//*988:*/
 
 static void mp_pict_length(MP mp,mp_number*n){
 
@@ -20758,7 +19689,6 @@ number_add(*n,unity_t);
 }
 
 
-/*:988*//*989:*/
 
 static void mp_an_angle(MP mp,mp_number*ret,mp_number xpar,mp_number ypar){
 set_number_to_zero(*ret);
@@ -20768,13 +19698,11 @@ n_arg(*ret,xpar,ypar);
 }
 
 
-/*:989*//*990:*/
 
 static void mp_bezier_slope(MP mp,mp_number*ret,mp_number AX,mp_number AY,mp_number BX,
 mp_number BY,mp_number CX,mp_number CY,mp_number DX,
 mp_number DY);
 
-/*:990*//*992:*/
 
 static void mp_turn_cycles(MP mp,mp_number*turns,mp_knot c){
 mp_angle res,ang;
@@ -20889,7 +19817,6 @@ free_number(arg1);
 free_number(arg2);
 }
 
-/*:992*//*993:*/
 
 static void mp_turn_cycles_wrapper(MP mp,mp_number*ret,mp_knot c){
 if(mp_next_knot(c)==c){
@@ -20900,7 +19827,6 @@ mp_turn_cycles(mp,ret,c);
 }
 }
 
-/*:993*//*994:*/
 
 static void mp_test_known(MP mp,quarterword c){
 int b;
@@ -20982,7 +19908,6 @@ cur_exp_node()= NULL;
 mp->cur_exp.type= mp_boolean_type;
 }
 
-/*:994*//*995:*/
 
 static void mp_pair_value(MP mp,mp_number x,mp_number y){
 mp_node p;
@@ -21011,7 +19936,6 @@ free_number(y1);
 }
 
 
-/*:995*//*996:*/
 
 static boolean mp_get_cur_bbox(MP mp){
 switch(mp->cur_exp.type){
@@ -21045,7 +19969,6 @@ return true;
 }
 
 
-/*:996*//*997:*/
 
 static void mp_do_read_or_close(MP mp,quarterword c){
 mp_value new_expr;
@@ -21135,7 +20058,6 @@ mp_flush_cur_exp(mp,new_expr);
 mp_finish_read(mp);
 }
 
-/*:997*/
 ;
 static void mp_do_unary(MP mp,quarterword c){
 mp_node p;
@@ -21180,6 +20102,8 @@ case mp_floor_op:
 case mp_uniform_deviate:
 case mp_odd_op:
 case mp_char_exists_op:
+case mp_m_get_left_endpoint_op:
+case mp_m_get_right_endpoint_op:
 if(mp->cur_exp.type!=mp_known){
 mp_bad_unary(mp,c);
 }else{
@@ -21275,7 +20199,41 @@ set_cur_exp_value_scaled(vv+256);
 boolean_reset(mp->char_exists[number_to_scaled(cur_exp_value_number())]);
 mp->cur_exp.type= mp_boolean_type;
 break;
+case mp_m_get_left_endpoint_op:
+{
+mp_number r1;
+new_number(r1);
+m_get_left_endpoint(r1,cur_exp_value_number());
+set_cur_exp_value_number(r1);
+free_number(r1);
 }
+break;
+case mp_m_get_right_endpoint_op:
+{
+mp_number r1;
+new_number(r1);
+m_get_right_endpoint(r1,cur_exp_value_number());
+set_cur_exp_value_number(r1);
+free_number(r1);
+}
+break;
+
+}
+}
+break;
+case mp_interval_set_op:
+if(mp_nice_pair(mp,cur_exp_node(),mp->cur_exp.type)){
+mp_number ret_val;
+memset(&new_expr,0,sizeof(mp_value));
+new_number(new_expr.data.n);
+new_number(ret_val);
+p= value_node(cur_exp_node());
+m_interval_set(ret_val,value_number(x_part(p)),value_number(y_part(p)));
+number_clone(new_expr.data.n,ret_val);
+free_number(ret_val);
+mp_flush_cur_exp(mp,new_expr);
+}else{
+mp_bad_unary(mp,mp_interval_set_op);
 }
 break;
 case mp_angle_op:
@@ -21639,7 +20597,6 @@ check_arith();
 }
 
 
-/*:971*//*980:*/
 
 static void mp_bad_color_part(MP mp,quarterword c){
 mp_node p;
@@ -21682,7 +20639,6 @@ mp_flush_cur_exp(mp,new_expr);
 }
 
 
-/*:980*//*991:*/
 
 static void mp_bezier_slope(MP mp,mp_number*ret,mp_number AX,mp_number AY,mp_number BX,
 mp_number BY,mp_number CX,mp_number CY,mp_number DX,
@@ -21786,9 +20742,7 @@ convert_scaled_to_angle(*ret);
 }
 
 
-/*:991*//*1000:*/
 
-/*1001:*/
 
 static void mp_bad_binary(MP mp,mp_node p,quarterword c){
 char msg[256];
@@ -21831,7 +20785,6 @@ mp_back_error(mp,"Not implemented: envelope(elliptical pen)of(path)",hlp,true);
 mp_get_x_next(mp);
 }
 
-/*:1001*//*1002:*/
 
 static mp_node mp_tarnished(MP mp,mp_node p){
 mp_node q;
@@ -21898,9 +20851,7 @@ break;
 return NULL;
 }
 
-/*:1002*//*1003:*/
 
-/*1004:*/
 
 static void mp_dep_finish(MP mp,mp_value_node v,mp_value_node q,
 quarterword t){
@@ -21934,7 +20885,6 @@ if(mp->fix_needed)
 mp_fix_dependencies(mp);
 }
 
-/*:1004*/
 ;
 static void mp_add_or_subtract(MP mp,mp_node p,mp_node q,quarterword c){
 mp_variable_type s,t;
@@ -22040,7 +20990,6 @@ free_number(vv);
 }
 
 
-/*:1003*//*1005:*/
 
 static void mp_dep_mult(MP mp,mp_value_node p,mp_number v,boolean v_is_scaled){
 mp_value_node q;
@@ -22094,7 +21043,6 @@ mp_dep_finish(mp,q,p,t);
 }
 
 
-/*:1005*//*1008:*/
 
 static void mp_hard_times(MP mp,mp_node p){
 mp_value_node q;
@@ -22160,7 +21108,6 @@ mp_dep_mult(mp,(mp_value_node)r,v,true);
 free_number(v);
 }
 
-/*:1008*//*1009:*/
 
 static void mp_dep_div(MP mp,mp_value_node p,mp_number v){
 mp_value_node q;
@@ -22201,7 +21148,6 @@ q= mp_p_over_v(mp,q,v,s,t);
 mp_dep_finish(mp,q,p,t);
 }
 
-/*:1009*//*1010:*/
 
 static void mp_set_up_trans(MP mp,quarterword c){
 mp_node p,q,r;
@@ -22219,11 +21165,9 @@ set_cur_exp_node(mp_id_transform(mp));
 mp->cur_exp.type= mp_transform_type;
 q= value_node(cur_exp_node());
 switch(c){
-/*1014:*/
 
 case mp_rotated_by:
 if(mp_type(p)==mp_known)
-/*1015:*/
 
 {
 mp_number n_sin,n_cos,arg1,arg2;
@@ -22252,7 +21196,6 @@ goto DONE;
 }
 
 
-/*:1015*/
 ;
 break;
 case mp_slanted_by:
@@ -22290,7 +21233,6 @@ goto DONE;
 break;
 case mp_z_scaled:
 if(mp_type(p)==mp_pair_type)
-/*1016:*/
 
 {
 r= value_node(p);
@@ -22309,14 +21251,12 @@ goto DONE;
 }
 
 
-/*:1016*/
 ;
 break;
 case mp_transformed_by:
 break;
 
 
-/*:1014*/
 ;
 };
 mp_disp_err(mp,p);
@@ -22354,7 +21294,6 @@ mp_flush_cur_exp(mp,new_expr);
 }
 
 
-/*:1010*//*1017:*/
 
 static void mp_set_up_known_trans(MP mp,quarterword c){
 mp_set_up_trans(mp,c);
@@ -22382,7 +21321,6 @@ set_number_to_zero(mp->ty);
 }
 
 
-/*:1017*//*1018:*/
 
 static void mp_number_trans(MP mp,mp_number*p,mp_number*q){
 mp_number r1,r2,v;
@@ -22404,7 +21342,6 @@ free_number(v);
 }
 
 
-/*:1018*//*1019:*/
 
 static void mp_do_path_trans(MP mp,mp_knot p){
 mp_knot q;
@@ -22420,7 +21357,6 @@ q= mp_next_knot(q);
 }
 
 
-/*:1019*//*1020:*/
 
 static void mp_do_pen_trans(MP mp,mp_knot p){
 mp_knot q;
@@ -22436,7 +21372,6 @@ q= mp_next_knot(q);
 }
 
 
-/*:1020*//*1021:*/
 
 static mp_edge_header_node mp_edges_trans(MP mp,mp_edge_header_node h){
 mp_node q;
@@ -22452,7 +21387,6 @@ new_number(sgndet);
 mp_sqrt_det(mp,&sqdet,mp->txx,mp->txy,mp->tyx,mp->tyy);
 ab_vs_cd(sgndet,mp->txx,mp->tyy,mp->txy,mp->tyx);
 if(dash_list(h)!=mp->null_dash){
-/*1022:*/
 
 if(number_nonzero(mp->txy)||number_nonzero(mp->tyx)||
 number_nonzero(mp->ty)||number_nonequalabs(mp->txx,mp->tyy)){
@@ -22461,7 +21395,6 @@ mp_flush_dash_list(mp,h);
 mp_number abs_tyy,ret;
 new_number(abs_tyy);
 if(number_negative(mp->txx)){
-/*1023:*/
 
 {
 r= dash_list(h);
@@ -22476,10 +21409,8 @@ set_dash_list(h,s);
 }
 
 
-/*:1023*/
 ;
 }
-/*1024:*/
 
 r= dash_list(h);
 {
@@ -22496,7 +21427,6 @@ free_number(arg1);
 }
 
 
-/*:1024*/
 ;
 number_clone(abs_tyy,mp->tyy);
 number_abs(abs_tyy);
@@ -22508,13 +21438,10 @@ free_number(abs_tyy);
 }
 
 
-/*:1022*/
 ;
 }
-/*1025:*/
 
 if(number_zero(mp->txx)&&number_zero(mp->tyy)){
-/*1026:*/
 
 {
 number_swap(h->minx,h->miny);
@@ -22522,14 +21449,12 @@ number_swap(h->maxx,h->maxy);
 }
 
 
-/*:1026*/
 ;
 }else if(number_nonzero(mp->txy)||number_nonzero(mp->tyx)){
 mp_init_bbox(mp,h);
 goto DONE1;
 }
 if(number_lessequal(h->minx,h->maxx)){
-/*1027:*/
 
 {
 mp_number tot,ret;
@@ -22560,24 +21485,20 @@ free_number(tot);
 }
 
 
-/*:1027*/
 ;
 }
 DONE1:
 
 
-/*:1025*/
 ;
 q= mp_link(edge_list(h));
 while(q!=NULL){
-/*1028:*/
 
 switch(mp_type(q)){
 case mp_fill_node_type:
 {
 mp_fill_node qq= (mp_fill_node)q;
 mp_do_path_trans(mp,mp_path_p(qq));
-/*1029:*/
 
 if(mp_pen_p(qq)!=NULL){
 number_clone(sx,mp->tx);
@@ -22601,7 +21522,6 @@ number_clone(mp->tx,sx);
 number_clone(mp->ty,sy);
 }
 
-/*:1029*/
 ;
 }
 break;
@@ -22609,7 +21529,6 @@ case mp_stroked_node_type:
 {
 mp_stroked_node qq= (mp_stroked_node)q;
 mp_do_path_trans(mp,mp_path_p(qq));
-/*1029:*/
 
 if(mp_pen_p(qq)!=NULL){
 number_clone(sx,mp->tx);
@@ -22633,7 +21552,6 @@ number_clone(mp->tx,sx);
 number_clone(mp->ty,sy);
 }
 
-/*:1029*/
 ;
 }
 break;
@@ -22644,7 +21562,6 @@ case mp_start_bounds_node_type:
 mp_do_path_trans(mp,mp_path_p((mp_start_bounds_node)q));
 break;
 case mp_text_node_type:
-/*1030:*/
 
 mp_number_trans(mp,&((mp_text_node)q)->tx,&((mp_text_node)q)->ty);
 number_clone(sx,mp->tx);
@@ -22656,7 +21573,6 @@ mp_number_trans(mp,&((mp_text_node)q)->txy,&((mp_text_node)q)->tyy);
 number_clone(mp->tx,sx);
 number_clone(mp->ty,sy)
 
-/*:1030*/
 ;
 break;
 case mp_stop_clip_node_type:
@@ -22667,7 +21583,6 @@ break;
 }
 
 
-/*:1028*/
 ;
 q= mp_link(q);
 }
@@ -22693,9 +21608,7 @@ return mp_edges_trans(mp,se_pic);
 }
 
 
-/*:1021*//*1031:*/
 
-/*1033:*/
 
 static void mp_bilin1(MP mp,mp_node p,mp_number t,mp_node q,
 mp_number u,mp_number delta_orig){
@@ -22760,7 +21673,6 @@ free_number(delta);
 }
 
 
-/*:1033*//*1035:*/
 
 static void mp_add_mult_dep(MP mp,mp_value_node p,mp_number v,mp_node r){
 if(mp_type(r)==mp_known){
@@ -22781,7 +21693,6 @@ mp_fix_dependencies(mp);
 }
 
 
-/*:1035*//*1036:*/
 
 static void mp_bilin2(MP mp,mp_node p,mp_node t,mp_number v,
 mp_node u,mp_node q){
@@ -22811,7 +21722,6 @@ free_number(vv);
 }
 
 
-/*:1036*//*1038:*/
 
 static void mp_bilin3(MP mp,mp_node p,mp_number t,
 mp_number v,mp_number u,mp_number delta_orig){
@@ -22840,7 +21750,6 @@ free_number(delta);
 }
 
 
-/*:1038*/
 ;
 static void mp_big_trans(MP mp,mp_node p,quarterword c){
 mp_node q,r,pp,qq;
@@ -22848,7 +21757,6 @@ q= value_node(p);
 if(mp_type(q)==mp_pair_node_type){
 if(mp_type(x_part(q))!=mp_known||
 mp_type(y_part(q))!=mp_known){
-/*1032:*/
 
 {
 mp_set_up_known_trans(mp,c);
@@ -22866,7 +21774,6 @@ return;
 }
 
 
-/*:1032*/
 ;
 }
 }else{
@@ -22876,7 +21783,6 @@ mp_type(xx_part(q))!=mp_known||
 mp_type(xy_part(q))!=mp_known||
 mp_type(yx_part(q))!=mp_known||
 mp_type(yy_part(q))!=mp_known){
-/*1032:*/
 
 {
 mp_set_up_known_trans(mp,c);
@@ -22894,15 +21800,12 @@ return;
 }
 
 
-/*:1032*/
 ;
 }
 }
-/*1034:*/
 
 mp_set_up_trans(mp,c);
 if(mp->cur_exp.type==mp_known){
-/*1037:*/
 
 {
 mp_make_exp_copy(mp,p);
@@ -22918,7 +21821,6 @@ mp_bilin3(mp,x_part(r),mp->txx,value_number(y_part(q)),mp->txy,mp->tx);
 }
 
 
-/*:1037*/
 ;
 }else{
 pp= mp_stash_cur_exp(mp);
@@ -22944,12 +21846,10 @@ mp_free_value_node(mp,pp);
 }
 
 
-/*:1034*/
 ;
 }
 
 
-/*:1031*//*1039:*/
 
 static void mp_chop_path(MP mp,mp_node p){
 mp_knot q;
@@ -23076,7 +21976,6 @@ free_number(b);
 }
 
 
-/*:1039*//*1040:*/
 
 static void mp_set_up_offset(MP mp,mp_node p){
 mp_find_offset(mp,value_number(x_part(p)),value_number(y_part(p)),
@@ -23219,7 +22118,6 @@ mp_free_path(mp,qq);
 
 
 
-/*:1040*//*1041:*/
 
 static void mp_set_up_glyph_infont(MP mp,mp_node p){
 mp_edge_object*h= NULL;
@@ -23252,7 +22150,6 @@ mp->cur_exp.type= mp_picture_type;
 }
 
 
-/*:1041*//*1042:*/
 
 static void mp_find_point(MP mp,mp_number v_orig,quarterword c){
 mp_knot p;
@@ -23326,7 +22223,6 @@ free_number(v);
 free_number(n);
 }
 
-/*:1042*//*1043:*/
 
 static void mp_do_infont(MP mp,mp_node p){
 mp_edge_header_node q;
@@ -23346,7 +22242,6 @@ mp->cur_exp.type= mp_picture_type;
 }
 
 
-/*:1043*/
 ;
 static void mp_finish_binary(MP mp,mp_node old_p,mp_node old_exp){
 check_arith();
@@ -23947,7 +22842,6 @@ mp_finish_binary(mp,old_p,old_exp);
 }
 
 
-/*:1000*//*1006:*/
 
 static void mp_frac_mult(MP mp,mp_number n,mp_number d){
 
@@ -23955,7 +22849,6 @@ mp_node old_exp;
 mp_number v;
 new_fraction(v);
 if(number_greater(internal_value(mp_tracing_commands),two_t)){
-/*1007:*/
 
 {
 mp_begin_diagnostic(mp);
@@ -23970,7 +22863,6 @@ mp_end_diagnostic(mp,false);
 }
 
 
-/*:1007*/
 ;
 }
 switch(mp->cur_exp.type){
@@ -24024,7 +22916,6 @@ free_number(v);
 }
 
 
-/*:1006*//*1044:*/
 
 static void worry_about_bad_statement(MP mp);
 static void flush_unparsable_junk_after_statement(MP mp);
@@ -24164,7 +23055,6 @@ mp->error_count= 0;
 }
 
 
-/*:1044*//*1046:*/
 
 static void worry_about_bad_statement(MP mp){
 if(cur_cmd()<mp_semicolon){
@@ -24190,7 +23080,6 @@ mp_get_x_next(mp);
 }
 
 
-/*:1046*//*1047:*/
 
 static void flush_unparsable_junk_after_statement(MP mp)
 {
@@ -24215,7 +23104,6 @@ mp->scanner_status= normal;
 
 
 
-/*:1047*//*1049:*/
 
 static void trace_equation(MP mp,mp_node lhs){
 mp_begin_diagnostic(mp);
@@ -24251,7 +23139,6 @@ mp_make_eq(mp,lhs);
 }
 
 
-/*:1049*//*1051:*/
 
 static void bad_lhs(MP mp){
 const char*hlp[]= {
@@ -24393,7 +23280,6 @@ mp_flush_node_list(mp,lhs);
 }
 
 
-/*:1051*//*1053:*/
 
 static void announce_bad_equation(MP mp,mp_node lhs){
 char msg[256];
@@ -24556,7 +23442,6 @@ free_number(v);
 mp_free_value_node(mp,lhs);
 }
 
-/*:1053*//*1055:*/
 
 static void deal_with_redundant_or_inconsistent_equation(MP mp,mp_value_node p,mp_node r){
 mp_number absp;
@@ -24689,7 +23574,6 @@ mp_free_value_node(mp,pp);
 }
 }
 
-/*:1055*//*1057:*/
 
 mp_node mp_scan_declared_variable(MP mp){
 mp_sym x;
@@ -24739,7 +23623,6 @@ return h;
 }
 
 
-/*:1057*//*1061:*/
 
 static void flush_spurious_symbols_after_declared_variable(MP mp);
 void mp_do_type_declaration(MP mp){
@@ -24773,7 +23656,6 @@ flush_spurious_symbols_after_declared_variable(mp);
 }
 
 
-/*:1061*//*1062:*/
 
 static void flush_spurious_symbols_after_declared_variable(MP mp)
 {
@@ -24791,20 +23673,17 @@ mp_get_x_next(mp);
 mp->scanner_status= flushing;
 do{
 get_t_next(mp);
-/*824:*/
 
 if(cur_cmd()==mp_string_token){
 delete_str_ref(cur_mod_str());
 }
 
-/*:824*/
 ;
 }while(cur_cmd()<mp_comma);
 mp->scanner_status= normal;
 }
 
 
-/*:1062*//*1063:*/
 
 static void mp_main_control(MP mp){
 do{
@@ -24836,7 +23715,6 @@ return mp->history;
 }
 
 
-/*:1063*//*1064:*/
 
 void mp_set_internal(MP mp,char*n,char*v,int isstring){
 size_t l= strlen(n);
@@ -24880,7 +23758,6 @@ mp_warn(mp,err);
 }
 
 
-/*:1064*//*1067:*/
 
 static void mp_reset_stream(mp_stream*str){
 xfree(str->data);
@@ -24894,7 +23771,6 @@ mp_reset_stream(str);
 }
 
 
-/*:1067*//*1072:*/
 
 static void*mplib_open_file(MP mp,const char*fname,const char*fmode,
 int ftype){
@@ -25113,14 +23989,12 @@ p->next= hh;
 }
 
 
-/*:1072*//*1075:*/
 
 mp_run_data*mp_rundata(MP mp){
 return&(mp->run_data);
 }
 
 
-/*:1075*//*1079:*/
 
 int mp_execute(MP mp,char*s,size_t l){
 mp_reset_stream(&(mp->run_data.term_out));
@@ -25157,22 +24031,18 @@ mp->run_data.term_in.cur= mp->run_data.term_in.data;
 mp->run_data.term_in.size= l;
 if(mp->run_state==0){
 mp->selector= term_only;
-/*1078:*/
 
-/*86:*/
 
 mp->selector= term_only;
 mp->tally= 0;
 mp->term_offset= 0;
 mp->file_offset= 0;
 
-/*:86*//*95:*/
 
 wterm(mp->banner);
 mp_print_ln(mp);
 update_terminal();
 
-/*:95*/
 ;
 mp->input_ptr= 0;
 mp->max_in_stack= file_bottom;
@@ -25211,7 +24081,6 @@ if(mp->troff_mode){
 number_clone(internal_value(mp_gtroffmode),unity_t);
 number_clone(internal_value(mp_prologues),unity_t);
 }
-/*880:*/
 
 if(mp->job_name!=NULL){
 if(internal_string(mp_job_name)!=0)
@@ -25219,14 +24088,12 @@ delete_str_ref(internal_string(mp_job_name));
 set_internal_string(mp_job_name,mp_rts(mp,mp->job_name));
 }
 
-/*:880*/
 ;
 if(mp->start_sym!=NULL){
 set_cur_sym(mp->start_sym);
 mp_back_input(mp);
 }
 
-/*:1078*/
 ;
 }
 mp->run_state= 1;
@@ -25245,7 +24112,6 @@ return mp->history;
 }
 
 
-/*:1079*//*1080:*/
 
 int mp_finish(MP mp){
 int history= 0;
@@ -25268,7 +24134,6 @@ return history;
 }
 
 
-/*:1080*//*1081:*/
 
 char*mp_metapost_version(void){
 return mp_strdup(metapost_version);
@@ -25279,10 +24144,10 @@ fprintf(stdout,"Compiled with pixman %s; using %s\n",COMPILED_PIXMAN_VERSION_STR
 fprintf(stdout,"Compiled with libpng %s; using %s\n",PNG_LIBPNG_VER_STRING,png_libpng_ver);
 fprintf(stdout,"Compiled with zlib %s; using %s\n",ZLIB_VERSION,zlibVersion());
 fprintf(stdout,"Compiled with mpfr %s; using %s\n",COMPILED_MPFR_VERSION_STRING,mpfr_get_version());
+fprintf(stdout,"Compiled with mpfi %s; using %s\n",COMPILED_MPFI_VERSION_STRING,mpfi_get_version());
 fprintf(stdout,"Compiled with gmp %d.%d.%d; using %s\n\n",COMPILED__GNU_MP_VERSION,COMPILED__GNU_MP_VERSION_MINOR,COMPILED__GNU_MP_VERSION_PATCHLEVEL,COMPILED_gmp_version);
 }
 
-/*:1081*//*1087:*/
 
 void mp_do_random_seed(MP mp){
 mp_value new_expr;
@@ -25307,7 +24172,6 @@ mp_back_error(mp,"Unknown value will be ignored",hlp,true);
 mp_get_x_next(mp);
 mp_flush_cur_exp(mp,new_expr);
 }else{
-/*1088:*/
 
 {
 init_randoms(number_to_scaled(cur_exp_value_number()));
@@ -25323,13 +24187,11 @@ mp->selector= mp->old_setting;
 }
 
 
-/*:1088*/
 ;
 }
 }
 
 
-/*:1087*//*1096:*/
 
 void mp_do_protection(MP mp){
 int m;
@@ -25349,7 +24211,6 @@ mp_get_x_next(mp);
 }
 
 
-/*:1096*//*1099:*/
 
 void mp_def_delims(MP mp){
 mp_sym l_delim,r_delim;
@@ -25365,7 +24226,6 @@ mp_get_x_next(mp);
 }
 
 
-/*:1099*//*1101:*/
 
 void mp_check_delimiter(MP mp,mp_sym l_delim,mp_sym r_delim){
 if(cur_cmd()==mp_right_delimiter)
@@ -25394,7 +24254,6 @@ mp_error(mp,msg,hlp,true);
 }
 
 
-/*:1101*//*1104:*/
 
 void mp_do_interim(MP mp){
 mp_get_x_next(mp);
@@ -25415,7 +24274,6 @@ mp_do_statement(mp);
 }
 
 
-/*:1104*//*1106:*/
 
 void mp_do_let(MP mp){
 mp_sym l;
@@ -25460,7 +24318,6 @@ mp_get_x_next(mp);
 }
 
 
-/*:1106*//*1109:*/
 
 void mp_grow_internals(MP mp,int l){
 mp_internal*internal;
@@ -25514,7 +24371,6 @@ mp_get_x_next(mp);
 }
 
 
-/*:1109*//*1114:*/
 
 void mp_do_show(MP mp){
 mp_value new_expr;
@@ -25531,13 +24387,11 @@ mp_flush_cur_exp(mp,new_expr);
 }
 
 
-/*:1114*//*1116:*/
 
 void mp_disp_token(MP mp){
 mp_print_nl(mp,"> ");
 ;
 if(cur_sym()==NULL){
-/*1117:*/
 
 {
 if(cur_cmd()==mp_numeric_token){
@@ -25553,7 +24407,6 @@ delete_str_ref(cur_mod_str());
 }
 
 
-/*:1117*/
 ;
 }else{
 mp_print_text(cur_sym());
@@ -25570,7 +24423,6 @@ mp_show_macro(mp,cur_mod_node(),NULL,100000);
 }
 
 
-/*:1116*//*1120:*/
 
 void mp_do_show_token(MP mp){
 do{
@@ -25581,7 +24433,6 @@ mp_get_x_next(mp);
 }
 
 
-/*:1120*//*1122:*/
 
 void mp_do_show_stats(MP mp){
 mp_print_nl(mp,"Memory usage ");
@@ -25597,13 +24448,11 @@ mp_get_x_next(mp);
 }
 
 
-/*:1122*//*1124:*/
 
 void mp_disp_var(MP mp,mp_node p){
 mp_node q;
 int n;
 if(mp_type(p)==mp_structured){
-/*1125:*/
 
 {
 q= attr_head(p);
@@ -25619,10 +24468,8 @@ q= mp_link(q);
 }
 
 
-/*:1125*/
 ;
 }else if(mp_type(p)>=mp_unsuffixed_macro){
-/*1126:*/
 
 {
 mp_print_nl(mp,"");
@@ -25638,7 +24485,6 @@ mp_show_macro(mp,value_node(p),NULL,n);
 }
 
 
-/*:1126*/
 ;
 }else if(mp_type(p)!=mp_undefined){
 mp_print_nl(mp,"");
@@ -25649,7 +24495,6 @@ mp_print_exp(mp,p,0);
 }
 
 
-/*:1124*//*1128:*/
 
 void mp_do_show_var(MP mp){
 do{
@@ -25668,7 +24513,6 @@ mp_get_x_next(mp);
 }
 
 
-/*:1128*//*1130:*/
 
 void mp_do_show_dependencies(MP mp){
 mp_value_node p;
@@ -25692,7 +24536,6 @@ mp_get_x_next(mp);
 }
 
 
-/*:1130*//*1132:*/
 
 void mp_do_show_whatever(MP mp){
 if(mp->interaction==mp_error_stop_mode)
@@ -25733,7 +24576,6 @@ mp_get_x_next(mp);
 }
 
 
-/*:1132*//*1137:*/
 
 static int is_invalid_with_list(MP mp,mp_variable_type t){
 return((t==with_mp_pre_script)&&(mp->cur_exp.type!=mp_string_type))||
@@ -26069,7 +24911,6 @@ q= mp_link(q);
 }
 
 
-/*:1137*//*1139:*/
 
 mp_edge_header_node mp_find_edges_var(MP mp,mp_node t){
 mp_node p;
@@ -26115,7 +24956,6 @@ return cur_edges;
 }
 
 
-/*:1139*//*1144:*/
 
 mp_node mp_start_draw_cmd(MP mp,quarterword sep){
 mp_node lhv;
@@ -26151,7 +24991,6 @@ mp->last_add_type= add_type;
 return lhv;
 }
 
-/*:1144*//*1146:*/
 
 void mp_do_bounds(MP mp){
 mp_node lhv;
@@ -26207,7 +25046,6 @@ mp_init_bbox(mp,lhe);
 }
 
 
-/*:1146*//*1148:*/
 
 void mp_do_add_to(MP mp){
 mp_node lhv;
@@ -26318,7 +25156,6 @@ mp_pen_p((mp_stroked_node)p)= mp_get_pen_circle(mp,zero_t);
 }
 }
 
-/*:1148*//*1150:*/
 
 void mp_do_ship_out(MP mp){
 integer c;
@@ -26328,7 +25165,6 @@ new_number(new_expr.data.n);
 mp_get_x_next(mp);
 mp_scan_expression(mp);
 if(mp->cur_exp.type!=mp_picture_type){
-/*1151:*/
 
 {
 const char*hlp[]= {"I can only output known pictures.",NULL};
@@ -26340,13 +25176,11 @@ mp_flush_cur_exp(mp,new_expr);
 }
 
 
-/*:1151*/
 ;
 }else{
 c= round_unscaled(internal_value(mp_char_code))%256;
 if(c<0)
 c= c+256;
-/*1185:*/
 
 if(c<mp->bc)
 mp->bc= (eight_bits)c;
@@ -26363,7 +25197,6 @@ mp_free_value_node(mp,mp->tfm_ital_corr[c]);
 mp->tfm_ital_corr[c]= mp_tfm_check(mp,mp_char_ic)
 
 
-/*:1185*/
 ;
 mp_ship_out(mp,cur_exp_node());
 set_number_to_zero(new_expr.data.n);
@@ -26372,7 +25205,6 @@ mp_flush_cur_exp(mp,new_expr);
 }
 
 
-/*:1150*//*1158:*/
 
 void mp_do_message(MP mp){
 int m;
@@ -26391,7 +25223,6 @@ mp_print_nl(mp,"");
 mp_print_str(mp,cur_exp_str());
 break;
 case err_message_code:
-/*1164:*/
 
 {
 char msg[256];
@@ -26419,11 +25250,9 @@ mp->use_err_help= false;
 }
 
 
-/*:1164*/
 ;
 break;
 case err_help_code:
-/*1161:*/
 
 {
 if(mp->err_help!=NULL)
@@ -26437,11 +25266,9 @@ add_str_ref(mp->err_help);
 }
 
 
-/*:1161*/
 ;
 break;
 case filename_template_code:
-/*1159:*/
 
 {
 delete_str_ref(internal_string(mp_output_template));
@@ -26454,7 +25281,6 @@ add_str_ref(internal_string(mp_output_template));
 }
 
 
-/*:1159*/
 ;
 break;
 }
@@ -26464,7 +25290,6 @@ mp_flush_cur_exp(mp,new_expr);
 }
 
 
-/*:1158*//*1166:*/
 
 void mp_do_write(MP mp){
 mp_string t;
@@ -26491,10 +25316,8 @@ if(mp->cur_exp.type!=mp_string_type)
 mp_no_string_err(mp,
 "I can\'t write to that file name.  It isn't a known string");
 else{
-/*1167:*/
 
 {
-/*1168:*/
 
 {
 char*fn= mp_str(mp,cur_exp_str());
@@ -26539,10 +25362,8 @@ n0= n;
 }
 
 
-/*:1168*/
 ;
 if(mp_str_vs_str(mp,t,mp->eof_line)==0){
-/*1169:*/
 
 {
 (mp->close_file)(mp,mp->wr_file[n]);
@@ -26552,7 +25373,6 @@ mp->write_files= n;
 }
 
 
-/*:1169*/
 ;
 }else{
 old_setting= mp->selector;
@@ -26564,7 +25384,6 @@ mp->selector= old_setting;
 }
 
 
-/*:1167*/
 ;
 }
 
@@ -26574,7 +25393,6 @@ mp_flush_cur_exp(mp,new_expr);
 }
 
 
-/*:1166*//*1184:*/
 
 static mp_node mp_tfm_check(MP mp,quarterword m){
 mp_number absm;
@@ -26610,7 +25428,6 @@ free_number(absm);
 return p;
 }
 
-/*:1184*//*1190:*/
 
 eight_bits mp_get_code(MP mp){
 integer c;
@@ -26645,7 +25462,6 @@ return(eight_bits)c;
 }
 
 
-/*:1190*//*1192:*/
 
 void mp_set_tag(MP mp,halfword c,quarterword t,halfword r){
 if(mp->char_tag[c]==no_tag){
@@ -26657,7 +25473,6 @@ mp->label_loc[mp->label_ptr]= (short)r;
 mp->label_char[mp->label_ptr]= (eight_bits)c;
 }
 }else{
-/*1193:*/
 
 {
 const char*xtra= NULL;
@@ -26685,13 +25500,11 @@ mp_get_x_next(mp);
 }
 
 
-/*:1193*/
 ;
 }
 }
 
 
-/*:1192*//*1195:*/
 
 void mp_do_tfm_command(MP mp){
 int c,cc;
@@ -26719,14 +25532,12 @@ mp->kern= xmalloc((max_tfm_int+1),sizeof(mp_number));
 for(i= 0;i<(max_tfm_int+1);i++)
 new_number(mp->kern[i]);
 }
-/*1196:*/
 
 {
 mp->lk_started= false;
 CONTINUE:
 mp_get_x_next(mp);
 if((cur_cmd()==mp_skip_to)&&mp->lk_started)
-/*1199:*/
 
 {
 c= mp_get_code(mp);
@@ -26743,7 +25554,6 @@ goto DONE;
 }
 
 
-/*:1199*/
 ;
 if(cur_cmd()==mp_bchar_label){
 c= 256;
@@ -26753,7 +25563,6 @@ mp_back_input(mp);
 c= mp_get_code(mp);
 };
 if((cur_cmd()==mp_colon)||(cur_cmd()==mp_double_colon)){
-/*1200:*/
 
 {
 if(cur_cmd()==mp_colon){
@@ -26778,11 +25587,9 @@ goto CONTINUE;
 }
 
 
-/*:1200*/
 ;
 }
 if(cur_cmd()==mp_lig_kern_token){
-/*1201:*/
 
 {
 next_char(mp->nl)= qi(c);
@@ -26821,7 +25628,6 @@ mp->lk_started= true;
 }
 
 
-/*:1201*/
 ;
 }else{
 const char*hlp[]= {"I was looking for `=:' or `kern' here.",NULL};
@@ -26842,11 +25648,9 @@ skip_byte(mp->nl-1)= stop_flag;
 }
 DONE:
 
-/*:1196*/
 ;
 break;
 case extensible_code:
-/*1202:*/
 
 {
 if(mp->ne==256)
@@ -26869,7 +25673,6 @@ mp->ne++;
 }
 
 
-/*:1202*/
 ;
 break;
 case header_byte_code:
@@ -26896,7 +25699,6 @@ mp_back_error(mp,"Missing `:' has been inserted",hlp,true);
 ;
 }
 if(c==header_byte_code){
-/*1203:*/
 
 j--;
 if(mp->header_last<j){
@@ -26919,7 +25721,6 @@ incr(mp->header_last);
 incr(j);
 }while(cur_cmd()==mp_comma)
 
-/*:1203*/
 ;
 }else{
 if(mp->param==NULL){
@@ -26928,7 +25729,6 @@ mp->param= xmalloc((max_tfm_int+1),sizeof(mp_number));
 for(i= 0;i<(max_tfm_int+1);i++)
 new_number(mp->param[i]);
 }
-/*1204:*/
 
 do{
 if(j> max_tfm_int)
@@ -26952,7 +25752,6 @@ number_clone(mp->param[j],cur_exp_value_number());
 incr(j);
 }while(cur_cmd()==mp_comma)
 
-/*:1204*/
 ;
 }
 }
@@ -26961,7 +25760,6 @@ break;
 }
 
 
-/*:1195*//*1207:*/
 
 static mp_node mp_sort_in(MP mp,mp_number v){
 mp_node p,q,r;
@@ -26982,7 +25780,6 @@ return mp_link(p);
 }
 
 
-/*:1207*//*1208:*/
 
 static integer mp_min_cover(MP mp,mp_number d){
 mp_node p;
@@ -27013,7 +25810,6 @@ return m;
 }
 
 
-/*:1208*//*1212:*/
 
 static void mp_threshold(MP mp,mp_number*ret,integer m){
 mp_number d,arg1;
@@ -27037,7 +25833,6 @@ free_number(arg1);
 }
 
 
-/*:1212*//*1213:*/
 
 static integer mp_skimp(MP mp,integer m){
 mp_number d;
@@ -27060,7 +25855,6 @@ number_clone(l,value_number(p));
 set_indep_value(p,m);
 set_number_from_addition(l_d,l,d);
 if(number_lessequal(value_number(mp_link(p)),l_d)){
-/*1214:*/
 
 {
 mp_number test;
@@ -27090,7 +25884,6 @@ free_number(test);
 }
 
 
-/*:1214*/
 ;
 }
 q= p;
@@ -27104,7 +25897,6 @@ return m;
 }
 
 
-/*:1213*//*1215:*/
 
 static void mp_tfm_warning(MP mp,quarterword m){
 mp_print_nl(mp,"(some ");
@@ -27119,7 +25911,6 @@ mp_print(mp,"pt)");
 }
 
 
-/*:1215*//*1221:*/
 
 static void mp_fix_design_size(MP mp){
 mp_number d;
@@ -27160,7 +25951,6 @@ free_number(d);
 }
 
 
-/*:1221*//*1222:*/
 
 static integer mp_dimen_out(MP mp,mp_number x_orig){
 integer ret;
@@ -27195,7 +25985,6 @@ return ret;
 }
 
 
-/*:1222*//*1226:*/
 
 static void mp_fix_check_sum(MP mp){
 eight_bits k;
@@ -27203,7 +25992,6 @@ eight_bits B1,B2,B3,B4;
 integer x;
 if(mp->header_byte[0]==0&&mp->header_byte[1]==0&&
 mp->header_byte[2]==0&&mp->header_byte[3]==0){
-/*1227:*/
 
 B1= mp->bc;
 B2= mp->ec;
@@ -27223,7 +26011,6 @@ break;
 }
 
 
-/*:1227*/
 ;
 mp->header_byte[0]= (char)B1;
 mp->header_byte[1]= (char)B2;
@@ -27234,7 +26021,6 @@ return;
 }
 
 
-/*:1226*//*1228:*/
 
 static void mp_tfm_two(MP mp,integer x){
 tfm_out(x/256);
@@ -27262,7 +26048,6 @@ tfm_out(qo(x.b3));
 }
 
 
-/*:1228*//*1242:*/
 
 void mp_reallocate_fonts(MP mp,font_number l){
 font_number f;
@@ -27289,7 +26074,6 @@ mp->font_max= l;
 }
 
 
-/*:1242*//*1247:*/
 
 font_number mp_find_font(MP mp,char*f){
 font_number n;
@@ -27303,7 +26087,6 @@ return n;
 }
 
 
-/*:1247*//*1248:*/
 
 double mp_get_char_dimension(MP mp,char*fname,int c,int t){
 unsigned n;
@@ -27331,7 +26114,6 @@ return w/655.35*(72.27/72);
 }
 
 
-/*:1248*//*1251:*/
 
 void mp_lost_warning(MP mp,font_number f,int k){
 if(number_positive(internal_value(mp_tracing_lost_chars))){
@@ -27349,7 +26131,6 @@ mp_end_diagnostic(mp,false);
 }
 
 
-/*:1251*//*1253:*/
 
 void mp_set_text_box(MP mp,mp_text_node p){
 font_number f;
@@ -27372,7 +26153,6 @@ ec= mp->font_ec[f];
 kk= mp_text_p(p)->len;
 k= 0;
 while(k<kk){
-/*1254:*/
 
 {
 if((*(mp_text_p(p)->str+k)<bc)||(*(mp_text_p(p)->str+k)> ec)){
@@ -27395,10 +26175,8 @@ incr(k);
 }
 
 
-/*:1254*/
 ;
 }
-/*1255:*/
 
 if(number_equal(p->height,p->depth)&&number_equal(p->height,minus_inf_t)){
 set_number_to_zero(p->height);
@@ -27408,7 +26186,6 @@ set_number_to_zero(p->height);
 set_number_to_zero(p->depth);
 }
 
-/*:1255*/
 ;
 free_number(h);
 free_number(d);
@@ -27416,13 +26193,11 @@ free_number(minus_inf_t);
 }
 
 
-/*:1253*//*1257:*/
 
 static void mp_do_mapfile(MP mp){
 mp_get_x_next(mp);
 mp_scan_expression(mp);
 if(mp->cur_exp.type!=mp_string_type){
-/*1258:*/
 
 {
 const char*hlp[]= {"Only known strings can be map files or map lines.",NULL};
@@ -27432,7 +26207,6 @@ mp_get_x_next(mp);
 }
 
 
-/*:1258*/
 ;
 }else{
 mp_map_file(mp,cur_exp_str());
@@ -27442,7 +26216,6 @@ static void mp_do_mapline(MP mp){
 mp_get_x_next(mp);
 mp_scan_expression(mp);
 if(mp->cur_exp.type!=mp_string_type){
-/*1258:*/
 
 {
 const char*hlp[]= {"Only known strings can be map files or map lines.",NULL};
@@ -27452,7 +26225,6 @@ mp_get_x_next(mp);
 }
 
 
-/*:1258*/
 ;
 }else{
 mp_map_line(mp,cur_exp_str());
@@ -27460,7 +26232,6 @@ mp_map_line(mp,cur_exp_str());
 }
 
 
-/*:1257*//*1263:*/
 
 static void mp_append_to_template(MP mp,integer ff,integer c,boolean rounding){
 if(internal_type(c)==mp_string_type){
@@ -27489,16 +26260,14 @@ char*s;
 if(c<0)
 s= xstrdup(".ps");
 else
-/*1264:*/
 
 {
-s= xmalloc(13,1);
+s= xmalloc(14,1);
 mp_snprintf(s,13,".%i",(int)c);
 s[13]= '\0';
 }
 
 
-/*:1264*/
 ;
 mp_pack_job_name(mp,s);
 free(s);
@@ -27514,7 +26283,6 @@ if(internal_string(mp_job_name)==NULL){
 if(mp->job_name==NULL){
 mp->job_name= xstrdup("mpout");
 }
-/*880:*/
 
 if(mp->job_name!=NULL){
 if(internal_string(mp_job_name)!=0)
@@ -27522,7 +26290,6 @@ delete_str_ref(internal_string(mp_job_name));
 set_internal_string(mp_job_name,mp_rts(mp,mp->job_name));
 }
 
-/*:880*/
 ;
 }
 old_setting= mp->selector;
@@ -27683,7 +26450,6 @@ mp_store_true_output_filename(mp,c);
 }
 
 
-/*:1263*//*1266:*/
 
 void mp_store_true_output_filename(MP mp,int c)
 {
@@ -27700,20 +26466,17 @@ mp->last_file_name= xstrdup(mp->name_of_file);
 set_internal_string(mp_output_filename,mp_rts(mp,mp->name_of_file));
 }
 
-/*:1266*//*1274:*/
 
 boolean mp_has_font_size(MP mp,font_number f){
 return(mp->font_sizes[f]!=NULL);
 }
 
 
-/*:1274*//*1277:*/
 
 void mp_do_special(MP mp){
 mp_get_x_next(mp);
 mp_scan_expression(mp);
 if(mp->cur_exp.type!=mp_string_type){
-/*1278:*/
 
 {
 const char*hlp[]= {"Only known strings are allowed for output as specials.",NULL};
@@ -27723,7 +26486,6 @@ mp_get_x_next(mp);
 }
 
 
-/*:1278*/
 ;
 }else{
 mp_link(mp->last_pending)= mp_stash_cur_exp(mp);
@@ -27733,7 +26495,6 @@ mp_link(mp->last_pending)= NULL;
 }
 
 
-/*:1277*//*1282:*/
 
 struct mp_edge_object*mp_gr_export(MP mp,mp_edge_header_node h){
 mp_node p;
@@ -27768,7 +26529,6 @@ hh->width= number_to_double(internal_value(mp_char_wd));
 hh->height= number_to_double(internal_value(mp_char_ht));
 hh->depth= number_to_double(internal_value(mp_char_dp));
 hh->ital_corr= number_to_double(internal_value(mp_char_ic));
-/*1280:*/
 
 p= mp_link(mp->spec_head);
 while(p!=NULL){
@@ -27786,7 +26546,6 @@ mp_flush_token_list(mp,mp_link(mp->spec_head));
 mp_link(mp->spec_head)= NULL;
 mp->last_pending= mp->spec_head
 
-/*:1280*/
 ;
 p= mp_link(edge_list(h));
 while(p!=NULL){
@@ -27904,7 +26663,6 @@ return hh;
 }
 
 
-/*:1282*//*1283:*/
 
 mp_edge_header_node mp_gr_import(MP mp,struct mp_edge_object*hh){
 mp_edge_header_node h;
@@ -27960,12 +26718,10 @@ return h;
 }
 
 
-/*:1283*//*1285:*/
 
 void mp_ship_out(MP mp,mp_node h){
 int c;
 c= round_unscaled(internal_value(mp_char_code));
-/*1270:*/
 
 if((int)mp->term_offset> mp->max_print_line-6)
 mp_print_ln(mp);
@@ -27976,24 +26732,20 @@ if(c>=0)
 mp_print_int(mp,c)
 
 
-/*:1270*/
 ;
 (mp->shipout_backend)(mp,h);
-/*1271:*/
 
 mp_print_char(mp,xord(']'));
 update_terminal();
 incr(mp->total_shipped)
 
 
-/*:1271*/
 ;
 if(number_positive(internal_value(mp_tracing_output)))
 mp_print_edges(mp,h," (just shipped out)",true);
 }
 
 
-/*:1285*//*1287:*/
 
 void mp_shipout_backend(MP mp,void*voidh){
 char*s;
@@ -28017,7 +26769,6 @@ mp_gr_toss_objects(hh);
 }
 
 
-/*:1287*//*1296:*/
 
 boolean mp_load_preload_file(MP mp){
 size_t k;
@@ -28095,9 +26846,7 @@ return true;
 }
 
 
-/*:1296*//*1297:*/
 
-/*943:*/
 
 static void check_for_mediation(MP mp);
 void mp_scan_primary(MP mp){
@@ -28464,7 +27213,6 @@ case mp_capsule_token:
 mp_make_exp_copy(mp,cur_mod_node());
 break;
 case mp_tag_token:
-/*948:*/
 
 {
 mp_node p,q;
@@ -28624,7 +27372,6 @@ goto DONE;
 }
 
 
-/*:948*/
 ;
 break;
 default:
@@ -28637,7 +27384,6 @@ DONE:
 check_for_mediation(mp);
 }
 
-/*:943*//*944:*/
 
 static void check_for_mediation(MP mp){
 mp_node p,q,r;
@@ -28683,7 +27429,6 @@ mp_get_x_next(mp);
 }
 
 
-/*:944*//*955:*/
 
 static void mp_scan_suffix(MP mp){
 mp_node h,t;
@@ -28731,7 +27476,6 @@ mp_free_symbolic_node(mp,h);
 mp->cur_exp.type= mp_token_list;
 }
 
-/*:955*//*956:*/
 
 static void mp_scan_secondary(MP mp){
 mp_node p;
@@ -28771,7 +27515,6 @@ goto CONTINUE;
 }
 
 
-/*:956*//*958:*/
 
 static void mp_scan_tertiary(MP mp){
 mp_node p;
@@ -28812,7 +27555,6 @@ goto CONTINUE;
 }
 
 
-/*:958*//*959:*/
 
 static int mp_scan_path(MP mp);
 static void mp_scan_expression(MP mp){
@@ -28874,7 +27616,6 @@ mp->expand_depth_count--;
 }
 
 
-/*:959*//*960:*/
 
 static void force_valid_tension_setting(MP mp){
 if((mp->cur_exp.type!=mp_known)||number_less(cur_exp_value_number(),min_tension)){
@@ -29157,7 +27898,6 @@ return 1;
 }
 
 
-/*:960*//*965:*/
 
 static void do_boolean_error(MP mp){
 mp_value new_expr;
@@ -29175,9 +27915,7 @@ mp_flush_cur_exp(mp,new_expr);
 mp->cur_exp.type= mp_boolean_type;
 }
 
-/*:965*/
 ;
-/*254:*/
 
 void mp_print_capsule(MP mp,mp_node p){
 mp_print_char(mp,xord('('));
@@ -29186,11 +27924,9 @@ mp_print_char(mp,xord(')'));
 }
 
 
-/*:254*/
 
 
 
-/*:1297*//*1299:*/
 
 void mp_close_files_and_terminate(MP mp){
 integer k;
@@ -29199,7 +27935,6 @@ int lk_offset;
 mp_node p;
 if(mp->finished)
 return;
-/*1301:*/
 
 if(mp->rd_fname!=NULL){
 for(k= 0;k<(int)mp->read_files;k++){
@@ -29218,10 +27953,8 @@ xfree(mp->wr_fname[k]);
 }
 }
 
-/*:1301*/
 ;
 if(number_positive(internal_value(mp_tracing_stats)))
-/*1304:*/
 
 if(mp->log_opened){
 char s[128];
@@ -29246,13 +27979,10 @@ mp_snprintf(s,128,
 wlog_ln(s);
 }
 
-/*:1304*/
 ;
 wake_up_terminal();
-/*1303:*/
 
 if(number_positive(internal_value(mp_fontmaking))){
-/*1216:*/
 
 clear_the_list;
 for(k= mp->bc;k<=mp->ec;k++){
@@ -29265,11 +27995,9 @@ if(number_greaterequal(mp->perturbation,tfm_warn_threshold_k))
 mp_tfm_warning(mp,mp_char_wd)
 
 
-/*:1216*/
 ;
 mp_fix_design_size(mp);
 mp_fix_check_sum(mp);
-/*1218:*/
 
 clear_the_list;
 for(k= mp->bc;k<=mp->ec;k++){
@@ -29312,10 +28040,8 @@ if(number_greaterequal(mp->perturbation,tfm_warn_threshold_k))
 mp_tfm_warning(mp,mp_char_ic)
 
 
-/*:1218*/
 ;
 set_number_to_zero(internal_value(mp_fontmaking));
-/*1229:*/
 
 if(mp->job_name==NULL)
 mp_open_log_file(mp);
@@ -29323,13 +28049,11 @@ mp_pack_job_name(mp,".tfm");
 while(!mp_open_out(mp,&mp->tfm_file,mp_filetype_metrics))
 mp_prompt_file_name(mp,"file name for font metrics",".tfm");
 mp->metric_file_name= xstrdup(mp->name_of_file);
-/*1230:*/
 
 k= mp->header_last;
 LH= (k+4)/4;
 if(mp->bc> mp->ec)
 mp->bc= 1;
-/*1232:*/
 
 mp->bchar= round_unscaled(internal_value(mp_boundary_char));
 if((mp->bchar<0)||(mp->bchar> 255)){
@@ -29340,7 +28064,6 @@ lk_offset= 0;
 mp->lk_started= true;
 lk_offset= 1;
 }
-/*1233:*/
 
 k= mp->label_ptr;
 if(mp->label_loc[k]+lk_offset> 255){
@@ -29365,7 +28088,6 @@ decr(k);
 }
 }
 
-/*:1233*/
 ;
 if(mp->bch_label<undefined_label){
 skip_byte(mp->nl)= qi(255);
@@ -29375,7 +28097,6 @@ rem_byte(mp->nl)= qi(((mp->bch_label+lk_offset)%256));
 mp->nl++;
 }
 
-/*:1232*/
 ;
 mp_tfm_two(mp,
 6+LH+(mp->ec-mp->bc+1)+mp->nw+mp->nh+mp->nd+mp->ni+
@@ -29397,9 +28118,7 @@ tfm_out(mp->header_byte[k]);
 }
 
 
-/*:1230*/
 ;
-/*1231:*/
 
 for(k= mp->bc;k<=mp->ec;k++){
 if(!mp->char_exists[k]){
@@ -29422,9 +28141,7 @@ p= mp_link(p);
 }
 
 
-/*:1231*/
 ;
-/*1234:*/
 
 for(k= 0;k<=255;k++){
 if(mp->skip_table[k]<undefined_label){
@@ -29467,9 +28184,7 @@ mp_tfm_four(mp,mp_dimen_out(mp,arg));
 free_number(arg);
 }
 
-/*:1234*/
 ;
-/*1235:*/
 
 for(k= 0;k<mp->ne;k++)
 mp_tfm_qqqq(mp,mp->exten[k]);
@@ -29509,10 +28224,8 @@ mp_print(mp," font metric dimensions");
 mp_print(mp," had to be decreased)");
 }
 
-/*:1235*/
 ;
 if(number_positive(internal_value(mp_tracing_stats)))
-/*1236:*/
 
 {
 char s[200];
@@ -29526,7 +28239,6 @@ wlog_ln(s);
 }
 
 
-/*:1236*/
 ;
 mp_print_nl(mp,"Font metrics written on ");
 mp_print(mp,mp->metric_file_name);
@@ -29535,13 +28247,10 @@ mp_print_char(mp,xord('.'));
 (mp->close_file)(mp,mp->tfm_file)
 
 
-/*:1229*/
 ;
 }
 
-/*:1303*/
 ;
-/*1272:*/
 
 if(mp->total_shipped> 0){
 mp_print_nl(mp,"");
@@ -29568,7 +28277,6 @@ mp_print_nl(mp,"");
 }
 }
 
-/*:1272*/
 ;
 if(mp->log_opened&&!mp->noninteractive){
 wlog_cr;
@@ -29586,7 +28294,6 @@ mp->finished= true;
 }
 
 
-/*:1299*//*1306:*/
 
 int mp_memory_usage(MP mp){
 return(int)mp->var_used;
@@ -29602,7 +28309,6 @@ return(int)mp->max_in_stack;
 }
 
 
-/*:1306*//*1307:*/
 
 void mp_final_cleanup(MP mp){
 
@@ -29648,10 +28354,8 @@ mp->selector= term_and_log;
 }
 
 
-/*:1307*//*1309:*/
 
 void mp_init_prim(MP mp){
-/*205:*/
 
 mp_primitive(mp,"tracingtitles",mp_internal_quantity,mp_tracing_titles);
 ;
@@ -29753,7 +28457,6 @@ mp_primitive(mp,"vppp",mp_internal_quantity,mp_vppp);
 ;
 
 
-/*:205*//*239:*/
 
 mp_primitive(mp,"..",mp_path_join,0);
 ;
@@ -29853,7 +28556,6 @@ mp_primitive(mp,"write",mp_write_command,0);
 
 
 
-/*:239*//*743:*/
 
 mp_primitive(mp,"btex",mp_start_tex,btex_code);
 ;
@@ -29867,7 +28569,6 @@ mp->frozen_mpx_break= mp_frozen_primitive(mp,"mpxbreak",mp_mpx_break,0);
 
 
 
-/*:743*//*753:*/
 
 mp_primitive(mp,"def",mp_macro_def,start_def);
 ;
@@ -29893,7 +28594,6 @@ mp->frozen_end_for= mp_frozen_primitive(mp,"endfor",mp_iteration,end_for);
 
 
 
-/*:753*//*761:*/
 
 mp_primitive(mp,"quote",mp_macro_special,quote);
 ;
@@ -29905,7 +28605,6 @@ mp_primitive(mp,"@#",mp_macro_special,macro_suffix);
 
 
 
-/*:761*//*767:*/
 
 mp_primitive(mp,"expr",mp_param_type,mp_expr_param);
 ;
@@ -29921,7 +28620,6 @@ mp_primitive(mp,"tertiary",mp_param_type,mp_tertiary_macro);
 
 
 
-/*:767*//*779:*/
 
 mp_primitive(mp,"input",mp_input,0);
 ;
@@ -29929,7 +28627,6 @@ mp_primitive(mp,"endinput",mp_input,1);
 
 
 
-/*:779*//*821:*/
 
 mp_primitive(mp,"if",mp_if_test,if_code);
 ;
@@ -29942,7 +28639,6 @@ mp_primitive(mp,"elseif",mp_fi_or_else,else_if_code);
 
 
 
-/*:821*//*967:*/
 
 mp_primitive(mp,"true",mp_nullary,mp_true_code);
 ;
@@ -30150,10 +28846,15 @@ mp_primitive(mp,"envelope",mp_primary_binary,mp_envelope_of);
 mp_primitive(mp,"boundingpath",mp_primary_binary,mp_boundingpath_of);
 ;
 mp_primitive(mp,"glyph",mp_primary_binary,mp_glyph_infont);
+;
+mp_primitive(mp,"interval_get_left_endpoint",mp_unary,mp_m_get_left_endpoint_op);
+;
+mp_primitive(mp,"interval_get_right_endpoint",mp_unary,mp_m_get_right_endpoint_op);
+;
+mp_primitive(mp,"interval_set",mp_unary,mp_interval_set_op);
+;
 
 
-
-/*:967*//*1058:*/
 
 mp_primitive(mp,"numeric",mp_type_name,mp_numeric_type);
 ;
@@ -30179,7 +28880,6 @@ mp_primitive(mp,"pair",mp_type_name,mp_pair_type);
 
 
 
-/*:1058*//*1083:*/
 
 mp_primitive(mp,"end",mp_stop,0);
 ;
@@ -30188,7 +28888,6 @@ mp->frozen_dump= mp_frozen_primitive(mp,"dump",mp_stop,1);
 
 
 
-/*:1083*//*1090:*/
 
 mp_primitive(mp,"batchmode",mp_mode_command,mp_batch_mode);
 ;
@@ -30200,7 +28899,6 @@ mp_primitive(mp,"errorstopmode",mp_mode_command,mp_error_stop_mode);
 
 
 
-/*:1090*//*1093:*/
 
 mp_primitive(mp,"inner",mp_protection_command,0);
 ;
@@ -30208,7 +28906,6 @@ mp_primitive(mp,"outer",mp_protection_command,1);
 
 
 
-/*:1093*//*1111:*/
 
 mp_primitive(mp,"showtoken",mp_show_command,show_token_code);
 ;
@@ -30222,7 +28919,6 @@ mp_primitive(mp,"showdependencies",mp_show_command,show_dependencies_code);
 
 
 
-/*:1111*//*1134:*/
 
 mp_primitive(mp,"doublepath",mp_thing_to_add,double_path_code);
 ;
@@ -30251,7 +28947,6 @@ mp_primitive(mp,"withcmykcolor",mp_with_option,mp_cmyk_model);
 
 
 
-/*:1134*//*1140:*/
 
 mp_primitive(mp,"clip",mp_bounds_command,mp_start_clip_node_type);
 ;
@@ -30259,7 +28954,6 @@ mp_primitive(mp,"setbounds",mp_bounds_command,mp_start_bounds_node_type);
 
 
 
-/*:1140*//*1155:*/
 
 mp_primitive(mp,"message",mp_message_command,message_code);
 ;
@@ -30271,7 +28965,6 @@ mp_primitive(mp,"filenametemplate",mp_message_command,filename_template_code);
 
 
 
-/*:1155*//*1187:*/
 
 mp_primitive(mp,"charlist",mp_tfm_command,char_list_code);
 ;
@@ -30285,7 +28978,6 @@ mp_primitive(mp,"fontdimen",mp_tfm_command,font_dimen_code);
 
 
 
-/*:1187*//*1197:*/
 
 mp_primitive(mp,"=:",mp_lig_kern_token,0);
 ;
@@ -30307,19 +28999,16 @@ mp_primitive(mp,"kern",mp_lig_kern_token,mp_kern_flag);
 
 
 
-/*:1197*/
 ;
 }
 
 void mp_init_tab(MP mp){
-/*187:*/
 
 mp->spec_head= mp_get_symbolic_node(mp);
 mp->last_pending= mp->spec_head;
 mp->temp_head= mp_get_symbolic_node(mp);
 mp->hold_head= mp_get_symbolic_node(mp);
 
-/*:187*//*207:*/
 
 set_internal_from_number(mp_default_color_model,unity_t);
 number_multiply_int(internal_value(mp_default_color_model),mp_rgb_model);
@@ -30348,7 +29037,6 @@ number_clone(internal_value(mp_tracing_lost_chars),three_t);
 number_clone(internal_value(mp_tracing_online),three_t);
 #endif
 
-/*:207*//*208:*/
 
 set_internal_name(mp_tracing_titles,xstrdup("tracingtitles"));
 set_internal_name(mp_tracing_equations,xstrdup("tracingequations"));
@@ -30400,11 +29088,10 @@ set_internal_name(mp_number_precision,xstrdup("numberprecision"));
 set_internal_name(mp_hppp,xstrdup("hppp"));
 set_internal_name(mp_vppp,xstrdup("vppp"));
 
-/*:208*//*231:*/
+
 
 mp->id_lookup_test= new_symbols_entry(mp,NULL,0);
 
-/*:231*//*232:*/
 
 mp->st_count= 0;
 mp->frozen_bad_vardef= mp_frozen_primitive(mp,"a bad variable",mp_tag_token,0);
@@ -30412,20 +29099,17 @@ mp->frozen_right_delimiter= mp_frozen_primitive(mp,")",mp_right_delimiter,0);
 mp->frozen_inaccessible= mp_frozen_primitive(mp," INACCESSIBLE",mp_tag_token,0);
 mp->frozen_undefined= mp_frozen_primitive(mp," UNDEFINED",mp_tag_token,0);
 
-/*:232*//*265:*/
 
 mp->end_attr= (mp_node)mp_get_attr_node(mp);
 set_hashloc(mp->end_attr,(mp_sym)-1);
 set_parent((mp_value_node)mp->end_attr,NULL);
 
-/*:265*//*375:*/
 
 new_fraction(mp->st);
 new_fraction(mp->ct);
 new_fraction(mp->sf);
 new_fraction(mp->cf);
 
-/*:375*//*392:*/
 
 {
 int i;
@@ -30435,29 +29119,24 @@ new_number(mp->bbmax[i]);
 }
 }
 
-/*:392*//*455:*/
 
 new_number(mp->cur_x);
 new_number(mp->cur_y);
 
-/*:455*//*486:*/
 
 mp->null_dash= mp_get_dash_node(mp);
 
-/*:486*//*619:*/
 
 new_number(mp->cur_t);
 new_number(mp->cur_tt);
 new_number(mp->max_t);
 
-/*:619*//*623:*/
 
 new_number(mp->delx);
 new_number(mp->dely);
 new_number(mp->appr_t);
 new_number(mp->appr_tt);
 
-/*:623*//*636:*/
 
 mp->serial_no= 0;
 mp->dep_head= mp_get_dep_node(mp);
@@ -30466,22 +29145,18 @@ set_prev_dep(mp->dep_head,(mp_node)mp->dep_head);
 set_dep_info(mp->dep_head,NULL);
 set_dep_list(mp->dep_head,NULL);
 
-/*:636*//*676:*/
 
 mp->cur_mod_= mp_get_symbolic_node(mp);
 
-/*:676*//*771:*/
 
 mp->bad_vardef= mp_get_value_node(mp);
 mp_name_type(mp->bad_vardef)= mp_root;
 set_value_sym(mp->bad_vardef,mp->frozen_bad_vardef);
 
-/*:771*//*842:*/
 
 mp->frozen_repeat_loop= 
 mp_frozen_primitive(mp," ENDFOR",mp_repeat_loop+mp_outer_tag,0);
 
-/*:842*//*939:*/
 
 {
 int i;
@@ -30490,12 +29165,10 @@ new_number(mp->max_c[i]);
 }
 }
 
-/*:939*//*982:*/
 
 mp->temp_val= mp_get_value_node(mp);
 mp_name_type(mp->temp_val)= mp_capsule;
 
-/*:982*//*1012:*/
 
 new_number(mp->txx);
 new_number(mp->txy);
@@ -30504,27 +29177,21 @@ new_number(mp->tyy);
 new_number(mp->tx);
 new_number(mp->ty);
 
-/*:1012*//*1205:*/
 
 mp->inf_val= mp_get_value_node(mp);
 set_value_number(mp->inf_val,fraction_four_t);
 
-/*:1205*//*1210:*/
 
 new_number(mp->perturbation);
 
-/*:1210*//*1219:*/
 
 mp->zero_val= mp_get_value_node(mp);
 set_value_number(mp->zero_val,zero_t);
 
-/*:1219*//*1224:*/
 
 new_number(mp->max_tfm_dimen);
 
-/*:1224*/
 ;
 }
 
 
-/*:1309*/

@@ -1,4 +1,3 @@
-/*1:*/
 
 #include <w2c/config.h> 
 #include <stdio.h> 
@@ -49,7 +48,6 @@ object_color_d= pq->color.d_val; \
 
 
 
-/*12:*/
 
 typedef struct mp_pen_info{
 double tx,ty;
@@ -58,7 +56,6 @@ double ww;
 }mp_pen_info;
 
 
-/*:12*//*31:*/
 
 typedef struct{
 unsigned char*data;
@@ -66,62 +63,48 @@ int height;
 int width;
 }bitmap_t;
 
-/*:31*//*32:*/
 
 typedef struct{
 void*fp;
 MP mp;
 }mp_png_io;
 
-/*:32*/
 
-/*8:*/
 
 static void mp_png_start(MP mp,mp_edge_object*hh,double hppp,double vppp,int colormodel,int antialias);
 
-/*:8*//*11:*/
 
 static void mp_png_color_out(MP mp,mp_graphic_object*p);
 
-/*:11*//*13:*/
 
 mp_pen_info*mp_png_pen_info(MP mp,mp_gr_knot pp,mp_gr_knot p);
 
-/*:13*//*16:*/
 
 static boolean mp_is_curved(mp_gr_knot p,mp_gr_knot q);
 
 
-/*:16*//*19:*/
 
 static double mp_png_choose_scale(MP mp,mp_graphic_object*p);
 
-/*:19*//*22:*/
 
 void mp_reallocate_psfonts(MP mp,int l);
 
-/*:22*//*24:*/
 
 static void mp_png_text_out(MP mp,mp_text_object*p);
 
-/*:24*//*26:*/
 
 static void mp_png_stroke_out(MP mp,mp_graphic_object*h,
 mp_pen_info*pen,boolean fill_also);
 
 
-/*:26*//*28:*/
 
 static void mp_png_fill_out(MP mp,mp_gr_knot p,mp_graphic_object*h);
 
-/*:28*//*34:*/
 
 int mp_png_save_to_file(MP mp,const bitmap_t*bitmap,const char*path,int colormodel);
 
-/*:34*/
 
 
-/*:1*//*5:*/
 
 void mp_png_backend_initialize(MP mp){
 mp->png= mp_xmalloc(mp,1,sizeof(pngout_data_struct));
@@ -132,7 +115,6 @@ mp_xfree(mp->png);
 mp->png= NULL;
 }
 
-/*:5*//*9:*/
 
 void mp_png_start(MP mp,mp_edge_object*hh,double hppp,double vppp,int colormodel,int antialias){
 double w,h;
@@ -164,7 +146,6 @@ cairo_translate(mp->png->cr,mp->png->dx,mp->png->dy);
 cairo_set_antialias(mp->png->cr,antialias);
 }
 
-/*:9*//*10:*/
 
 static void mp_png_color_out(MP mp,mp_graphic_object*p){
 int object_color_model;
@@ -199,7 +180,6 @@ cairo_set_source_rgb(mp->png->cr,object_color_a,object_color_b,object_color_c);
 }
 }
 
-/*:10*//*14:*/
 
 static double coord_range_x(mp_gr_knot h,double dz){
 double z;
@@ -236,7 +216,6 @@ break;
 return(zhi-zlo<=dz?aspect_bound:aspect_default);
 }
 
-/*:14*//*15:*/
 
 mp_pen_info*mp_png_pen_info(MP mp,mp_gr_knot pp,mp_gr_knot p){
 double wx,wy;
@@ -285,7 +264,6 @@ pen->sy= pen->sy/pen->ww;
 return pen;
 }
 
-/*:15*//*17:*/
 
 boolean mp_is_curved(mp_gr_knot p,mp_gr_knot q){
 double d;
@@ -306,7 +284,6 @@ return true;
 }
 
 
-/*:17*//*18:*/
 
 static void mp_png_path_out(MP mp,mp_gr_knot h){
 mp_gr_knot p,q;
@@ -337,7 +314,6 @@ cairo_close_path(mp->png->cr);
 }
 }
 
-/*:18*//*20:*/
 double mp_png_choose_scale(MP mp,mp_graphic_object*p){
 
 double a,b,c,d,ad,bc;
@@ -357,7 +333,6 @@ ret2= sqrt((c+bc)*(c+bc)+bc*bc);
 return sqrt(ret1*ret1+ret2*ret2);
 }
 
-/*:20*//*21:*/
 
 void mp_reallocate_psfonts(MP mp,int l){
 if(l>=mp->png->font_max){
@@ -371,7 +346,6 @@ mp->png->font_max= l;
 }
 }
 
-/*:21*//*25:*/
 
 void mp_png_text_out(MP mp,mp_text_object*p){
 double ds;
@@ -432,7 +406,6 @@ cairo_translate(mp->png->cr,wd,0);
 cairo_restore(mp->png->cr);
 }
 
-/*:25*//*27:*/
 
 void mp_png_stroke_out(MP mp,mp_graphic_object*h,
 mp_pen_info*pen,boolean fill_also){
@@ -499,7 +472,6 @@ cairo_stroke(mp->png->cr);
 cairo_restore(mp->png->cr);
 }
 
-/*:27*//*29:*/
 
 void mp_png_fill_out(MP mp,mp_gr_knot p,mp_graphic_object*h){
 cairo_save(mp->png->cr);
@@ -509,7 +481,6 @@ cairo_fill(mp->png->cr);
 cairo_restore(mp->png->cr);
 }
 
-/*:29*//*33:*/
 
 static void mp_write_png_data(png_structp png_ptr,png_bytep data,png_size_t length)
 {
@@ -523,7 +494,6 @@ static void mp_write_png_flush(png_structp png_ptr)
 }
 
 
-/*:33*//*35:*/
 
 int mp_png_save_to_file(MP mp,const bitmap_t*bitmap,const char*path,int colormodel)
 {
@@ -666,7 +636,6 @@ return status;
 }
 
 
-/*:35*//*36:*/
 
 int mp_png_gr_ship_out(mp_edge_object*hh,const char*options,int standalone){
 char*ss;
@@ -793,9 +762,7 @@ free(ss);
 return 1;
 }
 
-/*:36*//*38:*/
 
 int mp_png_ship_out(mp_edge_object*hh,const char*options){
 return mp_png_gr_ship_out(hh,options,(int)true);
 }
-/*:38*/

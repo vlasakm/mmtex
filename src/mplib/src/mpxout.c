@@ -1,4 +1,3 @@
-/*2:*/
 
 #include <w2c/config.h> 
 #include <stdio.h> 
@@ -187,13 +186,10 @@ deff= mpx_fsearch(mpx,cname,mpx_specchar_format) ; \
 
 
 
-/*:2*//*3:*/
 
 typedef signed int web_integer;
 typedef signed int web_boolean;
-/*5:*/
 
-/*8:*/
 
 enum mpx_history_states{
 mpx_spotless= 0,
@@ -203,36 +199,30 @@ mpx_fatal_error
 };
 
 
-/*:8*//*131:*/
 
 typedef struct named_color_record{
 const char*name;
 const char*value;
 }named_color_record;
 
-/*:131*//*165:*/
 
 typedef struct{
 char*name;
 int num;
 }avl_entry;
 
-/*:165*//*190:*/
 
 typedef struct{
 char*name;
 char*mac;
 }spec_entry;
 
-/*:190*/
 
 typedef struct mpx_data{
 int mode;
-/*9:*/
 
 int history;
 
-/*:9*//*11:*/
 
 char*banner;
 char*mpname;
@@ -242,11 +232,9 @@ FILE*mpxfile;
 FILE*errfile;
 int lnno;
 
-/*:11*//*16:*/
 
 jmp_buf jump_buf;
 
-/*:16*//*23:*/
 
 int texcnt;
 int verbcnt;
@@ -254,27 +242,22 @@ char*bb,*tt,*aa;
 char*buf;
 unsigned bufsize;
 
-/*:23*//*40:*/
 
 FILE*dvi_file;
 FILE*tfm_file;
 FILE*vf_file;
 
-/*:40*//*44:*/
 
 char*cur_name;
 
-/*:44*//*45:*/
 
 int b0,b1,b2,b3;
 
-/*:45*//*47:*/
 
 web_boolean vf_reading;
 unsigned char cmd_buf[(virtual_space+1)];
 unsigned int buf_ptr;
 
-/*:47*//*55:*/
 
 web_integer font_num[(max_fnums+1)];
 web_integer internal_num[(max_fnums+1)];
@@ -298,28 +281,23 @@ unsigned int n_cmds;
 unsigned int cur_fbase,cur_ftop;
 
 
-/*:55*//*63:*/
 
 double dvi_per_fix;
 
-/*:63*//*67:*/
 
 web_integer in_width[256];
 web_integer tfm_check_sum;
 
-/*:67*//*87:*/
 
 int state;
 int print_col;
 
-/*:87*//*93:*/
 
 web_integer h;
 web_integer v;
 double conv;
 double mag;
 
-/*:93*//*95:*/
 
 boolean font_used[(max_fonts+1)];
 boolean fonts_used;
@@ -331,11 +309,9 @@ web_integer str_f;
 double str_scale;
 
 
-/*:95*//*107:*/
 
 web_integer pic_dp;web_integer pic_ht;web_integer pic_wd;
 
-/*:107*//*111:*/
 
 web_integer w;web_integer x;web_integer y;web_integer z;
 
@@ -348,27 +324,22 @@ web_integer zstack[(stack_size+1)];
 web_integer stk_siz;
 double dvi_scale;
 
-/*:111*//*124:*/
 
 web_integer k;web_integer p;
 web_integer numerator;web_integer denominator;
 
-/*:124*//*128:*/
 
 char*dviname;
 
-/*:128*//*132:*/
 
 named_color_record named_colors[(max_named_colors+1)];
 
 web_integer num_named_colors;
 
-/*:132*//*142:*/
 
 web_integer color_stack_depth;
 char*color_stack[(max_color_stack_depth+1)];
 
-/*:142*//*155:*/
 
 int next_specfnt[(max_fnums+1)];
 int shiftchar[SHIFTS];
@@ -386,23 +357,18 @@ float sizescale;
 int gflag;
 float unit;
 
-/*:155*//*158:*/
 
 mpx_file_finder find_file;
 
-/*:158*//*169:*/
 
 char*arg_tail;
 
-/*:169*//*174:*/
 
 avl_tree trfonts;
 
-/*:174*//*179:*/
 
 avl_tree charcodes[(max_fnums+1)];
 
-/*:179*//*182:*/
 
 boolean graphics_used;
 float dmp_str_h1;
@@ -411,32 +377,25 @@ float dmp_str_h2;
 float str_size;
 
 
-/*:182*//*189:*/
 
 avl_tree spec_tab;
 
-/*:189*//*197:*/
 
 float gx;
 float gy;
 
-/*:197*//*210:*/
 
 char tex[15];
 int debug;
 const char*progname;
 
-/*:210*//*222:*/
 
 char*maincmd;
 
-/*:222*/
 
 }mpx_data;
 
-/*:5*/
 
-/*20:*/
 
 static void mpx_xfree(void*x);
 static void*mpx_xrealloc(MPX mpx,void*p,size_t nmem,size_t size);
@@ -444,70 +403,54 @@ static void*mpx_xmalloc(MPX mpx,size_t nmem,size_t size);
 static char*mpx_xstrdup(MPX mpX,const char*s);
 
 
-/*:20*//*96:*/
 
 static void mpx_prepare_font_use(MPX mpx);
 
-/*:96*//*100:*/
 
 static void mpx_first_use(MPX mpx,int f);
 
-/*:100*//*134:*/
 
 static void mpx_def_named_color(MPX mpx,const char*n,const char*v);
 
-/*:134*//*159:*/
 
 static char*mpx_find_file(MPX mpx,const char*nam,const char*mode,int ftype);
 
-/*:159*//*162:*/
 
 static FILE*mpx_fsearch(MPX mpx,const char*nam,int format);
 
-/*:162*//*183:*/
 
 static void mpx_slant_and_ht(MPX mpx);
 
-/*:183*//*212:*/
 
 static void mpx_erasetmp(MPX mpx);
 
-/*:212*/
 
 
-/*:3*//*7:*/
 
 static void mpx_initialize(MPX mpx){
 memset(mpx,0,sizeof(struct mpx_data));
-/*10:*/
 
 mpx->history= mpx_spotless;
 
-/*:10*//*24:*/
 
 mpx->bufsize= 1000;
 
-/*:24*//*48:*/
 
 mpx->vf_reading= false;
 mpx->buf_ptr= virtual_space;
 
-/*:48*//*56:*/
 
 mpx->nfonts= 0;mpx->info_ptr= 0;mpx->font_name[0]= 0;
 mpx->vf_ptr= max_fnums;
 mpx->cur_fbase= 0;mpx->cur_ftop= 0;
 
-/*:56*//*88:*/
 
 mpx->state= initial;
 mpx->print_col= 0;
 
-/*:88*//*92:*/
 
 mpx->state= initial;
 
-/*:92*//*135:*/
 
 mpx->num_named_colors= 0;
 mpx_def_named_color(mpx,"Apricot","(1.0, 0.680006, 0.480006)");
@@ -579,11 +522,9 @@ mpx_def_named_color(mpx,"Yellow","(1.0, 1.0, 0.0)");
 mpx_def_named_color(mpx,"YellowGreen","(0.560012, 1.0, 0.260012)");
 mpx_def_named_color(mpx,"YellowOrange","(1.0, 0.580006, 0.0)");
 
-/*:135*//*143:*/
 
 mpx->color_stack_depth= 0;
 
-/*:143*//*156:*/
 
 mpx->shiftptr= 0;
 mpx->specfnt= (max_fnums+1);
@@ -593,15 +534,12 @@ mpx->lnno= 0;
 mpx->gflag= 0;
 mpx->h= 0;mpx->v= 0;
 
-/*:156*//*161:*/
 
 mpx->find_file= mpx_find_file;
 
-/*:161*/
 
 }
 
-/*:7*//*12:*/
 
 static void mpx_printf(MPX mpx,const char*header,const char*msg,va_list ap){
 fprintf(mpx->errfile,"makempx %s: %s:",header,mpx->mpname);
@@ -612,7 +550,6 @@ fprintf(mpx->errfile," ");
 fprintf(mpx->errfile,"\n");
 }
 
-/*:12*//*13:*/
 
 static void mpx_report(MPX mpx,const char*msg,...){
 va_list ap;
@@ -624,7 +561,6 @@ if(mpx->history<mpx_warning_given)
 mpx->history= mpx_cksum_trouble;
 }
 
-/*:13*//*14:*/
 
 static void mpx_warn(MPX mpx,const char*msg,...){
 va_list ap;
@@ -635,7 +571,6 @@ if(mpx->history<mpx_warning_given)
 mpx->history= mpx_cksum_trouble;
 }
 
-/*:14*//*15:*/
 
 static void mpx_error(MPX mpx,const char*msg,...){
 va_list ap;
@@ -645,7 +580,6 @@ va_end(ap);
 mpx->history= mpx_warning_given;
 }
 
-/*:15*//*17:*/
 
 static void mpx_abort(MPX mpx,const char*msg,...){
 va_list ap;
@@ -661,7 +595,6 @@ mpx_erasetmp(mpx);
 mpx_jump_out;
 }
 
-/*:17*//*19:*/
 
 static FILE*mpx_xfopen(MPX mpx,const char*fname,const char*fmode){
 FILE*f= fopen(fname,fmode);
@@ -674,7 +607,6 @@ static void mpx_fclose(MPX mpx,FILE*file){
 (void)fclose(file);
 }
 
-/*:19*//*21:*/
 
 static void mpx_xfree(void*x){
 if(x!=NULL)free(x);
@@ -705,7 +637,6 @@ w= strdup(s);
 if(w==NULL)mpx_abort(mpx,"Out of Memory");
 return w;
 }
-/*:21*//*22:*/
 
 static int mpx_newer(char*source,char*target){
 struct stat source_stat,target_stat;
@@ -718,16 +649,15 @@ if(source_stat.st_mtim.tv_sec> target_stat.st_mtim.tv_sec||
 source_stat.st_mtim.tv_nsec>=target_stat.st_mtim.tv_nsec))
 return 0;
 #else
- if(source_stat.st_mtime>=target_stat.st_mtime)
+if(source_stat.st_mtime>=target_stat.st_mtime)
 return 0;
 #endif
 #endif
- return 1;
+return 1;
 }
 
 
 
-/*:22*//*25:*/
 
 static char*mpx_getline(MPX mpx,FILE*mpfile){
 int c;
@@ -760,7 +690,6 @@ return mpx->buf;
 }
 
 
-/*:25*//*26:*/
 
 static int mpx_match_str(const char*s,const char*t){
 while(*t!=0){
@@ -775,7 +704,6 @@ return 1;
 }
 
 
-/*:26*//*27:*/
 
 static int mpx_getbta(MPX mpx,char*s){
 int ok= 1;
@@ -828,7 +756,6 @@ mpx->aa= mpx->tt;
 return 0;
 }
 
-/*:27*//*28:*/
 
 static void mpx_copy_mpto(MPX mpx,FILE*outfile,int textype){
 char*s;
@@ -868,7 +795,7 @@ res= xrealloc(res,strlen(res)+strlen(mpx->bb)+2,1);
 res= strncat(res,mpx->bb,strlen(mpx->bb));
 }
 if(c=='\0')
-res= strncat(res,"\n",1);
+res= strcat(res,"\n");
 *s= c;
 }while(*(mpx->tt)!='e');
 s= res;
@@ -899,7 +826,6 @@ free(res);
 }
 
 
-/*:28*//*29:*/
 
 static const char*mpx_predoc[]= {"",".po 0\n"};
 static const char*mpx_postdoc[]= {"\\end{document}\n",""};
@@ -922,7 +848,6 @@ static const char*mpx_preverb1[]= {"",".lf %d %s\n"};
 static const char*mpx_preverb[]= {"%% line %d %s\n",".lf %d %s\n"};
 static const char*mpx_postverb[]= {"\n","\n"};
 
-/*:29*//*30:*/
 
 static void mpx_mpto(MPX mpx,char*tmpname,char*mptexpre){
 FILE*outfile;
@@ -949,7 +874,6 @@ mpx_fclose(mpx,fr);
 mpx->mpfile= mpx_xfopen(mpx,mpname,"r");
 fprintf(outfile,"%s",mpx_predoc[mode]);
 while(mpx_getline(mpx,mpx->mpfile)!=NULL)
-/*31:*/
 
 {
 mpx->aa= mpx->buf;
@@ -977,15 +901,14 @@ if(!verbatim_written)
 mpx_copy_mpto(mpx,outfile,FIRST_VERBATIM_TEX);
 else
 mpx_copy_mpto(mpx,outfile,VERBATIM_TEX);
+verbatim_written= 1;
 fprintf(outfile,"%s",mpx_postverb[mode]);
 }else{
 mpx_error(mpx,"unmatched etex");
 }
-verbatim_written= 1;
 }
 }
 
-/*:31*/
 ;
 fprintf(outfile,"%s",mpx_postdoc[mode]);
 mpx_fclose(mpx,mpx->mpfile);
@@ -993,13 +916,11 @@ mpx_fclose(mpx,outfile);
 mpx->lnno= 0;
 }
 
-/*:30*//*37:*/
 
 static void mpx_open_mpxfile(MPX mpx){
 mpx->mpxfile= mpx_xfopen(mpx,mpx->mpxname,"wb");
 }
 
-/*:37*//*41:*/
 
 static void mpx_open_dvi_file(MPX mpx){
 mpx->dvi_file= fopen(mpx->dviname,"rb");
@@ -1007,7 +928,6 @@ if(mpx->dvi_file==NULL)
 mpx_abort(mpx,"DVI generation failed");
 }
 
-/*:41*//*42:*/
 
 static web_boolean mpx_open_tfm_file(MPX mpx){
 mpx->tfm_file= mpx_fsearch(mpx,mpx->cur_name,mpx_tfm_format);
@@ -1017,7 +937,6 @@ free(mpx->cur_name);
 return true;
 }
 
-/*:42*//*43:*/
 
 static web_boolean mpx_open_vf_file(MPX mpx){
 if(mpx->vf_file)
@@ -1030,7 +949,6 @@ return true;
 return false;
 }
 
-/*:43*//*46:*/
 
 static void mpx_read_tfm_word(MPX mpx){
 mpx->b0= getc(mpx->tfm_file);
@@ -1039,11 +957,9 @@ mpx->b2= getc(mpx->tfm_file);
 mpx->b3= getc(mpx->tfm_file);
 }
 
-/*:46*//*49:*/
 
 static web_integer mpx_get_byte(MPX mpx){
 unsigned char b;
-/*50:*/
 
 if(mpx->vf_reading){
 b= (unsigned char)getc(mpx->vf_file);
@@ -1054,14 +970,12 @@ b= mpx->cmd_buf[mpx->buf_ptr];
 incr(mpx->buf_ptr);
 }
 
-/*:50*/
 ;
 return b;
 }
 
 static web_integer mpx_signed_byte(MPX mpx){
 unsigned char b;
-/*50:*/
 
 if(mpx->vf_reading){
 b= (unsigned char)getc(mpx->vf_file);
@@ -1072,7 +986,6 @@ b= mpx->cmd_buf[mpx->buf_ptr];
 incr(mpx->buf_ptr);
 }
 
-/*:50*/
 ;
 return(b<128?b:(b-256));
 }
@@ -1080,7 +993,6 @@ return(b<128?b:(b-256));
 static web_integer mpx_get_two_bytes(MPX mpx){
 unsigned char a,b;
 a= 0;b= 0;
-/*51:*/
 
 if(mpx->vf_reading){
 a= (unsigned char)getc(mpx->vf_file);
@@ -1097,7 +1009,6 @@ b= mpx->cmd_buf[mpx->buf_ptr+1];
 mpx->buf_ptr+= 2;
 }
 
-/*:51*/
 ;
 return(a*(int)(256)+b);
 }
@@ -1105,7 +1016,6 @@ return(a*(int)(256)+b);
 static web_integer mpx_signed_pair(MPX mpx){
 unsigned char a,b;
 a= 0;b= 0;
-/*51:*/
 
 if(mpx->vf_reading){
 a= (unsigned char)getc(mpx->vf_file);
@@ -1122,7 +1032,6 @@ b= mpx->cmd_buf[mpx->buf_ptr+1];
 mpx->buf_ptr+= 2;
 }
 
-/*:51*/
 ;
 if(a<128)return(a*256+b);
 else return((a-256)*256+b);
@@ -1131,7 +1040,6 @@ else return((a-256)*256+b);
 static web_integer mpx_get_three_bytes(MPX mpx){
 unsigned char a,b,c;
 a= 0;b= 0;c= 0;
-/*52:*/
 
 if(mpx->vf_reading){
 a= (unsigned char)getc(mpx->vf_file);
@@ -1151,7 +1059,6 @@ c= mpx->cmd_buf[mpx->buf_ptr+2];
 mpx->buf_ptr+= 3;
 }
 
-/*:52*/
 ;
 return((a*(int)(256)+b)*256+c);
 }
@@ -1159,7 +1066,6 @@ return((a*(int)(256)+b)*256+c);
 static web_integer mpx_signed_trio(MPX mpx){
 unsigned char a,b,c;
 a= 0;b= 0;c= 0;
-/*52:*/
 
 if(mpx->vf_reading){
 a= (unsigned char)getc(mpx->vf_file);
@@ -1179,7 +1085,6 @@ c= mpx->cmd_buf[mpx->buf_ptr+2];
 mpx->buf_ptr+= 3;
 }
 
-/*:52*/
 ;
 if(a<128)return((a*(int)(256)+b)*256+c);
 else return(((a-(int)(256))*256+b)*256+c);
@@ -1188,7 +1093,6 @@ else return(((a-(int)(256))*256+b)*256+c);
 static web_integer mpx_signed_quad(MPX mpx){
 unsigned char a,b,c,d;
 a= 0;b= 0;c= 0;d= 0;
-/*53:*/
 
 if(mpx->vf_reading){
 a= (unsigned char)getc(mpx->vf_file);
@@ -1211,14 +1115,11 @@ d= mpx->cmd_buf[mpx->buf_ptr+3];
 mpx->buf_ptr+= 4;
 }
 
-/*:53*/
 ;
 if(a<128)return(((a*(int)(256)+b)*256+c)*256+d);
 else return((((a-256)*(int)(256)+b)*256+c)*256+d);
 }
 
-/*:49*//*57:*/
-/*89:*/
 
 static void mpx_print_char(MPX mpx,unsigned char c){
 web_integer l;
@@ -1233,7 +1134,6 @@ fprintf(mpx->mpxfile,"\"");mpx->state= special;
 fprintf(mpx->mpxfile,"\n");
 mpx->print_col= 0;
 }
-/*90:*/
 
 if(mpx->state==normal){
 if(printable(c)){
@@ -1260,11 +1160,9 @@ mpx->state= normal;
 else
 mpx->state= special
 
-/*:90*/
 ;
 }
 
-/*:89*//*91:*/
 
 static void mpx_end_char_string(MPX mpx,web_integer l){
 while(mpx->state> special){
@@ -1278,7 +1176,6 @@ fprintf(mpx->mpxfile,"\n ");mpx->print_col= 0;
 mpx->state= initial;
 }
 
-/*:91*/
 
 static void mpx_print_font(MPX mpx,web_integer f){
 if((f<0)||(f>=(int)mpx->nfonts)){
@@ -1292,19 +1189,15 @@ s++;
 }
 }
 
-/*:57*//*59:*/
-/*64:*/
 
 static web_integer mpx_match_font(MPX mpx,unsigned ff,web_boolean exact){
 unsigned f;
 for(f= 0;f<mpx->nfonts;f++){
 if(f!=ff){
-/*65:*/
 
 if(strcmp(mpx->font_name[f],mpx->font_name[ff]))
 continue
 
-/*:65*/
 ;
 if(exact){
 if(fabs(mpx->font_scaled_size[f]-mpx->font_scaled_size[ff])<=font_tolerance){
@@ -1323,7 +1216,6 @@ break;
 }
 }
 if(f<mpx->nfonts){
-/*66:*/
 
 if(fabs(mpx->font_design_size[f]-mpx->font_design_size[ff])> font_tolerance){
 font_error("Inconsistent design sizes given for ",ff);
@@ -1333,13 +1225,11 @@ font_warn("Checksum mismatch for ",ff);
 
 }
 
-/*:66*/
 ;
 }
 return(web_integer)f;
 }
 
-/*:64*/
 
 static void mpx_define_font(MPX mpx,web_integer e){
 unsigned i;
@@ -1349,7 +1239,6 @@ web_integer x;
 if(mpx->nfonts==max_fonts)
 mpx_abort(mpx,"DVItoMP capacity exceeded (max fonts=%d)!",max_fonts);
 
-/*60:*/
 
 if(mpx->vf_ptr==mpx->nfonts)
 mpx_abort(mpx,"DVItoMP capacity exceeded (max font numbers=%d)",max_fnums);
@@ -1361,12 +1250,9 @@ i= mpx->nfonts;
 }
 mpx->font_num[i]= e
 
-/*:60*/
 ;
-/*61:*/
 
 mpx->font_check_sum[mpx->nfonts]= mpx_signed_quad(mpx);
-/*62:*/
 
 x= mpx_signed_quad(mpx);
 k= 1;
@@ -1378,7 +1264,6 @@ if(mpx->vf_reading)
 mpx->font_design_size[mpx->nfonts]= mpx_signed_quad(mpx)*mpx->dvi_per_fix/1048576.0;
 else mpx->font_design_size[mpx->nfonts]= mpx_signed_quad(mpx)/1048576.0;
 
-/*:62*/
 ;
 n= mpx_get_byte(mpx);
 n= n+mpx_get_byte(mpx);
@@ -1387,7 +1272,6 @@ for(k= 0;k<n;k++)
 mpx->font_name[mpx->nfonts][k]= (char)mpx_get_byte(mpx);
 mpx->font_name[mpx->nfonts][k]= 0
 
-/*:61*/
 ;
 mpx->internal_num[i]= mpx_match_font(mpx,mpx->nfonts,true);
 if(mpx->internal_num[i]==(int)mpx->nfonts){
@@ -1396,7 +1280,6 @@ mpx->local_only[mpx->nfonts]= mpx->vf_reading;incr(mpx->nfonts);
 }
 }
 
-/*:59*//*68:*/
 
 static void mpx_in_TFM(MPX mpx,web_integer f){
 
@@ -1404,7 +1287,6 @@ web_integer k;
 int lh;
 int nw;
 unsigned int wp;
-/*69:*/
 
 mpx_read_tfm_word(mpx);lh= mpx->b2*(int)(256)+mpx->b3;
 mpx_read_tfm_word(mpx);
@@ -1437,9 +1319,7 @@ mpx->font_design_size[f]= (((mpx->b0*(int)(256)+mpx->b1)*256+mpx->b2)*256+mpx->b
 }
 }
 
-/*:69*/
 ;
-/*70:*/
 
 if(wp> 0){
 for(k= (int)mpx->info_ptr;k<=(int)wp-1;k++){
@@ -1451,9 +1331,7 @@ mpx->width[k]= mpx->b0;
 }
 }
 
-/*:70*/
 ;
-/*71:*/
 
 for(k= 0;k<=nw-1;k++){
 mpx_read_tfm_word(mpx);
@@ -1461,9 +1339,7 @@ if(mpx->b0> 127)mpx->b0= mpx->b0-256;
 mpx->in_width[k]= ((mpx->b0*0400+mpx->b1)*0400+mpx->b2)*0400+mpx->b3;
 }
 
-/*:71*/
 ;
-/*74:*/
 
 if(mpx->in_width[0]!=0)
 font_abort("Bad TFM file for ",f);
@@ -1476,7 +1352,6 @@ mpx->width[k]= mpx->in_width[mpx->width[k]];
 }
 
 
-/*:74*/
 ;
 mpx->fbase[f]= 0;mpx->ftop[f]= 0;
 mpx->info_ptr= wp;
@@ -1484,9 +1359,7 @@ mpx_fclose(mpx,mpx->tfm_file);
 return;
 }
 
-/*:68*//*75:*/
 
-/*115:*/
 
 static web_integer mpx_first_par(MPX mpx,unsigned int o){
 switch(o){
@@ -1532,7 +1405,6 @@ break;
 return 0;
 }
 
-/*:115*/
 
 static void mpx_in_VF(MPX mpx,web_integer f){
 
@@ -1542,7 +1414,6 @@ web_integer c;
 web_integer limit;
 web_integer w;
 was_vf_reading= mpx->vf_reading;mpx->vf_reading= true;
-/*76:*/
 
 p= mpx_get_byte(mpx);
 if(p!=pre)
@@ -1556,9 +1427,7 @@ while(p--> 0)
 mpx->tfm_check_sum= mpx_signed_quad(mpx);
 (void)mpx_signed_quad(mpx);
 
-/*:76*/
 ;
-/*77:*/
 
 mpx->ftop[f]= (web_integer)mpx->vf_ptr;
 if(mpx->vf_ptr==mpx->nfonts)
@@ -1569,7 +1438,6 @@ mpx->info_base[f]= (web_integer)mpx->info_ptr;
 limit= max_widths-mpx->info_base[f];
 mpx->font_bc[f]= limit;mpx->font_ec[f]= 0
 
-/*:77*/
 ;
 p= mpx_get_byte(mpx);
 while(p>=fnt_def1){
@@ -1581,7 +1449,6 @@ p= mpx_get_byte(mpx);
 while(p<=242){
 if(feof(mpx->vf_file))
 font_abort("Bad VF file for ",f);
-/*78:*/
 
 if(p==242){
 p= mpx_signed_quad(mpx);c= mpx_signed_quad(mpx);w= mpx_signed_quad(mpx);
@@ -1597,9 +1464,7 @@ if(c<mpx->font_bc[f])mpx->font_bc[f]= c;
 if(c> mpx->font_ec[f])mpx->font_ec[f]= c;
 char_width(f,c)= w
 
-/*:78*/
 ;
-/*79:*/
 
 if(mpx->n_cmds+(unsigned int)p>=virtual_space)
 mpx_abort(mpx,"DVItoMP capacity exceeded (virtual font space=%d)",virtual_space);
@@ -1612,31 +1477,26 @@ incr(mpx->n_cmds);decr(p);
 mpx->cmd_buf[mpx->n_cmds]= eop;
 incr(mpx->n_cmds)
 
-/*:79*/
 ;
 p= mpx_get_byte(mpx);
 }
 if(p==post){
-/*80:*/
 
 mpx->fbase[f]= (web_integer)(mpx->vf_ptr+1);
 mpx->info_ptr= (unsigned int)(mpx->info_base[f]+mpx->font_ec[f]+1)
 
 
-/*:80*/
 ;
 mpx->vf_reading= was_vf_reading;
 return;
 }
 }
 
-/*:75*//*81:*/
 
 static web_integer mpx_select_font(MPX mpx,web_integer e){
 int f;
 int ff;
 web_integer k;
-/*82:*/
 
 if(mpx->cur_ftop<=mpx->nfonts)
 mpx->cur_ftop= mpx->nfonts;
@@ -1647,12 +1507,10 @@ if(k==(int)mpx->cur_ftop)
 mpx_abort(mpx,"Undefined font selected");
 f= mpx->internal_num[k]
 
-/*:82*/
 ;
 if(mpx->info_base[f]==max_widths){
 ff= mpx_match_font(mpx,(unsigned)f,false);
 if(ff<(int)mpx->nfonts){
-/*83:*/
 
 {
 mpx->font_bc[f]= mpx->font_bc[ff];
@@ -1662,14 +1520,11 @@ mpx->fbase[f]= mpx->fbase[ff];
 mpx->ftop[f]= mpx->ftop[ff];
 }
 
-/*:83*/
 ;
 }else{
-/*84:*/
 
 mpx->cur_name= xstrdup(mpx->font_name[f])
 
-/*:84*/
 ;
 if(mpx_open_vf_file(mpx)){
 mpx_in_VF(mpx,f);
@@ -1679,7 +1534,6 @@ font_abort("No TFM file found for ",f);
 
 mpx_in_TFM(mpx,f);
 }
-/*85:*/
 
 {
 if((mpx->font_check_sum[f]!=0)&&(mpx->tfm_check_sum!=0)&&
@@ -1689,21 +1543,16 @@ font_warn("Checksum mismatch for ",f);
 }
 }
 
-/*:85*/
 ;
 }
-/*99:*/
 
 mpx->font_used[f]= false;
 
-/*:99*/
 ;
 }
 return f;
 }
 
-/*:81*//*94:*/
-/*103:*/
 
 static void mpx_finish_last_char(MPX mpx){
 double m,x,y;
@@ -1721,14 +1570,12 @@ mpx_end_char_string(mpx,60);
 mpx_end_char_string(mpx,40);
 }
 fprintf(mpx->mpxfile,",_n%d,%1.5f,%1.4f,%1.4f,",mpx->str_f,m,x,y);
-/*154:*/
 
 if(mpx->color_stack_depth> 0){
 fprintf(mpx->mpxfile," withcolor %s\n",mpx->color_stack[mpx->color_stack_depth]);
 }
 
 
-/*:154*/
 
 fprintf(mpx->mpxfile,");\n");
 }else{
@@ -1750,7 +1597,6 @@ mpx->str_f= -1;
 }
 }
 
-/*:103*/
 
 static void mpx_do_set_char(MPX mpx,web_integer f,web_integer c){
 if((c<mpx->font_bc[f])||(c> mpx->font_ec[f]))
@@ -1761,20 +1607,16 @@ if((mpx->h!=mpx->str_h2)||(mpx->v!=mpx->str_v)||
 if(mpx->str_f>=0){
 mpx_finish_last_char(mpx);
 }else if(!mpx->fonts_used){
-/*98:*/
 
 mpx_prepare_font_use(mpx)
 
 
-/*:98*/
 ;
 }
 if(!mpx->font_used[f])
-/*102:*/
 
 mpx_first_use(mpx,f);
 
-/*:102*/
 ;
 fprintf(mpx->mpxfile,"_s(");mpx->print_col= 3;
 mpx->str_scale= mpx->dvi_scale;mpx->str_f= f;
@@ -1785,11 +1627,9 @@ mpx->str_h2= (web_integer)(mpx->h+/*72:*/
 
 floor(mpx->dvi_scale*mpx->font_scaled_size[f]*char_width(f,c))
 
-/*:72*/
 );
 }
 
-/*:94*//*97:*/
 
 static void mpx_prepare_font_use(MPX mpx){
 unsigned k;
@@ -1802,7 +1642,6 @@ fprintf(mpx->mpxfile,
 "  addto _p also _t infont _f scaled _m shifted (_x,_y) _c; enddef;\n");
 }
 
-/*:97*//*101:*/
 
 static void mpx_first_use(MPX mpx,int f){
 mpx->font_used[f]= true;
@@ -1813,19 +1652,16 @@ mpx_end_char_string(mpx,1);
 fprintf(mpx->mpxfile,";\n");
 }
 
-/*:101*//*104:*/
 
 static void mpx_do_set_rule(MPX mpx,web_integer ht,web_integer wd){
 double xx1,yy1,xx2,yy2,ww;
 
 if(wd==1){
-/*106:*/
 
 {
 mpx->pic_wd= mpx->h;mpx->pic_dp= mpx->v;mpx->pic_ht= ht-mpx->v;
 }
 
-/*:106*/
 
 }else if((ht> 0)||(wd> 0)){
 if(mpx->str_f>=0)
@@ -1837,7 +1673,6 @@ fprintf(mpx->mpxfile,
 "vardef _r(expr _a,_w)(text _t) =\n"
 "  addto _p doublepath _a withpen pencircle scaled _w _t enddef;");
 }
-/*105:*/
 
 xx1= mpx->conv*mpx->h;
 yy1= mpx->conv*(-mpx->v);
@@ -1853,26 +1688,22 @@ xx1= xx1+0.5*ww;
 xx2= xx1;
 }
 
-/*:105*/
 ;
 if((fabs(xx1)>=4096.0)||(fabs(yy1)>=4096.0)||
 (fabs(xx2)>=4096.0)||(fabs(yy2)>=4096.0)||(ww>=4096.0))
 mpx_warn(mpx,"hrule or vrule is out of range");
 fprintf(mpx->mpxfile,"_r((%1.4f,%1.4f)..(%1.4f,%1.4f), %1.4f,",xx1,yy1,xx2,yy2,ww);
-/*154:*/
 
 if(mpx->color_stack_depth> 0){
 fprintf(mpx->mpxfile," withcolor %s\n",mpx->color_stack[mpx->color_stack_depth]);
 }
 
 
-/*:154*/
 
 fprintf(mpx->mpxfile,");\n");
 }
 }
 
-/*:104*//*108:*/
 
 static void mpx_start_picture(MPX mpx){
 mpx->fonts_used= false;
@@ -1895,7 +1726,6 @@ double w,h,dd;
 if(mpx->str_f>=0)
 mpx_finish_last_char(mpx);
 if(mpx->mode==mpx_tex_mode){
-/*109:*/
 
 dd= -mpx->pic_dp*mpx->conv;
 w= mpx->conv*mpx->pic_wd;
@@ -1904,14 +1734,11 @@ fprintf(mpx->mpxfile,
 "setbounds _p to (0,%1.4f)--(%1.4f,%1.4f)--\n"
 " (%1.4f,%1.4f)--(0,%1.4f)--cycle;\n",dd,w,dd,w,h,h)
 
-/*:109*/
 ;
 }
 fprintf(mpx->mpxfile,"_p endgroup\n");
 }
 
-/*:108*//*113:*/
-/*137:*/
 
 static void mpx_do_xxx(MPX mpx,web_integer p)
 {
@@ -1924,7 +1751,6 @@ while((p> 0)&&(len<bufsiz)){
 buf[len]= (unsigned char)mpx_get_byte(mpx);
 decr(p);incr(len);
 }
-/*138:*/
 
 if((len<=5)
 ||(buf[0]!='c')
@@ -1935,7 +1761,6 @@ if((len<=5)
 ||(buf[5]!=' ')
 )goto XXXX;
 
-/*:138*/
 
 if(p> 0){
 color_warn("long \"color\" special ignored");
@@ -1948,9 +1773,7 @@ if(/*140:*/
 (buf[7]=='o')&&
 (buf[8]=='p')
 
-/*:140*/
 ){
-/*144:*/
 
 mpx_finish_last_char(mpx);
 if(mpx->color_stack_depth> 0){
@@ -1960,7 +1783,6 @@ decr(mpx->color_stack_depth);
 color_warn("color stack underflow");
 }
 
-/*:144*/
 
 }else if(/*139:*/
 
@@ -1971,9 +1793,7 @@ color_warn("color stack underflow");
 (buf[9]=='h')&&
 (buf[10]==' ')
 
-/*:139*/
 ){
-/*145:*/
 
 mpx_finish_last_char(mpx);
 if(mpx->color_stack_depth>=max_color_stack_depth)
@@ -1991,16 +1811,13 @@ if(/*146:*/
 &&(buf[l+2]=='b')
 &&(buf[l+3]==' ')
 
-/*:146*/
 ){
-/*147:*/
 
 l= l+4;
 while((l<len)&&(buf[l]==' '))incr(l);
 while((len> l)&&(buf[len-1]==' '))decr(len);
 mpx->color_stack[mpx->color_stack_depth]= xmalloc((size_t)(len-l+3),1);
 k= 0;
-/*152:*/
 
 mpx->color_stack[mpx->color_stack_depth][k]= '(';
 incr(k);
@@ -2018,10 +1835,8 @@ incr(k);
 mpx->color_stack[mpx->color_stack_depth][k]= ')';
 mpx->color_stack[mpx->color_stack_depth][k+1]= 0;
 
-/*:152*/
 
 
-/*:147*/
 
 }else if(/*150:*/
 
@@ -2032,9 +1847,7 @@ mpx->color_stack[mpx->color_stack_depth][k+1]= 0;
 &&(buf[l+3]=='k')
 &&(buf[l+4]==' ')
 
-/*:150*/
 ){
-/*151:*/
 
 l= l+5;
 while((l<len)&&(buf[l]==' '))incr(l);
@@ -2043,7 +1856,6 @@ while((len> l)&&(buf[len-1]==' '))decr(len);
 mpx->color_stack[mpx->color_stack_depth]= xmalloc((size_t)(len-l+7),1);
 strcpy(mpx->color_stack[mpx->color_stack_depth],"cmyk");
 k= 4;
-/*152:*/
 
 mpx->color_stack[mpx->color_stack_depth][k]= '(';
 incr(k);
@@ -2061,10 +1873,8 @@ incr(k);
 mpx->color_stack[mpx->color_stack_depth][k]= ')';
 mpx->color_stack[mpx->color_stack_depth][k+1]= 0;
 
-/*:152*/
 
 
-/*:151*/
 
 }else if(/*148:*/
 
@@ -2075,9 +1885,7 @@ mpx->color_stack[mpx->color_stack_depth][k+1]= 0;
 &&(buf[l+3]=='y')
 &&(buf[l+4]==' ')
 
-/*:148*/
 ){
-/*149:*/
 
 l= l+5;
 while((l<len)&&(buf[l]==' '))incr(l);
@@ -2085,7 +1893,6 @@ while((len> l)&&(buf[len-1]==' '))decr(len);
 mpx->color_stack[mpx->color_stack_depth]= xmalloc((size_t)(len-l+9),1);
 strcpy(mpx->color_stack[mpx->color_stack_depth],"white*");
 k= 6;
-/*152:*/
 
 mpx->color_stack[mpx->color_stack_depth][k]= '(';
 incr(k);
@@ -2103,13 +1910,10 @@ incr(k);
 mpx->color_stack[mpx->color_stack_depth][k]= ')';
 mpx->color_stack[mpx->color_stack_depth][k+1]= 0;
 
-/*:152*/
 
 
-/*:149*/
 
 }else{
-/*153:*/
 
 for(k= l;k<=len-1;k++){
 buf[k-l]= xchr(buf[k]);
@@ -2134,11 +1938,9 @@ color_warn_two("non-hardcoded color \"%s\" in \"color push\" command",buf);
 mpx->color_stack[mpx->color_stack_depth]= xstrdup((char*)(buf));
 }
 
-/*:153*/
 
 }
 
-/*:145*/
 
 }else{
 color_warn("unknown \"color\" special ignored");
@@ -2148,7 +1950,6 @@ XXXX:
 for(k= 1;k<=p;k++)(void)mpx_get_byte(mpx);
 }
 
-/*:137*/
 
 static void mpx_do_push(MPX mpx){
 if(mpx->stk_siz==stack_size)
@@ -2173,7 +1974,6 @@ mpx->y= mpx->ystack[mpx->stk_siz];mpx->z= mpx->zstack[mpx->stk_siz];
 }
 }
 
-/*:113*//*114:*/
 
 static void mpx_do_dvi_commands(MPX mpx);
 static void mpx_set_virtual_char(MPX mpx,web_integer f,web_integer c){
@@ -2200,7 +2000,6 @@ mpx->cur_ftop= old_ftop;
 }
 }
 
-/*:114*//*116:*/
 
 static void mpx_do_dvi_commands(MPX mpx){
 unsigned int o;
@@ -2212,7 +2011,6 @@ else
 cur_font= max_fnums+1;
 mpx->w= 0;mpx->x= 0;mpx->y= 0;mpx->z= 0;
 while(true){
-/*118:*/
 
 {
 o= (unsigned int)mpx_get_byte(mpx);
@@ -2233,7 +2031,6 @@ mpx->h+= /*73:*/
 
 floor(mpx->dvi_scale*mpx->font_scaled_size[cur_font]*char_width(cur_font,p))
 
-/*:73*/
 ;
 }else{
 switch(o){
@@ -2249,7 +2046,6 @@ case put_rule:
 q= (web_integer)trunc(mpx_signed_quad(mpx)*mpx->dvi_scale);
 mpx_do_set_rule(mpx,(web_integer)trunc(p*mpx->dvi_scale),q);
 break;
-/*119:*/
 
 case four_cases(xxx1):
 mpx_do_xxx(mpx,p);
@@ -2259,7 +2055,6 @@ bad_dvi("preamble or postamble within a page!");
 
 break;
 
-/*:119*//*120:*/
 
 case nop:
 break;
@@ -2277,7 +2072,6 @@ case pop:
 mpx_do_pop(mpx);
 break;
 
-/*:120*//*121:*/
 
 case four_cases(right1):
 mpx->h+= trunc(p*mpx->dvi_scale);
@@ -2298,7 +2092,6 @@ case z0:case four_cases(z1):
 mpx->z= (web_integer)trunc(p*mpx->dvi_scale);mpx->v+= mpx->z;
 break;
 
-/*:121*//*122:*/
 
 case sixty_four_cases(fnt_num_0):case four_cases(fnt1):
 cur_font= mpx_select_font(mpx,p);
@@ -2307,7 +2100,6 @@ case four_cases(fnt_def1):
 mpx_define_font(mpx,p);
 break;
 
-/*:122*/
 
 case undefined_commands:
 bad_dvi_two("undefined command %d",o);
@@ -2317,18 +2109,15 @@ break;
 }
 }
 
-/*:118*/
 ;
 }
 }
 
-/*:116*//*123:*/
 
 static int mpx_dvitomp(MPX mpx,char*dviname){
 int k;
 mpx->dviname= dviname;
 mpx_open_dvi_file(mpx);
-/*125:*/
 
 {
 int p;
@@ -2340,7 +2129,6 @@ p= mpx_get_byte(mpx);
 if(p!=id_byte)
 mpx_warn(mpx,"identification in byte 1 should be %d!",id_byte);
 
-/*126:*/
 
 mpx->numerator= mpx_signed_quad(mpx);mpx->denominator= mpx_signed_quad(mpx);
 if((mpx->numerator<=0)||(mpx->denominator<=0))
@@ -2353,7 +2141,6 @@ bad_dvi("magnification isn't positive");
 mpx->conv= (mpx->numerator/254000.0)*(72.0/mpx->denominator)*mpx->mag;
 mpx->dvi_per_fix= (254000.0/mpx->numerator)*(mpx->denominator/72.27)/1048576.0;
 
-/*:126*/
 ;
 p= mpx_get_byte(mpx);
 while(p> 0){
@@ -2362,13 +2149,11 @@ decr(p);
 }
 }
 
-/*:125*/
 ;
 mpx_open_mpxfile(mpx);
 if(mpx->banner!=NULL)
 fprintf(mpx->mpxfile,"%s\n",mpx->banner);
 while(true){
-/*127:*/
 
 do{
 int p;
@@ -2385,18 +2170,15 @@ bad_dvi("missing bop");
 
 
 
-/*:127*/
 ;
 for(k= 0;k<=10;k++)
 (void)mpx_signed_quad(mpx);
-/*112:*/
 
 mpx->dvi_scale= 1.0;
 mpx->stk_siz= 0;
 mpx->h= 0;mpx->v= 0;
 mpx->Xslant= 0.0;mpx->Xheight= 0.0
 
-/*:112*/
 ;
 mpx_start_picture(mpx);
 mpx_do_dvi_commands(mpx);
@@ -2414,7 +2196,6 @@ else
 return mpx->history;
 }
 
-/*:123*//*133:*/
 
 static void mpx_def_named_color(MPX mpx,const char*n,const char*v){
 mpx->num_named_colors++;
@@ -2423,7 +2204,6 @@ mpx->named_colors[mpx->num_named_colors].name= n;
 mpx->named_colors[mpx->num_named_colors].value= v;
 }
 
-/*:133*//*160:*/
 
 static char*mpx_find_file(MPX mpx,const char*nam,const char*mode,int ftype){
 (void)mpx;
@@ -2433,7 +2213,6 @@ return strdup(nam);
 return NULL;
 }
 
-/*:160*//*163:*/
 
 static FILE*mpx_fsearch(MPX mpx,const char*nam,int format){
 FILE*f= NULL;
@@ -2445,7 +2224,6 @@ mpx_report(mpx,"%p = fopen(%s,\"rb\")",f,fname);
 return f;
 }
 
-/*:163*//*166:*/
 
 static int mpx_comp_name(void*p,const void*pa,const void*pb){
 (void)p;
@@ -2472,7 +2250,6 @@ return(void*)q;
 }
 
 
-/*:166*//*167:*/
 
 static avl_tree mpx_avl_create(MPX mpx){
 avl_tree t;
@@ -2485,7 +2262,6 @@ mpx_abort(mpx,"Memory allocation failure");
 return t;
 }
 
-/*:167*//*168:*/
 
 static void mpx_avl_probe(MPX mpx,avl_tree tab,avl_entry*p){
 avl_entry*r= (avl_entry*)avl_find(p,tab);
@@ -2496,7 +2272,6 @@ mpx_abort(mpx,"Memory allocation failure");
 }
 
 
-/*:168*//*170:*/
 
 static int mpx_get_int(MPX mpx,char*s){
 register int i,d,neg;
@@ -2519,7 +2294,6 @@ mpx->arg_tail= NULL;
 return 0;
 }
 
-/*:170*//*171:*/
 
 static int mpx_get_int_map(MPX mpx,char*s){
 register int i;
@@ -2534,7 +2308,6 @@ mpx->arg_tail= NULL;
 return 0;
 }
 
-/*:171*//*172:*/
 
 static float mpx_get_float(MPX mpx,char*s){
 register int d,neg,digits;
@@ -2571,7 +2344,6 @@ mpx->arg_tail= s;
 return neg?-x:x;
 }
 
-/*:172*//*173:*/
 
 static float mpx_get_float_map(MPX mpx,char*s){
 if(s!=NULL){
@@ -2585,7 +2357,6 @@ return 0;
 }
 
 
-/*:173*//*175:*/
 
 static void mpx_read_fmap(MPX mpx,const char*dbase){
 FILE*fin;
@@ -2628,7 +2399,6 @@ mpx_fclose(mpx,fin);
 }
 
 
-/*:175*//*176:*/
 
 static void mpx_read_char_adj(MPX mpx,const char*adjfile){
 FILE*fin;
@@ -2670,7 +2440,6 @@ mpx->shiftchar[mpx->shiftptr++]= -1;
 mpx_fclose(mpx,fin);
 }
 
-/*:176*//*177:*/
 
 static void mpx_read_desc(MPX mpx){
 const char*const k1[]= {
@@ -2733,7 +2502,6 @@ break;
 }
 
 
-/*:177*//*180:*/
 
 static int mpx_scan_desc_line(MPX mpx,int f,char*lin){
 static int lastcode;
@@ -2772,7 +2540,6 @@ mpx_avl_probe(mpx,mpx->charcodes[f],tmp);
 return 1;
 }
 
-/*:180*//*181:*/
 
 static int mpx_read_fontdesc(MPX mpx,char*nam){
 char buf[200];
@@ -2809,7 +2576,6 @@ mpx_fclose(mpx,fin);
 return f;
 }
 
-/*:181*//*184:*/
 
 static void mpx_slant_and_ht(MPX mpx){
 int i= 0;
@@ -2826,7 +2592,6 @@ fprintf(mpx->mpxfile,")");
 }
 
 
-/*:184*//*185:*/
 
 static void mpx_set_num_char(MPX mpx,int f,int c){
 float hh,vv;
@@ -2860,7 +2625,6 @@ mpx_print_char(mpx,(unsigned char)c);
 mpx->dmp_str_h2= hh+(float)char_width(f,c);
 }
 
-/*:185*//*186:*/
 
 static void mpx_set_string(MPX mpx,char*cname){
 float hh;
@@ -2878,7 +2642,6 @@ mpx->h= (web_integer)floor(hh+0.5);
 mpx_finish_last_char(mpx);
 }
 
-/*:186*//*188:*/
 
 static char*mpx_copy_spec_char(MPX mpx,char*cname){
 FILE*deff;
@@ -2926,7 +2689,6 @@ return s;
 }
 
 
-/*:188*//*191:*/
 
 static void mpx_set_char(MPX mpx,char*cname){
 int f,c;
@@ -2982,7 +2744,6 @@ fprintf(mpx->mpxfile,";\n");
 }
 }
 
-/*:191*//*192:*/
 
 static void mpx_do_font_def(MPX mpx,int n,char*nam){
 int f;
@@ -3006,17 +2767,14 @@ for(k= 0;k<mpx->nfonts;k++)
 if(mpx->font_num[k]==n)
 mpx->font_num[k]= -1;
 mpx->font_num[f]= n;
-/*99:*/
 
 mpx->font_used[f]= false;
 
-/*:99*/
 ;
 }
 
 
 
-/*:192*//*193:*/
 
 static float mpx_b_eval(const float*xx,float t){
 float zz[4];
@@ -3030,12 +2788,10 @@ return zz[0];
 }
 
 
-/*:193*//*194:*/
 
 static const float xx[]= {1.0,1.0,(float)0.8946431597,(float)0.7071067812};
 static const float yy[]= {0.0,(float)0.2652164899,(float)0.5195704026,(float)0.7071067812};
 
-/*:194*//*195:*/
 
 static float mpx_circangle(float t){
 float ti;
@@ -3046,7 +2802,6 @@ mpx_b_eval(xx,t))+ti*Speed;
 }
 
 
-/*:195*//*196:*/
 
 static float mpx_circtime(float a){
 int i;
@@ -3059,7 +2814,6 @@ return t;
 
 
 
-/*:196*//*198:*/
 
 static void mpx_prepare_graphics(MPX mpx){
 
@@ -3070,7 +2824,6 @@ mpx->graphics_used= true;
 }
 
 
-/*:198*//*199:*/
 
 static char*mpx_do_line(MPX mpx,char*s){
 float dh,dv;
@@ -3087,7 +2840,6 @@ return mpx->arg_tail;
 }
 
 
-/*:199*//*200:*/
 
 static char*mpx_spline_seg(MPX mpx,char*s){
 float dh1,dv1,dh2,dv2;
@@ -3112,7 +2864,6 @@ return s;
 }
 
 
-/*:200*//*201:*/
 
 static void mpx_do_ellipse(MPX mpx,float a,float b){
 
@@ -3124,7 +2875,6 @@ mpx->gx+= a;
 }
 
 
-/*:201*//*202:*/
 
 static
 void mpx_do_arc(MPX mpx,float cx,float cy,float ax,float ay,float bx,float by){
@@ -3144,7 +2894,6 @@ mpx->gy= cy+by;
 
 
 
-/*:202*//*203:*/
 
 static void mpx_do_graphic(MPX mpx,char*s){
 float h1,v1,h2,v2;
@@ -3214,7 +2963,6 @@ mpx->v= (int)floor(YCORR/mpx->unit+.5-mpx->gy);
 
 
 
-/*:203*//*204:*/
 
 static void mpx_change_font(MPX mpx,int f){
 for(mpx->curfont= 0;mpx->curfont<mpx->nfonts;mpx->curfont++)
@@ -3224,7 +2972,6 @@ mpx_abort(mpx,"Bad font setting");
 }
 
 
-/*:204*//*205:*/
 
 static int mpx_do_x_cmd(MPX mpx,char*s0)
 {
@@ -3295,7 +3042,6 @@ return 1;
 }
 
 
-/*:205*//*206:*/
 
 static int mpx_do_page(MPX mpx,FILE*trf){
 char*buf;
@@ -3433,7 +3179,6 @@ return 0;
 }
 
 
-/*:206*//*207:*/
 
 static int mpx_dmp(MPX mpx,char*infile){
 int more;
@@ -3447,14 +3192,12 @@ if(mpx->banner!=NULL)
 fprintf(mpx->mpxfile,"%s\n",mpx->banner);
 if(mpx_do_page(mpx,trf)){
 do{
-/*112:*/
 
 mpx->dvi_scale= 1.0;
 mpx->stk_siz= 0;
 mpx->h= 0;mpx->v= 0;
 mpx->Xslant= 0.0;mpx->Xheight= 0.0
 
-/*:112*/
 ;
 mpx_start_picture(mpx);
 more= mpx_do_page(mpx,trf);
@@ -3470,7 +3213,6 @@ return mpx->history;
 }
 
 
-/*:207*//*208:*/
 
 
 #define TEXERR "mpxerr.tex"
@@ -3478,14 +3220,12 @@ return mpx->history;
 #define TROFF_INERR "mpxerr.i"
 #define TROFF_OUTERR "mpxerr.t"
 
-/*:208*//*209:*/
 
 static void mpx_rename(MPX mpx,const char*a,const char*b){
 mpx_report(mpx,"renaming %s to %s",a,b);
 rename(a,b);
 }
 
-/*:209*//*211:*/
 
 static void mpx_default_erasetmp(MPX mpx){
 char*wrk;
@@ -3506,7 +3246,6 @@ free(wrk);
 }
 }
 
-/*:211*//*213:*/
 
 static void mpx_cleandir(MPX mpx,char*cur_path){
 char*wrk,*p;
@@ -3514,10 +3253,10 @@ char*wrk,*p;
 struct _finddata_t c_file;
 intptr_t hFile;
 #else
- struct dirent*entry;
+struct dirent*entry;
 DIR*d;
 #endif
- wrk= xstrdup(mpx->tex);
+wrk= xstrdup(mpx->tex);
 p= strrchr(wrk,'.');
 *p= '\0';
 
@@ -3535,7 +3274,7 @@ remove(c_file.name);
 _findclose(hFile);
 }
 #else
- if((d= opendir(cur_path))==NULL){
+if((d= opendir(cur_path))==NULL){
 mpx_default_erasetmp(mpx);
 }else{
 while((entry= readdir(d))!=NULL){
@@ -3549,14 +3288,13 @@ free(wrk);
 }
 
 
-/*:213*//*214:*/
 
 #ifdef WIN32
 #define GETCWD _getcwd
 #else
 #define GETCWD getcwd
 #endif
- static void mpx_erasetmp(MPX mpx){
+static void mpx_erasetmp(MPX mpx){
 char cur_path[1024];
 if(mpx->debug)
 return;
@@ -3571,7 +3309,6 @@ mpx_cleandir(mpx,cur_path);
 }
 
 
-/*:214*//*215:*/
 
 static char*mpx_print_command(MPX mpx,int cmdlength,char**cmdline){
 char*s,*t;
@@ -3591,13 +3328,12 @@ t+= strlen(cmdline[i]);
 return s;
 }
 
-/*:215*//*216:*/
 
 static int do_spawn(MPX mpx,char*icmd,char**options){
 #ifndef WIN32
 pid_t child;
 #endif
- int retcode= -1;
+int retcode= -1;
 char*cmd= xmalloc(strlen(icmd)+1,1);
 if(icmd[0]!='"'){
 strcpy(cmd,icmd);
@@ -3620,20 +3356,19 @@ mpx_abort(mpx,"wait failed: %s",strerror(errno));
 }
 }
 #else
- retcode= _spawnvp(_P_WAIT,cmd,(const char*const*)options);
+retcode= _spawnvp(_P_WAIT,cmd,(const char*const*)options);
 #endif
- xfree(cmd);
+xfree(cmd);
 return retcode;
 }
 
-/*:216*//*217:*/
 
 #ifdef WIN32
 #define nuldev "nul"
 #else
 #define nuldev "/dev/null"
 #endif
- static int mpx_run_command(MPX mpx,char*inname,char*outname,int count,char**cmdl){
+static int mpx_run_command(MPX mpx,char*inname,char*outname,int count,char**cmdl){
 char*s;
 int retcode;
 int sav_o,sav_i;
@@ -3648,7 +3383,6 @@ free(s);
 
 fr= mpx_xfopen(mpx,(inname?inname:nuldev),"r");
 fw= mpx_xfopen(mpx,(outname?outname:nuldev),"wb");
-/*219:*/
 
 #ifdef WIN32
 #define DUP _dup
@@ -3657,29 +3391,25 @@ fw= mpx_xfopen(mpx,(outname?outname:nuldev),"wb");
 #define DUP dup
 #define DUPP dup2
 #endif
- sav_i= DUP(fileno(stdin));
+sav_i= DUP(fileno(stdin));
 sav_o= DUP(fileno(stdout));
 DUPP(fileno(fr),fileno(stdin));
 DUPP(fileno(fw),fileno(stdout))
 
-/*:219*/
 ;
 retcode= do_spawn(mpx,cmdl[0],cmdl);
-/*220:*/
 
 DUPP(sav_i,fileno(stdin));
 close(sav_i);
 DUPP(sav_o,fileno(stdout));
 close(sav_o)
 
-/*:220*/
 ;
 mpx_fclose(mpx,fr);
 mpx_fclose(mpx,fw);
 return retcode;
 }
 
-/*:217*//*221:*/
 
 static int
 mpx_do_split_command(MPX mpx,char*maincmd,char***cmdline_addr,char target){
@@ -3730,7 +3460,6 @@ cmdline[ret++]= piece;
 return ret;
 }
 
-/*:221*//*223:*/
 
 static void mpx_command_cleanup(MPX mpx,char**cmdline){
 (void)mpx;
@@ -3740,7 +3469,6 @@ xfree(cmdline);
 
 
 
-/*:223*//*224:*/
 
 static void mpx_command_error(MPX mpx,int cmdlength,char**cmdline){
 char*s= mpx_print_command(mpx,cmdlength,cmdline);
@@ -3750,7 +3478,6 @@ mpx_abort(mpx,"Command failed: %s; see mpxerr.log",s);
 
 
 
-/*:224*//*226:*/
 
 int mpx_makempx(mpx_options*mpxopt){
 MPX mpx;
@@ -3761,13 +3488,11 @@ char tmpname[]= "mpXXXXXX";
 int cmdlength= 1;
 int cmdbitlength= 1;
 if(!mpxopt->debug){
-/*229:*/
 
 if(mpx_newer(mpxopt->mpname,mpxopt->mpxname))
 return 0
 
 
-/*:229*/
 ;
 }
 mpx= malloc(sizeof(struct mpx_data));
@@ -3784,7 +3509,6 @@ if(mpxopt->cmd!=NULL)
 mpx->maincmd= xstrdup(mpxopt->cmd);
 mpx->mpname= xstrdup(mpxopt->mpname);
 mpx->mpxname= xstrdup(mpxopt->mpxname);
-/*18:*/
 
 if(setjmp(mpx->jump_buf)!=0){
 int h= mpx->history;
@@ -3796,7 +3520,6 @@ xfree(mpx);
 return h;
 }
 
-/*:18*/
 ;
 
 if(mpx->debug){
@@ -3805,7 +3528,6 @@ mpx->errfile= stderr;
 mpx->errfile= mpx_xfopen(mpx,MPXLOG,"wb");
 }
 mpx->progname= "makempx";
-/*230:*/
 
  /*@-bufferoverflowhigh@*/ 
 #ifdef HAVE_MKSTEMP
@@ -3833,23 +3555,20 @@ strncpy(tmpname,tmpstring,i);
 }
 }
 #else
- sprintf(tmpname,"mp%06d",(int)(time(NULL)%1000000));
+sprintf(tmpname,"mp%06d",(int)(time(NULL)%1000000));
 #endif
 #endif
  /*@+bufferoverflowhigh@*/ /*:230*/
 ;
 if(mpxopt->mptexpre==NULL)
 mpxopt->mptexpre= xstrdup("mptexpre.tex");
-/*32:*/
 
 mpx_mpto(mpx,tmpname,mpxopt->mptexpre)
 
-/*:32*/
 ;
 if(mpxopt->cmd==NULL)
 goto DONE;
 if(mpx->mode==mpx_tex_mode){
-/*227:*/
 
 {
 char log[15];
@@ -3872,7 +3591,6 @@ mpx_command_error(mpx,cmdlength,cmdline);
 mpx_command_cleanup(mpx,cmdline);
 }
 
-/*:227*/
 ;
 if(mpx_dvitomp(mpx,infile)){
 mpx_rename(mpx,infile,DVIERR);
@@ -3882,7 +3600,6 @@ mpx_abort(mpx,"Dvi conversion failed: %s %s\n",
 DVIERR,mpx->mpxname);
 }
 }else if(mpx->mode==mpx_troff_mode){
-/*228:*/
 
 {
 char*cur_in,*cur_out;
@@ -3920,7 +3637,6 @@ if(tmp_b!=cur_out){remove(tmp_b);}
 strcpy(infile,cur_out);
 }
 
-/*:228*/
 ;
 if(mpx_dmp(mpx,infile)){
 mpx_rename(mpx,infile,TROFF_OUTERR);
@@ -3966,7 +3682,6 @@ if(mpxopt->find_file!=NULL)
 mpx->find_file= mpxopt->find_file;
 mpx->mpname= xstrdup(mpxopt->mpname);
 mpx->mpxname= xstrdup(mpxopt->mpxname);
-/*18:*/
 
 if(setjmp(mpx->jump_buf)!=0){
 int h= mpx->history;
@@ -3978,7 +3693,6 @@ xfree(mpx);
 return h;
 }
 
-/*:18*/
 ;
 if(mpx->debug){
 mpx->errfile= stderr;
@@ -4011,4 +3725,3 @@ return retcode;
 }
 
 
-/*:226*/

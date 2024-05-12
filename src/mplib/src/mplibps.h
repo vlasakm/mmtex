@@ -1,15 +1,12 @@
-/*173:*/
 
 #ifndef MPLIBPS_H
 #define MPLIBPS_H 1
 #include "mplib.h"
-/*182:*/
 
 typedef struct{
 double a_val,b_val,c_val,d_val;
 }mp_color;
 
-/*:182*//*183:*/
 
 typedef struct{
 double offset;
@@ -17,7 +14,6 @@ double*array;
 }mp_dash_object;
 
 
-/*:183*//*188:*/
 
 #define GRAPHIC_BODY                      \
   int type;                               \
@@ -102,22 +98,17 @@ double width,height,depth,ital_corr;
 int charcode;
 }mp_edge_object;
 
-/*:188*//*235:*/
 
 int mp_ps_ship_out(mp_edge_object*hh,int prologues,int procset);
 
-/*:235*//*240:*/
 
 void mp_gr_toss_objects(mp_edge_object*hh);
 void mp_gr_toss_object(mp_graphic_object*p);
 
-/*:240*//*243:*/
 
 mp_graphic_object*mp_gr_copy_object(MP mp,mp_graphic_object*p);
 
-/*:243*/
 
 #endif
 
 
-/*:173*/

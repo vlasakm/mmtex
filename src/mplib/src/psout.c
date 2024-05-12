@@ -1,4 +1,3 @@
-/*1:*/
 
 #include <w2c/config.h> 
 #include <stdio.h> 
@@ -334,28 +333,22 @@ mp_ps_print_ln(mp) ; \
 
 
 
-/*29:*/
 
 static void enc_free(MP mp);
 
-/*:29*//*31:*/
 
 static void mp_reload_encodings(MP mp);
 static void mp_font_encodings(MP mp,font_number lastfnum,boolean encodings_only);
 
-/*:31*//*39:*/
 
 static const char nontfm[]= "<nontfm>";
 
-/*:39*//*41:*/
 
 static boolean mp_has_fm_entry(MP mp,font_number f,fm_entry**fm);
 
-/*:41*//*63:*/
 
 static void fm_free(MP mp);
 
-/*:63*//*92:*/
 
 static key_entry font_keys[FONT_KEYS_NUM]= {
 {"Ascent","Ascender",0,false},
@@ -372,15 +365,12 @@ static key_entry font_keys[FONT_KEYS_NUM]= {
 };
 
 
-/*:92*//*100:*/
 
 static void t1_free(MP mp);
 
-/*:100*//*110:*/
 
 boolean cs_parse(MP mp,mp_ps_font*f,const char*cs_name,int subr);
 
-/*:110*//*112:*/
 
 void cs_do_debug(MP mp,mp_ps_font*f,int i,char*s);
 static void finish_subpath(MP mp,mp_ps_font*f);
@@ -389,153 +379,117 @@ double dy2,double dx3,double dy3);
 static void add_line_segment(MP mp,mp_ps_font*f,double dx,double dy);
 static void start_subpath(MP mp,mp_ps_font*f,double dx,double dy);
 
-/*:112*//*117:*/
 
 static boolean mp_font_is_reencoded(MP mp,font_number f);
 static boolean mp_font_is_included(MP mp,font_number f);
 static boolean mp_font_is_subsetted(MP mp,font_number f);
 
-/*:117*//*119:*/
 
 static char*mp_fm_encoding_name(MP mp,font_number f);
 static char*mp_fm_font_name(MP mp,font_number f);
 static char*mp_fm_font_subset_name(MP mp,font_number f);
 
-/*:119*//*121:*/
 
 static integer mp_fm_font_slant(MP mp,font_number f);
 static integer mp_fm_font_extend(MP mp,font_number f);
 
-/*:121*//*123:*/
 
 static boolean mp_do_ps_font(MP mp,font_number f);
 
-/*:123*//*125:*/
 
 static void mp_list_used_resources(MP mp,int prologues,int procset);
 
-/*:125*//*127:*/
 
 static void mp_list_supplied_resources(MP mp,int prologues,int procset);
 
-/*:127*//*129:*/
 
 static void mp_list_needed_resources(MP mp,int prologues);
 
-/*:129*//*131:*/
 
 static void mp_write_font_definition(MP mp,font_number f,int prologues);
 
-/*:131*//*133:*/
 
 static void mp_ps_print_defined_name(MP mp,font_number f,int prologues);
 
-/*:133*//*139:*/
 
 static void mp_mark_string_chars(MP mp,font_number f,char*s,size_t l);
 
-/*:139*//*141:*/
 
 static void mp_unmark_font(MP mp,font_number f);
 
-/*:141*//*143:*/
 
 static void mp_print_improved_prologue(MP mp,mp_edge_object*h,int p1,int procset);
 
-/*:143*//*145:*/
 
 static font_number mp_print_font_comments(MP mp,mp_edge_object*h,int prologues);
 
 
-/*:145*//*150:*/
 
 static halfword mp_ps_marks_out(MP mp,font_number f);
 
-/*:150*//*155:*/
 
 static boolean mp_check_ps_marks(MP mp,font_number f);
 
-/*:155*//*159:*/
 
 static void mp_print_prologue(MP mp,mp_edge_object*h,int prologues,int procset);
 
-/*:159*//*163:*/
 
 static void mp_ps_pair_out(MP mp,double x,double y);
 
-/*:163*//*165:*/
 
 static void mp_ps_print_cmd(MP mp,const char*l,const char*s);
 
-/*:165*//*167:*/
 
 static void mp_ps_string_out(MP mp,const char*s,size_t l);
 
-/*:167*//*169:*/
 
 static void mp_ps_name_out(MP mp,char*s,boolean lit);
 
-/*:169*//*171:*/
 
 static void mp_print_initial_comment(MP mp,mp_edge_object*hh,int prologues);
 
-/*:171*//*177:*/
 
 void mp_do_gr_toss_knot_list(mp_gr_knot p);
 
-/*:177*//*184:*/
 
 static void mp_do_gr_toss_dashes(mp_dash_object*dl);
 
-/*:184*//*196:*/
 
 static void mp_gr_fix_graphics_state(MP mp,mp_graphic_object*p);
 
-/*:196*//*204:*/
 
 static boolean mp_gr_coord_rangeOK(mp_gr_knot h,
 quarterword zoff,double dz);
 
-/*:204*//*209:*/
 
 static boolean mp_gr_same_dashes(mp_dash_object*h,mp_dash_object*hh);
 
-/*:209*//*212:*/
 
 static void mp_gr_stroke_ellipse(MP mp,mp_graphic_object*h,boolean fill_also);
 
-/*:212*//*218:*/
 
 static void mp_gr_ps_fill_out(MP mp,mp_gr_knot p);
 
-/*:218*//*220:*/
 
 static double mp_gr_choose_scale(MP mp,mp_graphic_object*p);
 
-/*:220*//*222:*/
 
 static quarterword mp_size_index(MP mp,font_number f,double s);
 
-/*:222*//*224:*/
 
 static double mp_indexed_size(MP mp,font_number f,quarterword j);
 
-/*:224*//*226:*/
 
 static void mp_clear_sizes(MP mp);
 
-/*:226*//*229:*/
 
 static void mp_apply_mark_string_chars(MP mp,mp_edge_object*h,int next_size);
 
-/*:229*/
 
-/*24:*/
 
 static char notdef[]= ".notdef";
 
 
-/*:24*//*78:*/
 
 static const char*standard_glyph_names[256]= 
 {notdef,notdef,notdef,notdef,notdef,notdef,notdef,notdef,
@@ -577,7 +531,6 @@ notdef,"dotlessi",notdef,notdef,"lslash","oslash","oe",
 "germandbls",notdef,notdef,notdef,notdef};
 static const char charstringname[]= "/CharStrings";
 
-/*:78*//*86:*/
 
 static const char*cs_token_pairs_list[][2]= {
 {" RD","NP"},
@@ -587,10 +540,8 @@ static const char*cs_token_pairs_list[][2]= {
 {NULL,NULL}
 };
 
-/*:86*/
 
 
-/*:1*//*4:*/
 
 static boolean mp_isdigit(int a){
 return(a>='0'&&a<='9');
@@ -618,56 +569,45 @@ free(ss1);free(ss2);
 return r;
 }
 
-/*:4*//*6:*/
 void mp_ps_backend_initialize(MP mp){
 mp->ps= mp_xmalloc(mp,1,sizeof(psout_data_struct));
 memset(mp->ps,0,sizeof(psout_data_struct));
-/*8:*/
 
 mp->ps->ps_offset= 0;
 
-/*:8*//*25:*/
 
 mp->ps->enc_tree= NULL;
 
-/*:25*//*34:*/
 
 mp->ps->fm_byte_waiting= 0;
 mp->ps->fm_byte_length= 1;
 mp->ps->fm_bytes= NULL;
 
-/*:34*//*38:*/
 
 mp->ps->mitem= NULL;
 
-/*:38*//*44:*/
 
 mp->ps->tfm_tree= NULL;
 mp->ps->ps_tree= NULL;
 mp->ps->ff_tree= NULL;
 
-/*:44*//*70:*/
 
 mp->ps->char_array= NULL;
 mp->ps->job_id_string= NULL;
 
-/*:70*//*76:*/
 
 mp->ps->dvips_extra_charset= NULL;
 mp->ps->t1_byte_waiting= 0;
 mp->ps->t1_byte_length= 0;
 mp->ps->t1_bytes= NULL;
 
-/*:76*//*85:*/
 
 mp->ps->t1_line_array= NULL;
 mp->ps->t1_buf_array= NULL;
 
-/*:85*//*88:*/
 
 mp->ps->hexline_length= 0;
 
-/*:88*//*94:*/
 
 {
 int i;
@@ -677,30 +617,24 @@ assert(mp->ps->t1_builtin_glyph_names[i]);
 }
 }
 
-/*:94*//*193:*/
 
 mp->ps->gs_state= NULL;
 
-/*:193*/
 ;
 }
 void mp_ps_backend_free(MP mp){
-/*62:*/
 
 if(mp->ps->mitem!=NULL){
 mp_xfree(mp->ps->mitem->map_line);
 mp_xfree(mp->ps->mitem);
 }
 
-/*:62*//*73:*/
 
 mp_xfree(mp->ps->job_id_string);
 
-/*:73*//*194:*/
 
 mp_xfree(mp->ps->gs_state);
 
-/*:194*/
 ;
 enc_free(mp);
 t1_free(mp);
@@ -709,14 +643,12 @@ mp_xfree(mp->ps);
 mp->ps= NULL;
 }
 
-/*:6*//*9:*/
 
 static void mp_ps_print_ln(MP mp){
 wps_cr;
 mp->ps->ps_offset= 0;
 }
 
-/*:9*//*10:*/
 
 static void mp_ps_print_char(MP mp,int s){
 if(s==13){
@@ -726,7 +658,6 @@ wps_chr(s);incr(mp->ps->ps_offset);
 }
 }
 
-/*:10*//*11:*/
 
 static void mp_ps_do_print(MP mp,const char*ss,size_t len){
 size_t j= 0;
@@ -750,7 +681,6 @@ j++;
 }
 }
 
-/*:11*//*12:*/
 
 static void mp_ps_print(MP mp,const char*ss){
 ps_room(strlen(ss));
@@ -766,14 +696,12 @@ mp_ps_print_char(mp,' ');
 mp_ps_do_print(mp,ss,strlen(ss));
 }
 
-/*:12*//*13:*/
 
 static void mp_ps_print_nl(MP mp,const char*s){
 if(mp->ps->ps_offset> 0)mp_ps_print_ln(mp);
 mp_ps_print(mp,s);
 }
 
-/*:13*//*14:*/
 
 static void mp_ps_print_int(MP mp,integer n){
 integer m;
@@ -805,7 +733,6 @@ outbuf[l]= '\0';
 (mp->write_ascii_file)(mp,mp->output_file,outbuf);
 }
 
-/*:14*//*15:*/
 
 static void mp_ps_print_dd(MP mp,integer n){
 n= MPOST_ABS(n)%100;
@@ -813,7 +740,6 @@ mp_ps_print_char(mp,'0'+(n/10));
 mp_ps_print_char(mp,'0'+(n%10));
 }
 
-/*:15*//*16:*/
 
 static void mp_ps_print_double_new(MP mp,double s){
 char*value,*c;
@@ -869,7 +795,6 @@ mp_ps_print_double_new(mp,s);
 }
 
 
-/*:16*//*20:*/
 
 static int enc_getchar(MP mp){
 size_t len= 1;
@@ -879,7 +804,6 @@ void*byte_ptr= &abyte;
 return abyte;
 }
 
-/*:20*//*21:*/
 
 static boolean mp_enc_open(MP mp,char*n){
 mp->ps->enc_file= (mp->open_file)(mp,n,"r",mp_filetype_encoding);
@@ -975,7 +899,6 @@ mp_load_enc(mp,e->file_name,&e->enc_name,e->glyph_names);
 e->loaded= true;
 }
 
-/*:21*//*22:*/
 
 static void mp_write_enc(MP mp,enc_entry*e){
 int i;
@@ -1011,7 +934,6 @@ mp_ps_print(mp,"%%%%EndResource");
 }
 
 
-/*:22*//*26:*/
 
 static int comp_enc_entry(void*p,const void*pa,const void*pb){
 (void)p;
@@ -1033,7 +955,6 @@ mp_xfree(p);
 return NULL;
 }
 
-/*:26*//*27:*/
 
 static void*copy_enc_entry(const void*pa){
 const enc_entry*p;
@@ -1099,13 +1020,11 @@ destroy_enc_entry(p);
 return avl_find(&tmp,mp->ps->enc_tree);
 }
 
-/*:27*//*30:*/
 static void enc_free(MP mp){
 if(mp->ps->enc_tree!=NULL)
 avl_destroy(mp->ps->enc_tree);
 }
 
-/*:30*//*32:*/
 void mp_reload_encodings(MP mp){
 font_number f;
 enc_entry*e;
@@ -1144,7 +1063,6 @@ e->objnum= 0;
 }
 }
 
-/*:32*//*35:*/
 
 static int fm_getchar(MP mp){
 if(mp->ps->fm_bytes==NULL){
@@ -1163,7 +1081,6 @@ return 10;
 return*(mp->ps->fm_bytes+mp->ps->fm_byte_waiting++);
 }
 
-/*:35*//*40:*/
 
 static fm_entry*new_fm_entry(MP mp){
 fm_entry*fm;
@@ -1260,7 +1177,6 @@ buf[q-p]= '\0';
 return buf;
 }
 
-/*:40*//*42:*/
 
 boolean mp_has_fm_entry(MP mp,font_number f,fm_entry**fm){
 fm_entry*res= NULL;
@@ -1271,7 +1187,6 @@ if(fm!=NULL){
 return(res!=NULL);
 }
 
-/*:42*//*45:*/
 
 static int comp_fm_entry_tfm(void*p,const void*pa,const void*pb){
 (void)p;
@@ -1279,7 +1194,6 @@ return strcmp(((const fm_entry*)pa)->tfm_name,
 ((const fm_entry*)pb)->tfm_name);
 }
 
-/*:45*//*46:*/
 static int comp_fm_entry_ps(void*p,const void*pa,const void*pb){
 int i;
 const fm_entry*p1= (const fm_entry*)pa;
@@ -1296,14 +1210,12 @@ return i;
 return 0;
 }
 
-/*:46*//*47:*/
 static int comp_ff_entry(void*p,const void*pa,const void*pb){
 (void)p;
 return strcmp(((const ff_entry*)pa)->ff_name,
 ((const ff_entry*)pb)->ff_name);
 }
 
-/*:47*//*48:*/
 static void create_avl_trees(MP mp){
 if(mp->ps->tfm_tree==NULL){
 mp->ps->tfm_tree= avl_create(comp_fm_entry_tfm,
@@ -1328,7 +1240,6 @@ assert(mp->ps->ff_tree!=NULL);
 }
 }
 
-/*:48*//*49:*/
 
 static int avl_do_entry(MP mp,fm_entry*fp,int mode){
 fm_entry*p;
@@ -1402,7 +1313,6 @@ else
 return 0;
 }
 
-/*:49*//*50:*/
 
 static int check_fm_entry(MP mp,fm_entry*fm,boolean warn){
 int a= 0;
@@ -1486,7 +1396,6 @@ a+= 64;
 return a;
 }
 
-/*:50*//*51:*/
 static boolean check_basefont(char*s){
 static const char*basefont_names[]= {
 "Courier",
@@ -1533,7 +1442,6 @@ return true;
 return false;
 }
 
-/*:51*//*52:*/
 static void fm_scan_line(MP mp){
 int a,b,c,j,u= 0,v= 0;
 float d;
@@ -1686,7 +1594,6 @@ bad_line:
 delete_fm_entry(fm);
 }
 
-/*:52*//*53:*/
 static void fm_read_info(MP mp){
 char*n;
 char s[256];
@@ -1728,7 +1635,6 @@ mp->ps->mitem->map_line= NULL;
 return;
 }
 
-/*:53*//*54:*/
 static void init_fm(fm_entry*fm,font_number f){
 if(fm->tfm_num==null_font){
 fm->tfm_num= f;
@@ -1736,7 +1642,6 @@ fm->tfm_avail= TFM_FOUND;
 }
 }
 
-/*:54*//*56:*/
 
 fm_entry*mp_fm_lookup(MP mp,font_number f){
 char*tfm;
@@ -1766,7 +1671,6 @@ return(fm_entry*)fm;
 return NULL;
 }
 
-/*:56*//*57:*/
 
 static ff_entry*check_ff_exist(MP mp,fm_entry*fm){
 ff_entry*ff;
@@ -1786,7 +1690,6 @@ ff= (ff_entry*)avl_find(&tmp,mp->ps->ff_tree);
 return ff;
 }
 
-/*:57*//*58:*/
 static void mp_process_map_item(MP mp,char*s,int type){
 char*p;
 int mode;
@@ -1834,7 +1737,6 @@ fm_read_info(mp);
 }
 }
 
-/*:58*//*60:*/
 
 void mp_map_file(MP mp,mp_string t){
 char*ss= mp_str(mp,t);
@@ -1848,7 +1750,6 @@ mp_process_map_item(mp,s,MAPLINE);
 mp_xfree(s);
 }
 
-/*:60*//*61:*/
 void mp_init_map_file(MP mp,int is_troff){
 char*r;
 mp->ps->mitem= mp_xmalloc(mp,1,sizeof(mapitem));
@@ -1868,7 +1769,6 @@ mp->ps->mitem->map_line= mp_xstrdup(mp,"pdftex.map");
 }
 }
 
-/*:61*//*64:*/
 
 static void fm_free(MP mp){
 if(mp->ps->tfm_tree!=NULL)
@@ -1879,7 +1779,6 @@ if(mp->ps->ff_tree!=NULL)
 avl_destroy(mp->ps->ff_tree);
 }
 
-/*:64*//*66:*/
 
 void mp_read_psname_table(MP mp){
 font_number k;
@@ -1907,7 +1806,6 @@ mp->last_ps_fnum= mp->last_fnum;
 }
 
 
-/*:66*//*71:*/
 
 void mp_set_job_id(MP mp){
 char*name_string,*s;
@@ -1940,7 +1838,6 @@ strcat(mp->ps->char_ptr,ss);
 mp->ps->char_ptr= strend(mp->ps->char_ptr);
 }
 
-/*:71*//*74:*/
 
 static unsigned long crc32(unsigned long oldcrc,const Byte*buf,size_t len){
 unsigned long ret= 0;
@@ -2019,7 +1916,6 @@ fm_cur->subset_tag= mp_xstrdup(mp,tag);
 
 
 
-/*:74*//*77:*/
 
 static int t1_getchar(MP mp){
 if(mp->ps->t1_bytes==NULL){
@@ -2034,7 +1930,6 @@ byte_ptr= (void*)mp->ps->t1_bytes;
 return*(mp->ps->t1_bytes+mp->ps->t1_byte_waiting++);
 }
 
-/*:77*//*80:*/
 
 #define T1_BUF_SIZE   0x100
 
@@ -2069,7 +1964,6 @@ return*(mp->ps->t1_bytes+mp->ps->t1_byte_waiting++);
 #define CS_2BYTE_MAX        (CS_SETCURRENTPOINT + 1)
 #define CS_MAX              CS_2BYTE_MAX
 
-/*:80*//*89:*/
 
 static void end_hexline(MP mp){
 if(mp->ps->hexline_length>=HEXLINE_WIDTH){
@@ -2186,7 +2080,6 @@ return false;
 return s2<s;
 }
 
-/*:89*//*90:*/
 
 static void t1_getline(MP mp){
 int c,l,eexec_scan;
@@ -2370,7 +2263,6 @@ static void t1_modify_italic(MP mp){
 mp->ps->t1_line_ptr= eol(mp->ps->t1_line_array);
 }
 
-/*:90*//*93:*/
 
 static void t1_scan_keys(MP mp,font_number tex_font,fm_entry*fm_cur){
 int i,k;
@@ -2616,7 +2508,6 @@ if(t1_prefix("{restore}"))
 t1_putline(mp);
 }
 
-/*:93*//*96:*/
 
 static boolean t1_open_fontfile(MP mp,fm_entry*fm_cur,const char*open_name_prefix){
 ff_entry*ff;
@@ -2681,7 +2572,6 @@ t1_check_end(mp);
 }
 }
 
-/*:96*//*97:*/
 
 static const char**check_cs_token_pair(MP mp){
 const char**p= (const char**)cs_token_pairs_list;
@@ -2799,7 +2689,6 @@ set_cc(CS_SETCURRENTPOINT,true,2,true);
 is_cc_init= true;
 }
 
-/*:97*//*98:*/
 
 static void cs_warn(MP mp,const char*cs_name,int subr,const char*fmt,...){
 char buf[SMALL_BUF_SIZE];
@@ -3128,7 +3017,6 @@ goto FOUND;
 }
 }
 
-/*:98*//*99:*/
 
 static void t1_flush_cs(MP mp,boolean is_subr)
 {
@@ -3397,7 +3285,6 @@ t1_close_font_file(mp,">");
 mp->selector= save_selector;
 }
 
-/*:99*//*101:*/
 
 static void t1_free(MP mp){
 int k;
@@ -3425,7 +3312,6 @@ mp->ps->t1_builtin_glyph_names[k]= notdef;
 }
 }
 
-/*:101*//*103:*/
 
 
 mp_ps_font*mp_ps_font_parse(MP mp,int tex_font){
@@ -3495,7 +3381,6 @@ t1_close_font_file(mp,">");
 return f;
 }
 
-/*:103*//*105:*/
 
 void mp_ps_font_free(MP mp,mp_ps_font*f){
 cs_entry*ptr;
@@ -3517,7 +3402,6 @@ t1_free(mp);
 mp_xfree(f);
 }
 
-/*:105*//*108:*/
 
 mp_edge_object*mp_ps_do_font_charstring(MP mp,mp_ps_font*f,char*nam){
 mp_edge_object*h= NULL;
@@ -3552,7 +3436,6 @@ return mp_ps_do_font_charstring(mp,f,s);
 
 
 
-/*:108*//*111:*/
 
 static void start_subpath(MP mp,mp_ps_font*f,double dx,double dy)
 {
@@ -3648,7 +3531,6 @@ f->p= NULL;
 f->pp= NULL;
 }
 
-/*:111*//*113:*/
 
 void cs_do_debug(MP mp,mp_ps_font*f,int i,char*s){
 int n= cc_tab[i].nargs;
@@ -3970,7 +3852,6 @@ ptr->is_used= false;
 return false;
 }
 
-/*:113*//*118:*/
 
 boolean mp_font_is_reencoded(MP mp,font_number f){
 fm_entry*fm;
@@ -4003,7 +3884,6 @@ return true;
 return false;
 }
 
-/*:118*//*120:*/
 char*mp_fm_encoding_name(MP mp,font_number f){
 enc_entry*e;
 fm_entry*fm;
@@ -4071,7 +3951,6 @@ mp_error(mp,msg,NULL,true);
 return NULL;
 }
 
-/*:120*//*122:*/
 static integer mp_fm_font_slant(MP mp,font_number f){
 fm_entry*fm;
 if(mp_has_fm_entry(mp,f,&fm)){
@@ -4091,7 +3970,6 @@ return fm->extend;
 return 0;
 }
 
-/*:122*//*124:*/
 static boolean mp_do_ps_font(MP mp,font_number f){
 fm_entry*fm_cur;
 (void)mp_has_fm_entry(mp,f,&fm_cur);
@@ -4116,7 +3994,6 @@ mp_ps_print_ln(mp);
 return true;
 }
 
-/*:124*//*126:*/
 static void mp_list_used_resources(MP mp,int prologues,int procset){
 font_number f;
 int ff;
@@ -4183,7 +4060,6 @@ FOUND2:
 mp_ps_print_ln(mp);
 }
 
-/*:126*//*128:*/
 static void mp_list_supplied_resources(MP mp,int prologues,int procset){
 font_number f;
 int ff;
@@ -4252,7 +4128,6 @@ mp_ps_print_ln(mp);
 }
 }
 
-/*:128*//*130:*/
 static void mp_list_needed_resources(MP mp,int prologues){
 font_number f;
 int ff;
@@ -4306,7 +4181,6 @@ FOUND2:
 }
 }
 
-/*:130*//*132:*/
 static void mp_write_font_definition(MP mp,font_number f,int prologues){
 if((applied_reencoding(f))||(mp_fm_font_slant(mp,f)!=0)||
 (mp_fm_font_extend(mp,f)!=0)||
@@ -4354,7 +4228,6 @@ mp_ps_print_ln(mp);
 }
 }
 
-/*:132*//*134:*/
 static void mp_ps_print_defined_name(MP mp,font_number f,int prologues){
 mp_ps_print(mp," /");
 if((mp_font_is_subsetted(mp,f))&&
@@ -4381,7 +4254,6 @@ mp_ps_print(mp,"-Extend_");mp_ps_print_int(mp,mp_fm_font_extend(mp,f));
 }
 }
 
-/*:134*//*140:*/
 
 void mp_mark_string_chars(MP mp,font_number f,char*s,size_t l){
 integer b;
@@ -4399,7 +4271,6 @@ k++;
 }
 
 
-/*:140*//*142:*/
 
 void mp_unmark_font(MP mp,font_number f){
 int k;
@@ -4410,7 +4281,6 @@ mp->font_info[k].qqqq.b3= mp_unused;
 }
 
 
-/*:142*//*144:*/
 
 void mp_print_improved_prologue(MP mp,mp_edge_object*h,int prologues,int procset){
 quarterword next_size;
@@ -4444,7 +4314,6 @@ mp_ps_print_nl(mp,"/sd{setdash}bd/rd{[] 0 setdash}bd/P{showpage}bd/B{q F Q}bd/W{
 }
 
 
-/*:158*/
 ;
 mp_ps_print_nl(mp,"/fcp{findfont dup length dict begin"
 "{1 index/FID ne{def}{pop pop}ifelse}forall}bd");
@@ -4457,19 +4326,15 @@ mp_ps_print_nl(mp,"/ScaleFont{dup fmc 0 get"
 mp_ps_print_nl(mp,"/SlantFont{fmc 2 get dup 0 eq{pop 1}if"
 " Amul FontMatrix 0 get mul 2 exch put fmd}bd");
 mp_ps_print_nl(mp,"%%EndResource");
-/*135:*/
 
 mp_font_encodings(mp,mp->last_fnum,(prologues==2));
-/*136:*/
 
 {
 next_size= 0;
-/*147:*/
 
 for(f= null_font+1;f<=mp->last_fnum;f++)
 cur_fsize[f]= mp->font_sizes[f]
 
-/*:147*/
 ;
 do{
 done_fonts= true;
@@ -4490,22 +4355,18 @@ if(cur_fsize[f]!=null){mp_unmark_font(mp,f);done_fonts= false;}
 }
 }
 if(!done_fonts)
-/*137:*/
 
 {
 next_size++;
 mp_apply_mark_string_chars(mp,h,next_size);
 }
 
-/*:137*/
 ;
 }while(!done_fonts);
 }
 
-/*:136*/
 
 
-/*:135*/
 ;
 mp_ps_print_nl(mp,"%%EndProlog");
 mp_ps_print_nl(mp,"%%BeginSetup");
@@ -4534,7 +4395,6 @@ mp_ps_print_ln(mp);
 mp_xfree(cur_fsize);
 }
 
-/*:144*//*146:*/
 
 static font_number mp_print_font_comments(MP mp,mp_edge_object*h,int prologues){
 quarterword next_size;
@@ -4546,7 +4406,6 @@ int ds;
 int ldf= 0;
 cur_fsize= mp_xmalloc(mp,(size_t)(mp->font_max+1),sizeof(mp_node));
 if(prologues> 0){
-/*148:*/
 
 {
 ldf= null_font;
@@ -4570,21 +4429,17 @@ FOUND:
 }
 }
 
-/*:148*/
 ;
 }else{
 next_size= 0;
-/*147:*/
 
 for(f= null_font+1;f<=mp->last_fnum;f++)
 cur_fsize[f]= mp->font_sizes[f]
 
-/*:147*/
 ;
 do{done_fonts= true;
 for(f= null_font+1;f<=mp->last_fnum;f++){
 if(cur_fsize[f]!=null){
-/*157:*/
 
 {
 if(mp_check_ps_marks(mp,f)){
@@ -4602,20 +4457,17 @@ mp_ps_marks_out(mp,f);
 cur_fsize[f]= mp_link(cur_fsize[f]);
 }
 
-/*:157*/
 ;
 }
 if(cur_fsize[f]!=null){mp_unmark_font(mp,f);done_fonts= false;};
 }
 if(!done_fonts){
-/*137:*/
 
 {
 next_size++;
 mp_apply_mark_string_chars(mp,h,next_size);
 }
 
-/*:137*/
 ;
 }
 }while(!done_fonts);
@@ -4624,14 +4476,12 @@ mp_xfree(cur_fsize);
 return(font_number)ldf;
 }
 
-/*:146*//*149:*/
 
 static void mp_hex_digit_out(MP mp,quarterword d){
 if(d<10)mp_ps_print_char(mp,d+'0');
 else mp_ps_print_char(mp,d+'a'-10);
 }
 
-/*:149*//*151:*/
 
 static halfword mp_ps_marks_out(MP mp,font_number f){
 eight_bits bc,ec;
@@ -4640,7 +4490,6 @@ int d;
 unsigned b;
 bc= mp->font_bc[f];
 ec= mp->font_ec[f];
-/*152:*/
 
 p= mp->char_base[f]+bc;
 while((mp->font_info[p].qqqq.b3==mp_unused)&&(bc<ec)){
@@ -4651,18 +4500,14 @@ while((mp->font_info[p].qqqq.b3==mp_unused)&&(bc<ec)){
 p--;ec--;
 }
 
-/*:152*/
 ;
-/*153:*/
 
 mp_ps_print_char(mp,' ');
 mp_hex_digit_out(mp,(quarterword)(bc/16));
 mp_hex_digit_out(mp,(quarterword)(bc%16));
 mp_ps_print_char(mp,':')
 
-/*:153*/
 ;
-/*154:*/
 
 b= 8;d= 0;
 for(p= mp->char_base[f]+bc;p<=mp->char_base[f]+ec;p++){
@@ -4677,7 +4522,6 @@ b= b>>1;
 mp_hex_digit_out(mp,(quarterword)d)
 
 
-/*:154*/
 ;
 while((ec<mp->font_ec[f])&&(mp->font_info[p].qqqq.b3==mp_unused)){
 p++;ec++;
@@ -4685,7 +4529,6 @@ p++;ec++;
 return(ec+1);
 }
 
-/*:151*//*156:*/
 
 static boolean mp_check_ps_marks(MP mp,font_number f){
 int p;
@@ -4697,7 +4540,6 @@ return false;
 }
 
 
-/*:156*//*160:*/
 
 void mp_print_prologue(MP mp,mp_edge_object*h,int prologues,int procset){
 font_number f;
@@ -4731,7 +4573,6 @@ mp_ps_print_nl(mp,
 "/bd{bind def}bind def/fshow {exch findfont exch scalefont setfont show}bd");
 else
 mp_ps_print_nl(mp,"/bd{bind def}bind def");
-/*158:*/
 
 {
 mp_ps_print_nl(mp,"/hlw{0 dtransform exch truncate exch idtransform pop setlinewidth}bd");
@@ -4746,7 +4587,6 @@ mp_ps_print_nl(mp,"/sd{setdash}bd/rd{[] 0 setdash}bd/P{showpage}bd/B{q F Q}bd/W{
 }
 
 
-/*:158*/
 ;
 mp_ps_print_nl(mp,"%%EndResource");
 mp_ps_print_ln(mp);
@@ -4756,7 +4596,6 @@ mp_ps_print(mp,"%%EndProlog");
 mp_ps_print_nl(mp,"%%Page: 1 1");mp_ps_print_ln(mp);
 }
 
-/*:160*//*162:*/
 
 void mp_ps_pair_out(MP mp,double x,double y){
 ps_room(26);
@@ -4764,14 +4603,12 @@ mp_ps_print_double(mp,x);mp_ps_print_char(mp,' ');
 mp_ps_print_double(mp,y);mp_ps_print_char(mp,' ');
 }
 
-/*:162*//*164:*/
 
 void mp_ps_print_cmd(MP mp,const char*l,const char*s){
 if(number_positive(internal_value(mp_procset))){ps_room(strlen(s));mp_ps_print(mp,s);}
 else{ps_room(strlen(l));mp_ps_print(mp,l);};
 }
 
-/*:164*//*166:*/
 
 void mp_ps_string_out(MP mp,const char*s,size_t l){
 ASCII_code k;
@@ -4786,7 +4623,6 @@ if((/*161:*/
 
 (k<=' ')||(k> '~')
 
-/*:161*/
 )){
 mp_ps_print_char(mp,'\\');
 mp_ps_print_char(mp,'0'+(k/64));
@@ -4801,7 +4637,6 @@ mp_ps_print_char(mp,k);
 mp_ps_print_char(mp,')');
 }
 
-/*:166*//*168:*/
 
 static boolean mp_do_is_ps_name(char*s){
 ASCII_code k;
@@ -4813,7 +4648,6 @@ if((k=='(')||(k==')')||(k=='<')||(k=='>')||
 return true;
 }
 
-/*:168*//*170:*/
 
 void mp_ps_name_out(MP mp,char*s,boolean lit){
 ps_room(strlen(s)+2);
@@ -4829,7 +4663,6 @@ mp_ps_print(mp,"cvn");
 }
 
 
-/*:170*//*172:*/
 
 void mp_print_initial_comment(MP mp,mp_edge_object*hh,int prologues){
 int t;
@@ -4871,7 +4704,6 @@ mp_ps_print_dd(mp,t%60);
 mp_ps_print_nl(mp,"%%Pages: 1");
 }
 
-/*:172*//*175:*/
 
 static mp_gr_knot mp_gr_copy_knot(MP mp,mp_gr_knot p){
 mp_gr_knot q;
@@ -4881,7 +4713,6 @@ gr_next_knot(q)= NULL;
 return q;
 }
 
-/*:175*//*176:*/
 
 static mp_gr_knot mp_gr_copy_path(MP mp,mp_gr_knot p){
 mp_gr_knot q,pp,qq;
@@ -4899,7 +4730,6 @@ gr_next_knot(qq)= q;
 return q;
 }
 
-/*:176*//*178:*/
 
 void mp_do_gr_toss_knot_list(mp_gr_knot p){
 mp_gr_knot q;
@@ -4915,7 +4745,6 @@ mp_xfree(q);q= r;
 
 
 
-/*:178*//*179:*/
 
 static void mp_gr_ps_path_out(MP mp,mp_gr_knot h){
 mp_gr_knot p,q;
@@ -4932,10 +4761,8 @@ if(p==h)mp_ps_print_cmd(mp," 0 0 rlineto"," 0 0 r");
 return;
 }
 q= gr_next_knot(p);
-/*180:*/
 
 curved= true;
-/*181:*/
 
 if(gr_right_x(p)==gr_x_coord(p))
 if(gr_right_y(p)==gr_y_coord(p))
@@ -4949,7 +4776,6 @@ if(fabs(gr_right_y(p)-gr_y_coord(p)-d)<=bend_tolerance)
 if(fabs(gr_y_coord(q)-gr_left_y(q)-d)<=bend_tolerance)curved= false;
 }
 
-/*:181*/
 ;
 mp_ps_print_ln(mp);
 if(curved){
@@ -4962,14 +4788,12 @@ mp_ps_pair_out(mp,gr_x_coord(q),gr_y_coord(q));
 mp_ps_print_cmd(mp,"lineto","l");
 }
 
-/*:180*/
 ;
 p= q;
 }while(p!=h);
 mp_ps_print_cmd(mp," closepath"," p");
 }
 
-/*:179*//*185:*/
 
 void mp_do_gr_toss_dashes(mp_dash_object*dl){
 if(dl==NULL)
@@ -4979,7 +4803,6 @@ mp_xfree(dl);
 }
 
 
-/*:185*//*186:*/
 
 static mp_dash_object*mp_gr_copy_dashes(MP mp,mp_dash_object*dl){
 mp_dash_object*q= NULL;
@@ -4998,7 +4821,6 @@ return q;
 }
 
 
-/*:186*//*190:*/
 
 mp_graphic_object*mp_new_graphic_object(MP mp,int type){
 mp_graphic_object*p;
@@ -5018,7 +4840,6 @@ gr_type(p)= type;
 return p;
 }
 
-/*:190*//*195:*/
 static void mp_gs_unknown_graphics_state(MP mp,int c){
 struct _gs_state*p;
 if((c==0)||(c==-1)){
@@ -5053,7 +4874,6 @@ mp->ps->gs_state= p;
 }
 
 
-/*:195*//*197:*/
 
 void mp_gr_fix_graphics_state(MP mp,mp_graphic_object*p){
 
@@ -5063,7 +4883,6 @@ double wx,wy,ww;
 quarterword adj_wx;
 double tx,ty;
 if(gr_has_color(p))
-/*200:*/
 
 {
 int object_color_model;
@@ -5134,7 +4953,6 @@ gs_colormodel= mp_no_model;
 }
 }
 
-/*:200*/
 ;
 if((gr_type(p)==mp_fill_code)||(gr_type(p)==mp_stroked_code)){
 if(gr_type(p)==mp_fill_code){
@@ -5146,9 +4964,7 @@ path_p= gr_path_p((mp_stroked_object*)p);
 }
 if(pp!=NULL)
 if(pen_is_elliptical(pp)){
-/*201:*/
 
-/*202:*/
 
 if((gr_right_x(pp)==gr_x_coord(pp))&&(gr_left_y(pp)==gr_y_coord(pp))){
 wx= fabs(gr_left_x(pp)-gr_x_coord(pp));
@@ -5163,9 +4979,7 @@ b= gr_right_y(pp)-gr_y_coord(pp);
 wy= sqrt(a*a+b*b);
 }
 
-/*:202*/
 ;
-/*203:*/
 
 tx= 1.0/65536.0;ty= 1.0/65536.0;
 if(mp_gr_coord_rangeOK(path_p,do_y_loc,wy))tx= aspect_bound;
@@ -5173,7 +4987,6 @@ else if(mp_gr_coord_rangeOK(path_p,do_x_loc,wx))ty= aspect_bound;
 if(wy/ty>=wx/tx){ww= wy;adj_wx= 0;}
 else{ww= wx;adj_wx= 1;}
 
-/*:203*/
 ;
 if((ww!=gs_width)||(adj_wx!=gs_adj_wx)){
 if(adj_wx!=0){
@@ -5197,9 +5010,7 @@ gs_width= ww;
 gs_adj_wx= adj_wx;
 }
 
-/*:201*/
 ;
-/*207:*/
 
 if(gr_type(p)==mp_fill_code||gr_dash_p(p)==NULL){
 hh= NULL;
@@ -5213,7 +5024,6 @@ gs_dash_p= NULL;
 gs_dash_init_done= true;
 }
 }else if(!mp_gr_same_dashes(gs_dash_p,hh)){
-/*208:*/
 
 {gs_dash_p= hh;
 if((gr_dash_p(p)==NULL)||(hh==NULL)||(hh->array==NULL)){
@@ -5234,13 +5044,10 @@ mp_ps_print_cmd(mp," setdash"," sd");
 }
 }
 
-/*:208*/
 ;
 }
 
-/*:207*/
 ;
-/*198:*/
 
 if(gr_type(p)==mp_stroked_code){
 mp_stroked_object*ts= (mp_stroked_object*)p;
@@ -5254,9 +5061,7 @@ gs_lcap= (quarterword)gr_lcap_val(ts);
 }
 }
 
-/*:198*/
 ;
-/*199:*/
 
 if(gr_type(p)==mp_stroked_code){
 mp_stroked_object*ts= (mp_stroked_object*)p;
@@ -5266,14 +5071,12 @@ mp_fill_object*ts= (mp_fill_object*)p;
 set_ljoin_miterlim(ts);
 }
 
-/*:199*/
 ;
 }
 }
 if(mp->ps->ps_offset> 0)mp_ps_print_ln(mp);
 }
 
-/*:197*//*205:*/
 
 boolean mp_gr_coord_rangeOK(mp_gr_knot h,
 quarterword zoff,double dz){
@@ -5286,31 +5089,25 @@ zhi= zlo;
 p= h;
 while(gr_right_type(p)!=mp_endpoint){
 z= gr_right_x(p);
-/*206:*/
 
 if(z<zlo)zlo= z;
 else if(z> zhi)zhi= z;
 if(zhi-zlo> dz)return false
 
-/*:206*/
 ;
 p= gr_next_knot(p);z= gr_left_x(p);
-/*206:*/
 
 if(z<zlo)zlo= z;
 else if(z> zhi)zhi= z;
 if(zhi-zlo> dz)return false
 
-/*:206*/
 ;
 z= gr_x_coord(p);
-/*206:*/
 
 if(z<zlo)zlo= z;
 else if(z> zhi)zhi= z;
 if(zhi-zlo> dz)return false
 
-/*:206*/
 ;
 if(p==h)break;
 }
@@ -5320,31 +5117,25 @@ zhi= zlo;
 p= h;
 while(gr_right_type(p)!=mp_endpoint){
 z= gr_right_y(p);
-/*206:*/
 
 if(z<zlo)zlo= z;
 else if(z> zhi)zhi= z;
 if(zhi-zlo> dz)return false
 
-/*:206*/
 ;
 p= gr_next_knot(p);z= gr_left_y(p);
-/*206:*/
 
 if(z<zlo)zlo= z;
 else if(z> zhi)zhi= z;
 if(zhi-zlo> dz)return false
 
-/*:206*/
 ;
 z= gr_y_coord(p);
-/*206:*/
 
 if(z<zlo)zlo= z;
 else if(z> zhi)zhi= z;
 if(zhi-zlo> dz)return false
 
-/*:206*/
 ;
 if(p==h)break;
 }
@@ -5352,7 +5143,6 @@ if(p==h)break;
 return true;
 }
 
-/*:205*//*210:*/
 
 boolean mp_gr_same_dashes(mp_dash_object*h,mp_dash_object*hh){
 boolean ret= false;
@@ -5374,12 +5164,10 @@ ret= true;
 }
 }
 
-/*:211*/
 ;}
 return ret;
 }
 
-/*:210*//*213:*/
 void mp_gr_stroke_ellipse(MP mp,mp_graphic_object*h,boolean fill_also){
 
 double txx,txy,tyx,tyy;
@@ -5388,7 +5176,6 @@ double d1,det;
 double s;
 boolean transformed;
 transformed= false;
-/*214:*/
 
 if(gr_type(h)==mp_fill_code){
 p= gr_pen_p((mp_fill_object*)h);
@@ -5412,7 +5199,6 @@ transformed= true;
 }else{
 mp_ps_print_nl(mp,"");
 }
-/*215:*/
 
 if(gs_width!=unity){
 if(gs_width==0.0){
@@ -5431,12 +5217,9 @@ transformed= true;
 }
 }
 
-/*:215*/
 
 
-/*:214*/
 ;
-/*217:*/
 
 det= mp_take_double(mp,txx,tyy)-mp_take_double(mp,txy,tyx);
 d1= 4*(aspect_bound+1/65536.0);
@@ -5453,7 +5236,6 @@ else txy= txy+(d1+s*fabs(tyx))/tyx;
 }
 }
 
-/*:217*/
 ;
 if(gr_type(h)==mp_fill_code){
 mp_gr_ps_path_out(mp,gr_path_p((mp_fill_object*)h));
@@ -5462,7 +5244,6 @@ mp_gr_ps_path_out(mp,gr_path_p((mp_stroked_object*)h));
 }
 if(number_zero(internal_value(mp_procset))){
 if(fill_also)mp_ps_print_nl(mp,"gsave fill grestore");
-/*216:*/
 
 if((txy!=0.0)||(tyx!=0.0)){
 mp_ps_print_ln(mp);
@@ -5476,7 +5257,6 @@ mp_ps_pair_out(mp,txx,tyy);
 mp_ps_print(mp,"scale");
 }
 
-/*:216*/
 ;
 mp_ps_print(mp," stroke");
 if(transformed)mp_ps_print(mp," grestore");
@@ -5498,7 +5278,6 @@ if(transformed)mp_ps_print(mp," Q");
 mp_ps_print_ln(mp);
 }
 
-/*:213*//*219:*/
 
 void mp_gr_ps_fill_out(MP mp,mp_gr_knot p){
 mp_gr_ps_path_out(mp,p);
@@ -5506,7 +5285,6 @@ mp_ps_print_cmd(mp," fill"," F");
 mp_ps_print_ln(mp);
 }
 
-/*:219*//*221:*/
 double mp_gr_choose_scale(MP mp,mp_graphic_object*p){
 
 double a,b,c,d,ad,bc;
@@ -5531,7 +5309,6 @@ r= sqrt(c*c+d*d);
 return r;
 }
 
-/*:221*//*223:*/
 
 quarterword mp_size_index(MP mp,font_number f,double s){
 mp_node p,q;
@@ -5555,7 +5332,6 @@ if(i==0)mp->font_sizes[f]= q;else mp_link(p)= q;
 return(quarterword)i;
 }
 
-/*:223*//*225:*/
 
 double mp_indexed_size(MP mp,font_number f,quarterword j){
 mp_node p;
@@ -5573,7 +5349,6 @@ assert(p);
 return sc_factor(p);
 }
 
-/*:225*//*227:*/
 void mp_clear_sizes(MP mp){
 font_number f;
 mp_node p;
@@ -5586,7 +5361,6 @@ mp_xfree(p);
 }
 }
 
-/*:227*//*230:*/
 
 void mp_apply_mark_string_chars(MP mp,mp_edge_object*h,int next_size){
 mp_graphic_object*p;
@@ -5602,7 +5376,6 @@ p= gr_link(p);
 }
 }
 
-/*:230*//*234:*/
 
 int mp_gr_ship_out(mp_edge_object*hh,int qprologues,int qprocset,int standalone){
 mp_graphic_object*p;
@@ -5628,7 +5401,6 @@ procset= qprocset;
 mp_open_output_file(mp);
 mp_print_initial_comment(mp,hh,prologues);
 
-/*231:*/
 
 for(f= null_font+1;f<=mp->last_fnum;f++){
 if(mp->font_sizes[f]!=null){
@@ -5637,12 +5409,10 @@ mp->font_sizes[f]= null;
 }
 }
 
-/*:231*/
 ;
 if(prologues==2||prologues==3){
 mp_reload_encodings(mp);
 }
-/*232:*/
 
 p= hh->body;
 while(p!=null){
@@ -5675,7 +5445,6 @@ p= gr_link(p);
 }
 
 
-/*:232*/
 ;
 if(prologues==2||prologues==3){
 mp_print_improved_prologue(mp,hh,prologues,procset);
@@ -5686,7 +5455,6 @@ mp_gs_unknown_graphics_state(mp,0);
 p= hh->body;
 while(p!=NULL){
 if(gr_has_color(p)){
-/*237:*/
 
 {
 if(gr_type(p)==mp_fill_code){do_write_prescript(p,mp_fill_object);}
@@ -5694,7 +5462,6 @@ else if(gr_type(p)==mp_stroked_code){do_write_prescript(p,mp_stroked_object);}
 else if(gr_type(p)==mp_text_code){do_write_prescript(p,mp_text_object);}
 }
 
-/*:237*/
 ;
 }
 mp_gr_fix_graphics_state(mp,p);
@@ -5730,7 +5497,6 @@ if(prologues> 0)
 scf= mp_gr_choose_scale(mp,p);
 else
 scf= mp_indexed_size(mp,gr_font_n(p),(quarterword)gr_size_index(p));
-/*239:*/
 
 transformed= (gr_txx_val(p)!=scf)||(gr_tyy_val(p)!=scf)||
 (gr_txy_val(p)!=0)||(gr_tyx_val(p)!=0);
@@ -5748,11 +5514,9 @@ mp_ps_print_cmd(mp,"moveto","m");
 }
 mp_ps_print_ln(mp)
 
-/*:239*/
 ;
 mp_ps_string_out(mp,gr_text_p(p),gr_text_l(p));
 mp_ps_name_out(mp,mp->font_name[gr_font_n(p)],false);
-/*238:*/
 
 ps_room(18);
 mp_ps_print_char(mp,' ');
@@ -5764,7 +5528,6 @@ mp_ps_print_cmd(mp," grestore"," Q")
 
 
 
-/*:238*/
 ;
 mp_ps_print_ln(mp);
 }
@@ -5809,7 +5572,6 @@ mp_clear_sizes(mp);
 return 1;
 }
 
-/*:234*//*236:*/
 
 int mp_ps_ship_out(mp_edge_object*hh,int prologues,int procset){
 return mp_gr_ship_out(hh,prologues,procset,(int)true);
@@ -5819,7 +5581,6 @@ return mp_gr_ship_out(hh,prologues,procset,(int)true);
 
 
 
-/*:236*//*241:*/
 
 void mp_gr_toss_object(mp_graphic_object*p){
 mp_fill_object*tf;
@@ -5867,7 +5628,6 @@ mp_xfree(p);
 }
 
 
-/*:241*//*242:*/
 
 void mp_gr_toss_objects(mp_edge_object*hh){
 mp_graphic_object*p,*q;
@@ -5881,7 +5641,6 @@ mp_xfree(hh->filename);
 mp_xfree(hh);
 }
 
-/*:242*//*244:*/
 
 mp_graphic_object*
 mp_gr_copy_object(MP mp,mp_graphic_object*p){
@@ -5944,4 +5703,3 @@ break;
 }
 return q;
 }
-/*:244*/

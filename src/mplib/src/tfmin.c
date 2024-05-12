@@ -1,4 +1,3 @@
-/*2:*/
 
 #include <w2c/config.h> 
 #include <stdio.h> 
@@ -8,11 +7,9 @@
 #include "mpmp.h" 
 #include "mpmath.h" 
 #include "mpstrings.h" 
-/*3:*/
 
 font_number mp_read_font_info(MP mp,char*fname);
 
-/*:3*/
 ;
 #define qi(A) (quarterword) (A) 
 #define null_font 0
@@ -42,7 +39,6 @@ tfget;(A) = (A) *0400+tfbyte; \
 
 
 
-/*:2*//*4:*/
 
 font_number mp_read_font_info(MP mp,char*fname){
 boolean file_opened;
@@ -56,7 +52,6 @@ int d;
 int h_and_d;
 int tfbyte= 0;
 n= null_font;
-/*12:*/
 
 file_opened= false;
 mp_ptr_scan_file(mp,fname);
@@ -76,11 +71,8 @@ file_opened= true
 
 
 
-/*:12*/
 ;
-/*6:*/
 
-/*7:*/
 
 tfget;read_two(lf);
 tfget;read_two(tfm_lh);
@@ -94,9 +86,7 @@ whd_size= (size_t)((ec+1-bc)+nw+nh+nd);
 if(lf<(int)(6+(size_t)tfm_lh+whd_size))goto BAD_TFM;
 tf_ignore(10)
 
-/*:7*/
 ;
-/*8:*/
 
 if(mp->next_fmem<(size_t)bc)
 mp->next_fmem= (size_t)bc;
@@ -123,9 +113,7 @@ mp->depth_base[n]= mp->height_base[n]+nh;
 mp->next_fmem= mp->next_fmem+whd_size;
 
 
-/*:8*/
 ;
-/*9:*/
 
 if(tfm_lh<2)goto BAD_TFM;
 tf_ignore(4);
@@ -136,9 +124,7 @@ mp->font_dsize[n]= mp_take_fraction(mp,z,integer_as_fraction(267432584));
 
 tf_ignore(4*(tfm_lh-2))
 
-/*:9*/
 ;
-/*10:*/
 
 ii= mp->width_base[n];
 i= mp->char_base[n]+bc;
@@ -151,7 +137,6 @@ tfget;tfget;
 i++;
 }
 while(i<(int)mp->next_fmem){
-/*11:*/
 
 {
 tfget;d= tfbyte;
@@ -163,18 +148,14 @@ mp->font_info[i].sc= mp_take_fraction(mp,d*16,integer_as_fraction(mp->font_dsize
 i++;
 }
 
-/*:11*/
 ;
 }
 goto DONE
 
-/*:10*/
 
 
-/*:6*/
 ;
 BAD_TFM:
-/*5:*/
 
 {
 char msg[256];
@@ -190,7 +171,6 @@ mp_snprintf(msg,256,"Font %s not usable: TFM file %s",fname,
 mp_error(mp,msg,hlp,true);
 }
 
-/*:5*/
 ;
 DONE:
 if(file_opened)(mp->close_file)(mp,mp->tfm_infile);
@@ -201,4 +181,3 @@ mp->font_name[n]= mp_xstrdup(mp,fname);
 return n;
 }
 
-/*:4*/

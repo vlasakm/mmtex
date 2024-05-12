@@ -1,4 +1,3 @@
-/*3:*/
 
 #ifndef MPLIB_H
 #define MPLIB_H 1
@@ -6,14 +5,11 @@
 #ifndef HAVE_BOOLEAN
 typedef int boolean;
 #endif
-/*2:*/
 
-#define metapost_version "2.02"
+#define metapost_version "2.10"
 
-/*:2*/
 
 typedef struct MP_instance*MP;
-/*17:*/
 
 typedef enum{
 mp_nan_type= 0,
@@ -22,7 +18,8 @@ mp_fraction_type,
 mp_angle_type,
 mp_double_type,
 mp_binary_type,
-mp_decimal_type
+mp_decimal_type,
+mp_interval_type
 }mp_number_type;
 typedef union{
 void*num;
@@ -98,6 +95,10 @@ typedef char*(*tostring_func)(MP mp,mp_number A);
 typedef void(*scan_func)(MP mp,int A);
 typedef void(*mp_free_func)(MP mp);
 typedef void(*set_precision_func)(MP mp);
+
+typedef void(*m_get_left_endpoint_func)(MP mp,mp_number*r,mp_number a);
+typedef void(*m_get_right_endpoint_func)(MP mp,mp_number*r,mp_number a);
+typedef void(*m_interval_set_func)(MP mp,mp_number*r,mp_number a,mp_number b);
 
 typedef struct math_data{
 mp_number precision_default;
@@ -203,11 +204,14 @@ scan_func scan_numeric;
 scan_func scan_fractional;
 mp_free_func free_math;
 set_precision_func set_precision;
+
+m_get_left_endpoint_func m_get_left_endpoint;
+m_get_right_endpoint_func m_get_right_endpoint;
+m_interval_set_func m_interval_set;
 }math_data;
 
 
 
-/*:17*//*45:*/
 
 enum mp_filetype{
 mp_filetype_terminal= 0,
@@ -235,7 +239,6 @@ typedef void(*mp_file_flush)(MP,void*);
 typedef void(*mp_file_writer)(MP,void*,const char*);
 typedef void(*mp_binfile_writer)(MP,void*,void*,size_t);
 
-/*:45*//*77:*/
 
 typedef struct{
 unsigned char*str;
@@ -244,7 +247,6 @@ int refs;
 }mp_lstring;
 typedef mp_lstring*mp_string;
 
-/*:77*//*103:*/
 
 enum mp_interaction_mode{
 mp_unspecified_mode= 0,
@@ -254,7 +256,6 @@ mp_scroll_mode,
 mp_error_stop_mode
 };
 
-/*:103*//*109:*/
 
 enum mp_history_state{
 mp_spotless= 0,
@@ -264,20 +265,18 @@ mp_fatal_error_stop,
 mp_system_error_stop
 };
 
-/*:109*//*123:*/
 
 typedef void(*mp_editor_cmd)(MP,char*,int);
 
-/*:123*//*167:*/
 
 typedef enum{
 mp_math_scaled_mode= 0,
 mp_math_double_mode= 1,
 mp_math_binary_mode= 2,
-mp_math_decimal_mode= 3
+mp_math_decimal_mode= 3,
+mp_math_interval_mode= 4
 }mp_math_mode;
 
-/*:167*//*304:*/
 
 typedef struct mp_knot_data*mp_knot;
 typedef struct mp_knot_data{
@@ -300,7 +299,6 @@ unsigned char originator;
 }mp_knot_data;
 
 
-/*:304*//*305:*/
 
 typedef struct mp_gr_knot_data*mp_gr_knot;
 typedef struct mp_gr_knot_data{
@@ -323,18 +321,15 @@ unsigned char originator;
 }mp_gr_knot_data;
 
 
-/*:305*//*308:*/
 
 enum mp_knot_originator{
 mp_program_code= 0,
 mp_metapost_user
 };
 
-/*:308*//*898:*/
 
 typedef int(*mp_makempx_cmd)(MP mp,char*origname,char*mtxname);
 
-/*:898*//*1066:*/
 
 #undef term_in
 #undef term_out
@@ -355,14 +350,11 @@ mp_stream term_in;
 struct mp_edge_object*edges;
 }mp_run_data;
 
-/*:1066*//*1288:*/
 
 typedef void(*mp_backend_writer)(MP,void*);
 
-/*:1288*/
 
 typedef struct MP_options{
-/*29:*/
 
 int error_line;
 int half_error_line;
@@ -374,7 +366,6 @@ char*banner;
 int ini_version;
 int utf8_mode;
 
-/*:29*//*46:*/
 
 mp_file_finder find_file;
 mp_file_opener open_file;
@@ -388,60 +379,46 @@ mp_file_flush flush_file;
 mp_file_writer write_ascii_file;
 mp_binfile_writer write_binary_file;
 
-/*:46*//*53:*/
 
 int print_found_names;
 
-/*:53*//*55:*/
 
 int file_line_error_style;
 
-/*:55*//*71:*/
 
 char*command_line;
 
-/*:71*//*104:*/
 
 int interaction;
 int noninteractive;
 int extensions;
 
-/*:104*//*124:*/
 
 mp_editor_cmd run_editor;
 
-/*:124*//*156:*/
 
 int random_seed;
 
-/*:156*//*168:*/
 
 int math_mode;
 
-/*:168*//*200:*/
 
 int troff_mode;
 
-/*:200*//*865:*/
 
 char*mem_name;
 
-/*:865*//*878:*/
 
 char*job_name;
 
-/*:878*//*899:*/
 
 mp_makempx_cmd run_make_mpx;
 
-/*:899*//*1289:*/
 
 mp_backend_writer shipout_backend;
 
-/*:1289*/
 
 }MP_options;
-/*20:*/
 
 extern MP_options*mp_options(void);
 extern MP mp_initialize(MP_options*opt);
@@ -449,29 +426,24 @@ extern int mp_status(MP mp);
 extern boolean mp_finished(MP mp);
 extern void*mp_userdata(MP mp);
 
-/*:20*//*121:*/
 
 extern void mp_error(MP mp,const char*msg,const char**hlp,boolean deletions_allowed);
 extern void mp_warn(MP mp,const char*msg);
 
 
-/*:121*//*138:*/
 
 extern void mp_fatal_error(MP mp,const char*s);
 
 
-/*:138*//*202:*/
 
 int mp_troff_mode(MP mp);
 
-/*:202*//*235:*/
 
 double mp_get_numeric_value(MP mp,const char*s,size_t l);
 int mp_get_boolean_value(MP mp,const char*s,size_t l);
 char*mp_get_string_value(MP mp,const char*s,size_t l);
 mp_knot mp_get_path_value(MP mp,const char*s,size_t l);
 
-/*:235*//*384:*/
 
 int mp_close_path_cycle(MP mp,mp_knot p,mp_knot q);
 int mp_close_path(MP mp,mp_knot q,mp_knot first);
@@ -493,7 +465,6 @@ int mp_set_knotpair_directions(MP mp,mp_knot p,mp_knot q,double x1,double y1,dou
 int mp_solve_path(MP mp,mp_knot first);
 void mp_free_path(MP mp,mp_knot p);
 
-/*:384*//*386:*/
 
 #define mp_knot_left_curl mp_knot_left_x
 #define mp_knot_left_given mp_knot_left_x
@@ -513,36 +484,29 @@ mp_knot mp_knot_next(MP mp,mp_knot p);
 double mp_number_as_double(MP mp,mp_number n);
 
 
-/*:386*//*1065:*/
 
 void mp_set_internal(MP mp,char*n,char*v,int isstring);
 
-/*:1065*//*1074:*/
 
 extern mp_run_data*mp_rundata(MP mp);
 
-/*:1074*//*1082:*/
 
 int mp_run(MP mp);
 int mp_execute(MP mp,char*s,size_t l);
 int mp_finish(MP mp);
 char*mp_metapost_version(void);void mp_show_library_versions(void);
 
-/*:1082*//*1249:*/
 
 double mp_get_char_dimension(MP mp,char*fname,int n,int t);
 
 
-/*:1249*//*1305:*/
 
 int mp_memory_usage(MP mp);
 int mp_hash_usage(MP mp);
 int mp_param_usage(MP mp);
 int mp_open_usage(MP mp);
 
-/*:1305*/
 
-/*206:*/
 
 enum mp_color_model{
 mp_no_model= 1,
@@ -553,7 +517,6 @@ mp_uninitialized_model= 9
 };
 
 
-/*:206*//*306:*/
 
 enum mp_knot_type{
 mp_endpoint= 0,
@@ -564,22 +527,17 @@ mp_open,
 mp_end_cycle
 };
 
-/*:306*//*464:*/
 
 enum mp_graphical_object_code{
-/*466:*/
 
 mp_fill_code= 1,
 
-/*:466*//*470:*/
 
 mp_stroked_code= 2,
 
-/*:470*//*477:*/
 
 mp_text_code= 3,
 
-/*:477*//*481:*/
 
 mp_start_clip_code= 4,
 mp_start_bounds_code= 5,
@@ -587,17 +545,13 @@ mp_stop_clip_code= 6,
 mp_stop_bounds_code= 7,
 
 
-/*:481*//*1279:*/
 
 mp_special_code= 8,
 
-/*:1279*/
 
 mp_final_graphic
 };
 
-/*:464*/
 
 #endif
 
-/*:3*/

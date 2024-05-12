@@ -1,4 +1,3 @@
-/*2:*/
 
 #include <w2c/config.h> 
 #include <stdio.h> 
@@ -12,7 +11,6 @@
 #include <time.h>                
 #include "mpstrings.h"          
 
-/*:2*//*5:*/
 
 #define STRCMP_RESULT(a) ((a)<0 ? -1 : ((a)> 0 ? 1 : 0))
 static int comp_strings_entry(void*p,const void*pa,const void*pb){
@@ -54,7 +52,6 @@ mp_xfree(ff);
 return NULL;
 }
 
-/*:5*//*7:*/
 
 static mp_string new_strings_entry(MP mp){
 mp_string ff;
@@ -66,7 +63,6 @@ return ff;
 }
 
 
-/*:7*//*9:*/
 
 char*mp_strldup(const char*p,size_t l){
 char*r,*s;
@@ -85,7 +81,6 @@ return NULL;
 return mp_strldup(p,strlen(p));
 }
 
-/*:9*//*10:*/
 
 int mp_xstrcmp(const char*a,const char*b){
 if(a==NULL&&b==NULL)
@@ -115,7 +110,6 @@ return mp_xstrldup(mp,s,strlen(s));
 }
 
 
-/*:10*//*11:*/
 
 void mp_initialize_strings(MP mp){
 mp->strings= avl_create(comp_strings_entry,
@@ -126,7 +120,6 @@ mp->cur_length= 0;
 mp->cur_string_size= 0;
 }
 
-/*:11*//*12:*/
 
 void mp_dealloc_strings(MP mp){
 if(mp->strings!=NULL)
@@ -138,14 +131,12 @@ mp->cur_length= 0;
 mp->cur_string_size= 0;
 }
 
-/*:12*//*15:*/
 
 char*mp_str(MP mp,mp_string ss){
 (void)mp;
 return(char*)ss->str;
 }
 
-/*:15*//*16:*/
 
 mp_string mp_rtsl(MP mp,const char*s,size_t l){
 mp_string str,nstr;
@@ -162,14 +153,12 @@ add_str_ref(nstr);
 return nstr;
 }
 
-/*:16*//*17:*/
 
 mp_string mp_rts(MP mp,const char*s){
 return mp_rtsl(mp,s,strlen(s));
 }
 
 
-/*:17*//*20:*/
 
 void mp_reset_cur_string(MP mp){
 mp_xfree(mp->cur_string);
@@ -180,7 +169,6 @@ memset(mp->cur_string,0,64);
 }
 
 
-/*:20*//*24:*/
 
 void mp_flush_string(MP mp,mp_string s){
 if(s->refs==0){
@@ -191,7 +179,6 @@ mp->pool_in_use= mp->pool_in_use-(integer)s->len;
 }
 
 
-/*:24*//*25:*/
 
 mp_string mp_intern(MP mp,const char*s){
 mp_string r;
@@ -200,7 +187,6 @@ r->refs= MAX_STR_REF;
 return r;
 }
 
-/*:25*//*28:*/
 
 mp_string mp_make_string(MP mp){
 mp_string str;
@@ -227,7 +213,6 @@ return str;
 }
 
 
-/*:28*//*30:*/
 
 integer mp_str_vs_str(MP mp,mp_string s,mp_string t){
 (void)mp;
@@ -236,7 +221,6 @@ return comp_strings_entry(NULL,(const void*)s,(const void*)t);
 
 
 
-/*:30*//*32:*/
 
 mp_string mp_cat(MP mp,mp_string a,mp_string b){
 mp_string str;
@@ -263,7 +247,6 @@ return str;
 }
 
 
-/*:32*//*34:*/
 
 mp_string mp_chop_string(MP mp,mp_string s,integer a,integer b){
 integer l;
@@ -300,4 +283,3 @@ append_char(*(s->str+k));
 }
 return mp_make_string(mp);
 }
-/*:34*/

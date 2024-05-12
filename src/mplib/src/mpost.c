@@ -12,7 +12,6 @@
 #define command_line_size 256
 #define max_command_line_size 0xFFFFFFF \
 
-/*2:*/
 
 #include <w2c/config.h> 
 #include <stdio.h> 
@@ -43,7 +42,6 @@ static int ini_version_test= false;
 string output_directory;
 static boolean restricted_mode= false;
 
-/*25:*/
 
 
 
@@ -80,7 +78,6 @@ static struct option mpost_options[]
 
 
 
-/*:25*//*27:*/
 
 
 
@@ -94,21 +91,16 @@ static struct option dvitomp_options[]
 
 
 
-/*:27*/
 
-/*7:*/
 
 void recorder_start(char*jobname);
 
-/*:7*//*19:*/
 
 void internal_set_option(const char*opt);
 
-/*:19*//*21:*/
 
 void run_set_list(MP mp);
 
-/*:21*//*37:*/
 
 #define DLLPROC dllmpostmain
 #if defined(WIN32) && !defined(__MINGW32__) && defined(DLLPROC)
@@ -117,10 +109,8 @@ extern __declspec(dllexport)int DLLPROC(int argc,char**argv);
 #undef DLLPROC
 #endif
 
-/*:37*/
 
 
-/*:2*//*3:*/
 
  /*@only@*/ /*@out@*/ static void*mpost_xmalloc(size_t bytes){
 void*w= malloc(bytes);
@@ -157,7 +147,6 @@ return mpost_xstrdup(res+idx+1);
 }
 
 
-/*:3*//*4:*/
 
 #ifdef WIN32
 static int
@@ -166,7 +155,7 @@ Isspace(char c)
 return(c==' '||c=='\t');
 }
 #endif
- static void mpost_run_editor(MP mp,char*fname,int fline){
+static void mpost_run_editor(MP mp,char*fname,int fline){
 char*temp,*command,*fullcmd,*edit_value;
 char c;
 boolean sdone,ddone;
@@ -287,14 +276,13 @@ strcat(fullcmd,"\"");
 strcat(fullcmd,command);
 }else
 #endif
- fullcmd= command;
+fullcmd= command;
 
 if(system(fullcmd)!=0)
 fprintf(stderr,"! Trouble executing `%s'.\n",command);
 exit(EXIT_FAILURE);
 }
 
-/*:4*//*6:*/
 
 static string normalize_quotes(const char*name,const char*mesg){
 boolean quoted= false;
@@ -322,7 +310,6 @@ exit(EXIT_FAILURE);
 return ret;
 }
 
-/*:6*//*8:*/
 
 void recorder_start(char*jobname){
 char cwd[1024];
@@ -345,14 +332,13 @@ else if(IS_KANJI(p))
 p++;
 }
 #endif
- fprintf(recorder_file,"PWD %s\n",cwd);
+fprintf(recorder_file,"PWD %s\n",cwd);
 }else{
 fprintf(recorder_file,"PWD <unknown>\n");
 }
 }
 
 
-/*:8*//*9:*/
 
  /*@null@*/ static char*makempx_find_file(MPX mpx,const char*nam,
 const char*mode,int ftype){
@@ -379,12 +365,11 @@ if(fmt<0)return NULL;
 return kpse_find_file(nam,fmt,req);
 }
 
-/*:9*//*10:*/
 
 #ifndef MPXCOMMAND
 #define MPXCOMMAND "makempx"
 #endif
- static int mpost_run_make_mpx(MP mp,char*mpname,char*mpxname){
+static int mpost_run_make_mpx(MP mp,char*mpname,char*mpxname){
 int ret;
 char*cnf_cmd= kpse_var_value("MPXCOMMAND");
 if(restricted_mode){
@@ -429,7 +414,7 @@ if(source_stat.st_mtim.tv_sec<target_stat.st_mtim.tv_sec||
 source_stat.st_mtim.tv_nsec<target_stat.st_mtim.tv_nsec))
 nothingtodo= 1;
 #else
- if(source_stat.st_mtime<target_stat.st_mtime)
+if(source_stat.st_mtime<target_stat.st_mtime)
 nothingtodo= 1;
 #endif
 }
@@ -570,7 +555,6 @@ return ret;
 }
 
 
-/*:10*//*12:*/
 
 static int get_random_seed(void){
 int ret= 0;
@@ -583,15 +567,14 @@ struct timeb tb;
 ftime(&tb);
 ret= (tb.millitm+1000*tb.time);
 #else
- time_t clock= time((time_t*)NULL);
+time_t clock= time((time_t*)NULL);
 struct tm*tmptr= localtime(&clock);
 if(tmptr!=NULL)
 ret= (tmptr->tm_sec+60*(tmptr->tm_min+60*tmptr->tm_hour));
 #endif
- return ret;
+return ret;
 }
 
-/*:12*//*14:*/
 
 static char*mpost_find_in_output_directory(const char*s,const char*fmode)
 {
@@ -604,7 +587,6 @@ return NULL;
 
 
 
-/*:14*//*15:*/
 
 static char*mpost_find_file(MP mp,const char*fname,const char*fmode,int ftype){
 size_t l;
@@ -658,7 +640,7 @@ if(source_stat.st_mtim.tv_sec<=target_stat.st_mtim.tv_sec||
 source_stat.st_mtim.tv_nsec<=target_stat.st_mtim.tv_nsec))
 s= mpost_xstrdup(f);
 #else
- if(source_stat.st_mtime<=target_stat.st_mtime)
+if(source_stat.st_mtime<=target_stat.st_mtime)
 s= mpost_xstrdup(f);
 #endif
 }
@@ -715,7 +697,6 @@ s= mpost_xstrdup(fname);
 return s;
 }
 
-/*:15*//*17:*/
 
 typedef struct set_list_item{
 int isstring;
@@ -724,11 +705,9 @@ char*value;
 struct set_list_item*next;
 }set_list_item;
 
-/*:17*//*18:*/
 
 struct set_list_item*set_list= NULL;
 
-/*:18*//*20:*/
 
 void internal_set_option(const char*opt){
 struct set_list_item*itm;
@@ -765,7 +744,6 @@ itm->next= NULL;
 }
 }
 
-/*:20*//*22:*/
 
 void run_set_list(MP mp){
 struct set_list_item*itm;
@@ -778,7 +756,6 @@ itm= itm->next;
 
 
 
-/*:22*//*23:*/
 
 static void*mpost_open_file(MP mp,const char*fname,const char*fmode,int ftype){
 char realmode[3];
@@ -810,7 +787,6 @@ return ret;
 return NULL;
 }
 
-/*:23*//*33:*/
 
 static int setup_var(int def,const char*var_name,boolean nokpse){
 if(!nokpse){
@@ -826,7 +802,6 @@ return conf_val;
 return def;
 }
 
-/*:33*//*38:*/
 
 static char*cleaned_invocation_name(char*arg)
 {
@@ -843,7 +818,7 @@ int
 #if defined(DLLPROC)
 DLLPROC(int argc,char**argv)
 #else
- main(int argc,char**argv)
+main(int argc,char**argv)
 #endif
 
 {
@@ -868,7 +843,6 @@ if(FILESTRCASEEQ(base,"dvitomp"))
 dvitomp_only= 1;
 }
 if(dvitomp_only){
-/*28:*/
 
 {
 int g;
@@ -889,7 +863,6 @@ kpathsea_debug|= (unsigned)atoi(optarg);
 }else if(option_is("progname")){
 user_progname= optarg;
 }else if(option_is("help")){
-/*30:*/
 
 {
 char*s= mp_metapost_version();
@@ -916,10 +889,8 @@ fprintf(stdout,
 exit(EXIT_SUCCESS);
 }
 
-/*:30*/
 ;
 }else if(option_is("version")){
-/*31:*/
 
 {
 char*s= mp_metapost_version();
@@ -946,16 +917,13 @@ mp_show_library_versions();
 exit(EXIT_SUCCESS);
 }
 
-/*:31*/
 ;
 }
 }
 }
 
-/*:28*/
 ;
 }else{
-/*26:*/
 
 {
 int g;
@@ -1015,6 +983,9 @@ internal_set_option("numbersystem=\"decimal\"");
 }else if(STREQ(optarg,"binary")){
 options->math_mode= mp_math_binary_mode;
 internal_set_option("numbersystem=\"binary\"");
+}else if(STREQ(optarg,"interval")){
+options->math_mode= mp_math_interval_mode;
+internal_set_option("numbersystem=\"interval\"");
 }else{
 fprintf(stdout,"Ignoring unknown argument `%s' to --numbersystem\n",optarg);
 }
@@ -1035,7 +1006,6 @@ ARGUMENT_IS("no-file-line-error-style")){
 options->file_line_error_style= false;
 }else if(ARGUMENT_IS("help")){
 if(dvitomp_only){
-/*30:*/
 
 {
 char*s= mp_metapost_version();
@@ -1062,10 +1032,8 @@ fprintf(stdout,
 exit(EXIT_SUCCESS);
 }
 
-/*:30*/
 ;
 }else{
-/*29:*/
 
 {
 char*s= mp_metapost_version();
@@ -1089,7 +1057,7 @@ fprintf(stdout,
 "  -ini                      be inimpost, for dumping mem files\n"
 "  -interaction=STRING       set interaction mode (STRING=batchmode/nonstopmode/\n"
 "                            scrollmode/errorstopmode)\n"
-"  -numbersystem=STRING      set number system mode (STRING=scaled/double/binary/decimal)\n"
+"  -numbersystem=STRING      set number system mode (STRING=scaled/double/binary/interval/decimal)\n"
 "  -jobname=STRING           set the job name to STRING\n"
 "  -progname=STRING          set program (and mem) name to STRING\n"
 "  -tex=TEXPROGRAM           use TEXPROGRAM for text labels\n"
@@ -1114,11 +1082,9 @@ fprintf(stdout,
 exit(EXIT_SUCCESS);
 }
 
-/*:29*/
 ;
 }
 }else if(ARGUMENT_IS("version")){
-/*31:*/
 
 {
 char*s= mp_metapost_version();
@@ -1145,7 +1111,6 @@ mp_show_library_versions();
 exit(EXIT_SUCCESS);
 }
 
-/*:31*/
 ;
 }else if(ARGUMENT_IS("s")){
 if(strchr(optarg,'=')==NULL){
@@ -1169,7 +1134,6 @@ fprintf(stdout,"warning: %s: unimplemented option %s\n",argv[0],argv[optind]);
 options->ini_version= (int)ini_version_test;
 }
 
-/*:26*/
 ;
 }
 if(dvitomp_only){
@@ -1183,7 +1147,6 @@ mpx= argv[optind++];
 }
 }
 if(dvi==NULL){
-/*30:*/
 
 {
 char*s= mp_metapost_version();
@@ -1210,7 +1173,6 @@ fprintf(stdout,
 exit(EXIT_SUCCESS);
 }
 
-/*:30*/
 ;
 }else{
 if(!nokpse)
@@ -1236,7 +1198,6 @@ fprintf(stdout,"warning: could not set up $engine\n");
 options->error_line= setup_var(79,"error_line",nokpse);
 options->half_error_line= setup_var(50,"half_error_line",nokpse);
 options->max_print_line= setup_var(100,"max_print_line",nokpse);
-/*34:*/
 
 {
 char*mpversion= mp_metapost_version();
@@ -1259,9 +1220,7 @@ strcat(options->banner,kpsebanner_stop);
 mpost_xfree(mpversion);
 }
 
-/*:34*/
 ;
-/*32:*/
 
 {
 mpost_xfree(options->command_line);
@@ -1299,9 +1258,7 @@ options->command_line[k]= '\0';
 }
 }
 
-/*:32*/
 ;
-/*35:*/
 
 {
 char*m= NULL;
@@ -1393,9 +1350,7 @@ if(kpse_program_name!=NULL)
 options->mem_name= mpost_xstrdup(kpse_program_name);
 
 
-/*:35*/
 ;
-/*36:*/
 
 {
 char*tmp_job= NULL;
@@ -1469,34 +1424,27 @@ job_name= tmp_job;
 }
 options->job_name= job_name;
 
-/*:36*/
 ;
-/*5:*/
 
 options->run_editor= mpost_run_editor;
 
-/*:5*//*11:*/
 
 if(!nokpse)
 options->run_make_mpx= mpost_run_make_mpx;
 
 
-/*:11*//*13:*/
 
 options->random_seed= get_random_seed();
 
 
-/*:13*//*16:*/
 
 if(!nokpse)
 options->find_file= mpost_find_file;
 
-/*:16*//*24:*/
 
 if(!nokpse)
 options->open_file= mpost_open_file;
 
-/*:24*/
 ;
 mp= mp_initialize(options);
 mpost_xfree(options->command_line);
@@ -1521,4 +1469,3 @@ exit(0);
 
 }
 
-/*:38*/

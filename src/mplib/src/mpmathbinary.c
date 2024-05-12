@@ -1,4 +1,3 @@
-/*1:*/
 
 #include <w2c/config.h> 
 #include <stdio.h> 
@@ -64,9 +63,7 @@ mpfr_set_zero(dec,1) ; \
 
 
 
-/*:1*//*2:*/
 
-/*5:*/
 
 #define DEBUG 0
 static void mp_binary_scan_fractional_token(MP mp,int n);
@@ -144,7 +141,6 @@ static void free_binary_constants(void);
 static mpfr_prec_t precision_digits_to_bits(double i);
 static double precision_bits_to_digits(mpfr_prec_t i);
 
-/*:5*//*9:*/
 
 static mpfr_t zero;
 static mpfr_t one;
@@ -162,22 +158,17 @@ static mpfr_t EL_GORDO_mpfr_t;
 static boolean initialized= false;
 
 
-/*:9*//*25:*/
 
 void mp_binary_make_fraction(MP mp,mpfr_t ret,mpfr_t p,mpfr_t q);
 
-/*:25*//*27:*/
 
 void mp_binary_take_fraction(MP mp,mpfr_t ret,mpfr_t p,mpfr_t q);
 
-/*:27*//*31:*/
 
 static void mp_wrapup_numeric_token(MP mp,unsigned char*start,unsigned char*stop);
 
-/*:31*/
 ;
 
-/*:2*//*6:*/
 
 int binary_number_check(mpfr_t dec)
 {
@@ -204,7 +195,6 @@ mp->arith_error= binary_number_check(dec);
 
 
 
-/*:6*//*7:*/
 
 static double precision_bits;
 mpfr_prec_t precision_digits_to_bits(double i)
@@ -217,7 +207,6 @@ return d*log10(2);
 }
 
 
-/*:7*//*10:*/
 
 void init_binary_constants(void){
 if(!initialized){
@@ -248,7 +237,6 @@ void free_binary_constants(void){
 
 }
 
-/*:10*//*11:*/
 
 void*mp_initialize_binary_math(MP mp){
 math_data*math= (math_data*)mp_xmalloc(mp,1,sizeof(math_data));
@@ -461,7 +449,6 @@ free_binary_constants();
 free(mp->math);
 }
 
-/*:11*//*13:*/
 
 void mp_new_number(MP mp,mp_number*n,mp_number_type t){
 (void)mp;
@@ -471,7 +458,6 @@ mpfr_set_zero((mpfr_ptr)(n->data.num),1);
 n->type= t;
 }
 
-/*:13*//*14:*/
 
 void mp_free_number(MP mp,mp_number*n){
 (void)mp;
@@ -482,7 +468,6 @@ n->data.num= NULL;
 n->type= mp_nan_type;
 }
 
-/*:14*//*15:*/
 
 void mp_set_binary_from_int(mp_number*A,int B){
 mpfr_set_si(A->data.num,B,ROUNDING);
@@ -582,14 +567,12 @@ mpfr_mul(A->data.num,A->data.num,angle_multiplier_mpfr_t,ROUNDING);
 }
 
 
-/*:15*//*17:*/
 
 int mp_number_to_scaled(mp_number A){
 double v= mpfr_get_d(A.data.num,ROUNDING);
 return(int)(v*65536.0);
 }
 
-/*:17*//*18:*/
 
 int mp_number_to_int(mp_number A){
 int32_t result= 0;
@@ -628,7 +611,6 @@ int mp_number_nonequalabs(mp_number A,mp_number B){
 return!(mpfr_cmpabs(A.data.num,B.data.num)==0);
 }
 
-/*:18*//*21:*/
 
 char*mp_binnumber_tostring(mpfr_t n){
 char*str= NULL,*buffer= NULL;
@@ -712,7 +694,6 @@ return mp_binnumber_tostring(n.data.num);
 }
 
 
-/*:21*//*22:*/
 
 void mp_binary_print_number(MP mp,mp_number n){
 char*str= mp_binary_number_tostring(mp,n);
@@ -723,13 +704,11 @@ free(str);
 
 
 
-/*:22*//*23:*/
 
 void mp_binary_slow_add(MP mp,mp_number*ret,mp_number A,mp_number B){
 mpfr_add(ret->data.num,A.data.num,B.data.num,ROUNDING);
 }
 
-/*:23*//*24:*/
 
 void mp_binary_make_fraction(MP mp,mpfr_t ret,mpfr_t p,mpfr_t q){
 mpfr_div(ret,p,q,ROUNDING);
@@ -740,7 +719,6 @@ void mp_binary_number_make_fraction(MP mp,mp_number*ret,mp_number p,mp_number q)
 mp_binary_make_fraction(mp,ret->data.num,p.data.num,q.data.num);
 }
 
-/*:24*//*26:*/
 
 void mp_binary_take_fraction(MP mp,mpfr_t ret,mpfr_t p,mpfr_t q){
 mpfr_mul(ret,p,q,ROUNDING);
@@ -750,21 +728,18 @@ void mp_binary_number_take_fraction(MP mp,mp_number*ret,mp_number p,mp_number q)
 mp_binary_take_fraction(mp,ret->data.num,p.data.num,q.data.num);
 }
 
-/*:26*//*28:*/
 
 void mp_binary_number_take_scaled(MP mp,mp_number*ret,mp_number p_orig,mp_number q_orig){
 mpfr_mul(ret->data.num,p_orig.data.num,q_orig.data.num,ROUNDING);
 }
 
 
-/*:28*//*29:*/
 
 void mp_binary_number_make_scaled(MP mp,mp_number*ret,mp_number p_orig,mp_number q_orig){
 mpfr_div(ret->data.num,p_orig.data.num,q_orig.data.num,ROUNDING);
 mp_check_mpfr_t(mp,ret->data.num);
 }
 
-/*:29*//*38:*/
 
 void mp_wrapup_numeric_token(MP mp,unsigned char*start,unsigned char*stop){
 int invalid= 0;
@@ -822,7 +797,6 @@ set_cur_cmd((mp_variable_type)mp_numeric_token);
 mpfr_clear(result);
 }
 
-/*:38*//*39:*/
 
 static void find_exponent(MP mp){
 if(mp->buffer[mp->cur_input.loc_field]=='e'||
@@ -855,7 +829,6 @@ mp_wrapup_numeric_token(mp,start,stop);
 }
 
 
-/*:39*//*40:*/
 
 void mp_binary_scan_numeric_token(MP mp,int n){
 unsigned char*start= &mp->buffer[mp->cur_input.loc_field-1];
@@ -875,7 +848,6 @@ stop= &mp->buffer[mp->cur_input.loc_field-1];
 mp_wrapup_numeric_token(mp,start,stop);
 }
 
-/*:40*//*42:*/
 
 void mp_binary_velocity(MP mp,mp_number*ret,mp_number st,mp_number ct,mp_number sf,
 mp_number cf,mp_number t){
@@ -934,7 +906,6 @@ mp_check_mpfr_t(mp,ret->data.num);
 }
 
 
-/*:42*//*43:*/
 
 void mp_ab_vs_cd(MP mp,mp_number*ret,mp_number a_orig,mp_number b_orig,mp_number c_orig,mp_number d_orig){
 mpfr_t q,r,test;
@@ -964,7 +935,6 @@ goto RETURN;
 }
 
 
-/*44:*/
 
 if(mpfr_negative_p(a)){
 mpfr_neg(a,a,ROUNDING);
@@ -1007,7 +977,6 @@ mpfr_set(ret->data.num,minusone,ROUNDING);
 goto RETURN;
 }
 
-/*:44*/
 ;
 while(1){
 mpfr_div(q,a,d,ROUNDING);
@@ -1046,13 +1015,12 @@ fprintf(stdout,"\n%f = ab_vs_cd(%f,%f,%f,%f)",mp_number_to_double(*ret),
 mp_number_to_double(a_orig),mp_number_to_double(b_orig),
 mp_number_to_double(c_orig),mp_number_to_double(d_orig));
 #endif
- mp_check_mpfr_t(mp,ret->data.num);
+mp_check_mpfr_t(mp,ret->data.num);
 mpfr_clears(q,r,test,a,b,c,d,(mpfr_ptr)0);
 return;
 }
 
 
-/*:43*//*45:*/
 
 static void mp_binary_crossing_point(MP mp,mp_number*ret,mp_number aa,mp_number bb,mp_number cc){
 mpfr_t a,b,c;
@@ -1122,13 +1090,12 @@ RETURN:
 fprintf(stdout,"\n%f = crossing_point(%f,%f,%f)",mp_number_to_double(*ret),
 mp_number_to_double(aa),mp_number_to_double(bb),mp_number_to_double(cc));
 #endif
- mpfr_clears(a,b,c,x,xx,x0,x1,x2,scratch,(mpfr_ptr)0);
+mpfr_clears(a,b,c,x,xx,x0,x1,x2,scratch,(mpfr_ptr)0);
 mp_check_mpfr_t(mp,ret->data.num);
 return;
 }
 
 
-/*:45*//*47:*/
 
 int mp_round_unscaled(mp_number x_orig){
 double xx= mp_number_to_double(x_orig);
@@ -1136,13 +1103,11 @@ int x= (int)ROUND(xx);
 return x;
 }
 
-/*:47*//*48:*/
 
 void mp_number_floor(mp_number*i){
 mpfr_rint_floor(i->data.num,i->data.num,MPFR_RNDD);
 }
 
-/*:48*//*49:*/
 
 void mp_binary_fraction_to_round_scaled(mp_number*x_orig){
 x_orig->type= mp_scaled_type;
@@ -1151,11 +1116,9 @@ mpfr_div(x_orig->data.num,x_orig->data.num,fraction_multiplier_mpfr_t,ROUNDING);
 
 
 
-/*:49*//*51:*/
 
 void mp_binary_square_rt(MP mp,mp_number*ret,mp_number x_orig){
 if(!mpfr_positive_p((mpfr_ptr)x_orig.data.num)){
-/*52:*/
 
 {
 if(mpfr_negative_p((mpfr_ptr)x_orig.data.num)){
@@ -1175,7 +1138,6 @@ return;
 }
 
 
-/*:52*/
 ;
 }else{
 mpfr_sqrt(ret->data.num,x_orig.data.num,ROUNDING);
@@ -1184,7 +1146,6 @@ mp_check_mpfr_t(mp,ret->data.num);
 }
 
 
-/*:51*//*53:*/
 
 void mp_binary_pyth_add(MP mp,mp_number*ret,mp_number a_orig,mp_number b_orig){
 mpfr_t a,b,asq,bsq;
@@ -1199,7 +1160,6 @@ mp_check_mpfr_t(mp,ret->data.num);
 mpfr_clears(a,b,asq,bsq,(mpfr_ptr)0);
 }
 
-/*:53*//*54:*/
 
 void mp_binary_pyth_sub(MP mp,mp_number*ret,mp_number a_orig,mp_number b_orig){
 mpfr_t a,b,asq,bsq;
@@ -1207,7 +1167,6 @@ mpfr_inits2(precision_bits,a,b,asq,bsq,(mpfr_ptr)0);
 mpfr_set(a,(mpfr_ptr)a_orig.data.num,ROUNDING);
 mpfr_set(b,(mpfr_ptr)b_orig.data.num,ROUNDING);
 if(!mpfr_greater_p(a,b)){
-/*55:*/
 
 {
 if(mpfr_less_p(a,b)){
@@ -1228,7 +1187,6 @@ mpfr_set_zero(a,1);
 }
 
 
-/*:55*/
 ;
 }else{
 mpfr_mul(asq,a,a,ROUNDING);
@@ -1241,11 +1199,9 @@ mp_check_mpfr_t(mp,ret->data.num);
 }
 
 
-/*:54*//*56:*/
 
 void mp_binary_m_log(MP mp,mp_number*ret,mp_number x_orig){
 if(!mpfr_positive_p((mpfr_ptr)x_orig.data.num)){
-/*57:*/
 
 {
 char msg[256];
@@ -1262,7 +1218,6 @@ mpfr_set_zero(ret->data.num,1);
 }
 
 
-/*:57*/
 ;
 }else{
 mpfr_log(ret->data.num,x_orig.data.num,ROUNDING);
@@ -1272,7 +1227,6 @@ mpfr_mul_si(ret->data.num,ret->data.num,256,ROUNDING);
 mp_check_mpfr_t(mp,ret->data.num);
 }
 
-/*:56*//*58:*/
 
 void mp_binary_m_exp(MP mp,mp_number*ret,mp_number x_orig){
 mpfr_t temp;
@@ -1284,11 +1238,9 @@ mpfr_clear(temp);
 }
 
 
-/*:58*//*59:*/
 
 void mp_binary_n_arg(MP mp,mp_number*ret,mp_number x_orig,mp_number y_orig){
 if(mpfr_zero_p((mpfr_ptr)x_orig.data.num)&&mpfr_zero_p((mpfr_ptr)y_orig.data.num)){
-/*60:*/
 
 {
 const char*hlp[]= {
@@ -1301,7 +1253,6 @@ mpfr_set_zero(ret->data.num,1);
 }
 
 
-/*:60*/
 ;
 }else{
 mpfr_t atan2val,oneeighty_angle;
@@ -1322,7 +1273,6 @@ mp_check_mpfr_t(mp,ret->data.num);
 }
 
 
-/*:59*//*62:*/
 
 void mp_binary_sin_cos(MP mp,mp_number z_orig,mp_number*n_cos,mp_number*n_sin){
 mpfr_t rad;
@@ -1344,7 +1294,6 @@ mpfr_clear(rad);
 mpfr_clear(one_eighty);
 }
 
-/*:62*//*63:*/
 
 #define KK 100                     
 #define LL  37                     
@@ -1418,7 +1367,6 @@ return ran_arr_buf[0];
 
 
 
-/*:63*//*64:*/
 
 void mp_init_randoms(MP mp,int seed){
 int j,jj,k;
@@ -1444,13 +1392,11 @@ ran_start((unsigned long)seed);
 
 }
 
-/*:64*//*65:*/
 
 void mp_binary_number_modulo(mp_number*a,mp_number b){
 mpfr_remainder(a->data.num,a->data.num,b.data.num,ROUNDING);
 }
 
-/*:65*//*66:*/
 
 static void mp_next_unif_random(MP mp,mp_number*ret){
 mp_number rop;
@@ -1467,7 +1413,6 @@ free_number(rop);
 
 
 
-/*:66*//*67:*/
 
 static void mp_next_random(MP mp,mp_number*ret){
 if(mp->j_random==0)
@@ -1477,7 +1422,6 @@ mp->j_random= mp->j_random-1;
 mp_number_clone(ret,mp->randoms[mp->j_random]);
 }
 
-/*:67*//*68:*/
 
 static void mp_binary_m_unif_rand(MP mp,mp_number*ret,mp_number x_orig){
 mp_number y;
@@ -1517,7 +1461,6 @@ free_number(y);
 
 
 
-/*:68*//*69:*/
 
 static void mp_binary_m_norm_rand(MP mp,mp_number*ret){
 mp_number ab_vs_cd;
@@ -1561,7 +1504,6 @@ free_number(u);
 
 
 
-/*:69*//*70:*/
 
 static void mp_binary_ab_vs_cd(MP mp,mp_number*ret,mp_number a_orig,mp_number b_orig,mp_number c_orig,mp_number d_orig){
 mpfr_t a,b,c,d;
@@ -1591,4 +1533,3 @@ mpfr_clears(a,b,c,d,ab,cd,(mpfr_ptr)0);
 return;
 }
 
-/*:70*/

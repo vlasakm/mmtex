@@ -1,4 +1,3 @@
-/*1:*/
 
 #include <w2c/config.h> 
 #include <stdio.h> 
@@ -72,9 +71,7 @@
 
 
 
-/*:1*//*2:*/
 
-/*5:*/
 
 static void mp_scan_fractional_token(MP mp,int n);
 static void mp_scan_numeric_token(MP mp,int n);
@@ -141,24 +138,19 @@ static void mp_free_number(MP mp,mp_number*n);
 static void mp_free_scaled_math(MP mp);
 static void mp_scaled_set_precision(MP mp);
 
-/*:5*//*15:*/
 
 static void mp_print_scaled(MP mp,int s);
 static char*mp_string_scaled(MP mp,int s);
 
-/*:15*//*22:*/
 
 static integer mp_take_scaled(MP mp,integer q,int f);
 
-/*:22*//*26:*/
 
 static int mp_round_decimals(MP mp,unsigned char*b,quarterword k);
 
-/*:26*//*28:*/
 
 static void mp_wrapup_numeric_token(MP mp,int n,int f);
 
-/*:28*//*50:*/
 
 static const integer spec_log[29]= {0,
 93032640,38612034,17922280,8662214,4261238,2113709,
@@ -167,7 +159,6 @@ static const integer spec_log[29]= {0,
 };
 
 
-/*:50*//*56:*/
 
 static const int spec_atan[27]= {0,27855475,14718068,7471121,3750058,
 1876857,938658,469357,234682,117342,58671,29335,14668,7334,3667,
@@ -175,10 +166,8 @@ static const int spec_atan[27]= {0,27855475,14718068,7471121,3750058,
 };
 
 
-/*:56*/
 ;
 
-/*:2*//*7:*/
 
 void*mp_initialize_scaled_math(MP mp){
 math_data*math= (math_data*)mp_xmalloc(mp,1,sizeof(math_data));
@@ -372,7 +361,6 @@ free_number(((math_data*)mp->math)->tfm_warn_threshold_t);
 free(mp->math);
 }
 
-/*:7*//*9:*/
 
 void mp_new_number(MP mp,mp_number*n,mp_number_type t){
 (void)mp;
@@ -380,14 +368,12 @@ n->data.val= 0;
 n->type= t;
 }
 
-/*:9*//*10:*/
 
 void mp_free_number(MP mp,mp_number*n){
 (void)mp;
 n->type= mp_nan_type;
 }
 
-/*:10*//*11:*/
 
 void mp_set_number_from_int(mp_number*A,int B){
 A->data.val= B;
@@ -482,7 +468,6 @@ A->data.val= A->data.val*16;
 }
 
 
-/*:11*//*12:*/
 
 int mp_number_to_int(mp_number A){
 return A.data.val;
@@ -512,7 +497,6 @@ int mp_number_nonequalabs(mp_number A,mp_number B){
 return(!(abs(A.data.val)==abs(B.data.val)));
 }
 
-/*:12*//*16:*/
 
 static void mp_print_scaled(MP mp,int s){
 int delta;
@@ -563,7 +547,6 @@ scaled_string[i]= '\0';
 return scaled_string;
 }
 
-/*:16*//*17:*/
 
 void mp_slow_add(MP mp,mp_number*ret,mp_number x_orig,mp_number y_orig){
 integer x,y;
@@ -584,7 +567,6 @@ ret->data.val= -EL_GORDO;
 }
 }
 
-/*:17*//*19:*/
 
 static integer mp_make_fraction(MP mp,integer p,integer q){
 integer i;
@@ -626,7 +608,6 @@ ret->data.val= mp_make_fraction(mp,p.data.val,q.data.val);
 }
 
 
-/*:19*//*21:*/
 
 integer mp_take_fraction(MP mp,integer p,int q){
 register double d;
@@ -660,7 +641,6 @@ ret->data.val= mp_take_fraction(mp,p_orig.data.val,q_orig.data.val);
 }
 
 
-/*:21*//*23:*/
 
 static integer mp_take_scaled(MP mp,integer p,int q){
 register double d;
@@ -694,7 +674,6 @@ ret->data.val= mp_take_scaled(mp,p_orig.data.val,q_orig.data.val);
 }
 
 
-/*:23*//*25:*/
 
 int mp_make_scaled(MP mp,integer p,integer q){
 register integer i;
@@ -731,7 +710,6 @@ void mp_number_make_scaled(MP mp,mp_number*ret,mp_number p_orig,mp_number q_orig
 ret->data.val= mp_make_scaled(mp,p_orig.data.val,q_orig.data.val);
 }
 
-/*:25*//*27:*/
 
 static int mp_round_decimals(MP mp,unsigned char*b,quarterword k){
 
@@ -745,7 +723,6 @@ a= (a+(unsigned)(*(b+l)-'0')*two)/10;
 return(int)halfp(a+1);
 }
 
-/*:27*//*29:*/
 
 static void mp_wrapup_numeric_token(MP mp,int n,int f){
 int mod;
@@ -776,7 +753,6 @@ set_cur_mod(EL_GORDO);
 set_cur_cmd((mp_variable_type)mp_numeric_token);
 }
 
-/*:29*//*30:*/
 
 void mp_scan_fractional_token(MP mp,int n){
 int f;
@@ -794,7 +770,6 @@ mp_wrapup_numeric_token(mp,n,f);
 }
 
 
-/*:30*//*31:*/
 
 void mp_scan_numeric_token(MP mp,int n){
 while(mp->char_class[mp->buffer[mp->cur_input.loc_field]]==digit_class){
@@ -811,7 +786,6 @@ mp_scan_fractional_token(mp,n);
 }
 }
 
-/*:31*//*33:*/
 
 void mp_velocity(MP mp,mp_number*ret,mp_number st,mp_number ct,mp_number sf,
 mp_number cf,mp_number t){
@@ -837,7 +811,6 @@ ret->data.val= mp_make_fraction(mp,num,denom);
 }
 
 
-/*:33*//*34:*/
 
 static void mp_ab_vs_cd(MP mp,mp_number*ret,mp_number a_orig,mp_number b_orig,mp_number c_orig,mp_number d_orig){
 integer q,r;
@@ -847,7 +820,6 @@ a= a_orig.data.val;
 b= b_orig.data.val;
 c= c_orig.data.val;
 d= d_orig.data.val;
-/*35:*/
 
 if(a<0){
 a= -a;
@@ -884,7 +856,6 @@ ret->data.val= (c==0?0:-1);
 return;
 }
 
-/*:35*/
 ;
 while(1){
 q= a/d;
@@ -911,7 +882,6 @@ d= r;
 }
 
 
-/*:34*//*36:*/
 
 static void mp_crossing_point(MP mp,mp_number*ret,mp_number aa,mp_number bb,mp_number cc){
 integer a,b,c;
@@ -971,7 +941,6 @@ ret->data.val= (d-fraction_one);
 }
 
 
-/*:36*//*38:*/
 
 int mp_round_unscaled(mp_number x_orig){
 int x= x_orig.data.val;
@@ -984,13 +953,11 @@ return-(1+((-(x+1)-32768)/65536));
 }
 }
 
-/*:38*//*39:*/
 
 void mp_number_floor(mp_number*i){
 i->data.val= i->data.val&-65536;
 }
 
-/*:39*//*40:*/
 
 void mp_fraction_to_round_scaled(mp_number*x_orig){
 int x= x_orig->data.val;
@@ -1000,7 +967,6 @@ x_orig->data.val= (x>=2048?1+((x-2048)/4096):(x>=-2048?0:-(1+((-(x+1)-2048)/4096
 
 
 
-/*:40*//*42:*/
 
 void mp_square_rt(MP mp,mp_number*ret,mp_number x_orig){
 integer x;
@@ -1009,7 +975,6 @@ integer y;
 integer q;
 x= x_orig.data.val;
 if(x<=0){
-/*43:*/
 
 {
 if(x<0){
@@ -1027,7 +992,6 @@ return;
 }
 
 
-/*:43*/
 ;
 }else{
 k= 23;
@@ -1043,7 +1007,6 @@ x= x-fraction_four;
 y= 1;
 }
 do{
-/*44:*/
 
 x+= x;
 y+= y;
@@ -1067,7 +1030,6 @@ y+= q;
 };
 k--
 
-/*:44*/
 ;
 }while(k!=0);
 ret->data.val= (int)(halfp(q));
@@ -1075,7 +1037,6 @@ ret->data.val= (int)(halfp(q));
 }
 
 
-/*:42*//*45:*/
 
 void mp_pyth_add(MP mp,mp_number*ret,mp_number a_orig,mp_number b_orig){
 int a,b;
@@ -1096,7 +1057,6 @@ a= a/4;
 b= b/4;
 big= true;
 };
-/*46:*/
 
 while(1){
 r= mp_make_fraction(mp,b,a);
@@ -1109,7 +1069,6 @@ b= mp_take_fraction(mp,b,r);
 }
 
 
-/*:46*/
 ;
 if(big){
 if(a<fraction_two){
@@ -1124,7 +1083,6 @@ ret->data.val= a;
 }
 
 
-/*:45*//*47:*/
 
 void mp_pyth_sub(MP mp,mp_number*ret,mp_number a_orig,mp_number b_orig){
 int a,b;
@@ -1133,7 +1091,6 @@ boolean big;
 a= abs(a_orig.data.val);
 b= abs(b_orig.data.val);
 if(a<=b){
-/*49:*/
 
 {
 if(a<b){
@@ -1153,7 +1110,6 @@ a= 0;
 }
 
 
-/*:49*/
 ;
 }else{
 if(a<fraction_four){
@@ -1163,7 +1119,6 @@ a= (integer)halfp(a);
 b= (integer)halfp(b);
 big= true;
 }
-/*48:*/
 
 while(1){
 r= mp_make_fraction(mp,b,a);
@@ -1176,7 +1131,6 @@ b= mp_take_fraction(mp,b,r);
 }
 
 
-/*:48*/
 ;
 if(big)
 a*= 2;
@@ -1185,7 +1139,6 @@ ret->data.val= a;
 }
 
 
-/*:47*//*51:*/
 
 void mp_m_log(MP mp,mp_number*ret,mp_number x_orig){
 int x;
@@ -1193,7 +1146,6 @@ integer y,z;
 integer k;
 x= x_orig.data.val;
 if(x<=0){
-/*53:*/
 
 {
 char msg[256];
@@ -1208,7 +1160,6 @@ ret->data.val= 0;
 }
 
 
-/*:53*/
 ;
 }else{
 y= 1302456956+4-100;
@@ -1221,7 +1172,6 @@ z-= 48782;
 y= y+(z/unity);
 k= 2;
 while(x> fraction_four+4){
-/*52:*/
 
 {
 z= ((x-1)/two_to_the(k))+1;
@@ -1234,7 +1184,6 @@ x-= z;
 }
 
 
-/*:52*/
 ;
 }
 ret->data.val= (y/8);
@@ -1242,7 +1191,6 @@ ret->data.val= (y/8);
 }
 
 
-/*:51*//*54:*/
 
 void mp_m_exp(MP mp,mp_number*ret,mp_number x_orig){
 quarterword k;
@@ -1269,7 +1217,6 @@ z= 8*(174436200-x);
 }
 y= EL_GORDO;
 }
-/*55:*/
 
 k= 1;
 while(z> 0){
@@ -1280,7 +1227,6 @@ y= y-1-((y-two_to_the(k-1))/two_to_the(k));
 k++;
 }
 
-/*:55*/
 ;
 if(x<=127919879)
 ret->data.val= ((y+8)/16);
@@ -1290,7 +1236,6 @@ ret->data.val= y;
 }
 
 
-/*:54*//*57:*/
 
 void mp_n_arg(MP mp,mp_number*ret,mp_number x_orig,mp_number y_orig){
 integer z;
@@ -1317,7 +1262,6 @@ x= t;
 octant= octant+switch_x_and_y;
 }
 if(x==0){
-/*58:*/
 
 {
 const char*hlp[]= {
@@ -1330,11 +1274,9 @@ ret->data.val= 0;
 }
 
 
-/*:58*/
 ;
 }else{
 ret->type= mp_angle_type;
-/*60:*/
 
 while(x>=fraction_two){
 x= halfp(x);
@@ -1346,7 +1288,6 @@ while(x<fraction_one){
 x+= x;
 y+= y;
 };
-/*61:*/
 
 k= 0;
 do{
@@ -1368,13 +1309,10 @@ y= y-x;
 };
 }while(k!=26)
 
-/*:61*/
 ;
 }
 
-/*:60*/
 ;
-/*59:*/
 
 switch(octant){
 case first_octant:
@@ -1404,13 +1342,11 @@ break;
 }
 
 
-/*:59*/
 ;
 }
 }
 
 
-/*:57*//*64:*/
 
 void mp_n_sin_cos(MP mp,mp_number z_orig,mp_number*n_cos,mp_number*n_sin){
 quarterword k;
@@ -1431,7 +1367,6 @@ x= fraction_one;
 y= x;
 if(!odd(q))
 z= forty_five_deg-z;
-/*66:*/
 
 k= 1;
 while(z> 0){
@@ -1447,9 +1382,7 @@ if(y<0)
 y= 0
 
 
-/*:66*/
 ;
-/*65:*/
 
 switch(q){
 case 0:
@@ -1487,7 +1420,6 @@ break;
 }
 
 
-/*:65*/
 ;
 x_n.data.val= x;
 y_n.data.val= y;
@@ -1500,7 +1432,6 @@ free_number(y_n);
 }
 
 
-/*:64*//*67:*/
 
 void mp_init_randoms(MP mp,int seed){
 int j,jj,k;
@@ -1524,20 +1455,17 @@ mp_new_randoms(mp);
 }
 
 
-/*:67*//*68:*/
 
 void mp_print_number(MP mp,mp_number n){
 mp_print_scaled(mp,n.data.val);
 }
 
 
-/*:68*//*69:*/
 
 char*mp_number_tostring(MP mp,mp_number n){
 return mp_string_scaled(mp,n.data.val);
 }
 
-/*:69*//*70:*/
 
 void mp_number_modulo(mp_number*a,mp_number b){
 a->data.val= a->data.val%b.data.val;
@@ -1547,7 +1475,6 @@ a->data.val= a->data.val%b.data.val;
 
 
 
-/*:70*//*71:*/
 
 static void mp_next_random(MP mp,mp_number*ret){
 if(mp->j_random==0)
@@ -1558,7 +1485,6 @@ mp_number_clone(ret,mp->randoms[mp->j_random]);
 }
 
 
-/*:71*//*72:*/
 
 static void mp_m_unif_rand(MP mp,mp_number*ret,mp_number x_orig){
 mp_number y;
@@ -1592,7 +1518,6 @@ free_number(y);
 
 
 
-/*:72*//*73:*/
 
 static void mp_m_norm_rand(MP mp,mp_number*ret){
 mp_number ab_vs_cd;

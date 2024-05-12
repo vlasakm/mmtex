@@ -1,4 +1,3 @@
-/*1:*/
 
 #include <w2c/config.h> 
 #include <stdio.h> 
@@ -57,9 +56,7 @@
 
 
 
-/*:1*//*2:*/
 
-/*5:*/
 
 static void mp_double_scan_fractional_token(MP mp,int n);
 static void mp_double_scan_numeric_token(MP mp,int n);
@@ -129,27 +126,21 @@ static void mp_set_double_from_double(mp_number*A,double B);
 static void mp_free_double_math(MP mp);
 static void mp_double_set_precision(MP mp);
 
-/*:5*//*19:*/
 
 double mp_double_make_fraction(MP mp,double p,double q);
 
-/*:19*//*21:*/
 
 double mp_double_take_fraction(MP mp,double p,double q);
 
-/*:21*//*24:*/
 
 double mp_double_make_scaled(MP mp,double p,double q);
 
 
-/*:24*//*26:*/
 
 static void mp_wrapup_numeric_token(MP mp,unsigned char*start,unsigned char*stop);
 
-/*:26*/
 ;
 
-/*:2*//*7:*/
 
 void*mp_initialize_double_math(MP mp){
 math_data*math= (math_data*)mp_xmalloc(mp,1,sizeof(math_data));
@@ -334,7 +325,6 @@ free_number(((math_data*)mp->math)->tfm_warn_threshold_t);
 free(mp->math);
 }
 
-/*:7*//*9:*/
 
 void mp_new_number(MP mp,mp_number*n,mp_number_type t){
 (void)mp;
@@ -342,14 +332,12 @@ n->data.dval= 0.0;
 n->type= t;
 }
 
-/*:9*//*10:*/
 
 void mp_free_number(MP mp,mp_number*n){
 (void)mp;
 n->type= mp_nan_type;
 }
 
-/*:10*//*11:*/
 
 void mp_set_double_from_int(mp_number*A,int B){
 A->data.dval= B;
@@ -442,7 +430,6 @@ A->data.dval= A->data.dval*angle_multiplier;
 }
 
 
-/*:11*//*12:*/
 
 int mp_number_to_scaled(mp_number A){
 return(int)ROUND(A.data.dval*65536.0);
@@ -472,7 +459,6 @@ int mp_number_nonequalabs(mp_number A,mp_number B){
 return(!(fabs(A.data.dval)==fabs(B.data.dval)));
 }
 
-/*:12*//*15:*/
 
 char*mp_double_number_tostring(MP mp,mp_number n){
 static char set[64];
@@ -485,7 +471,6 @@ return ret;
 }
 
 
-/*:15*//*16:*/
 
 void mp_double_print_number(MP mp,mp_number n){
 char*str= mp_double_number_tostring(mp,n);
@@ -496,7 +481,6 @@ free(str);
 
 
 
-/*:16*//*17:*/
 
 void mp_double_slow_add(MP mp,mp_number*ret,mp_number x_orig,mp_number y_orig){
 double x,y;
@@ -517,7 +501,6 @@ ret->data.dval= -EL_GORDO;
 }
 }
 
-/*:17*//*18:*/
 
 double mp_double_make_fraction(MP mp,double p,double q){
 return((p/q)*fraction_multiplier);
@@ -526,7 +509,6 @@ void mp_double_number_make_fraction(MP mp,mp_number*ret,mp_number p,mp_number q)
 ret->data.dval= mp_double_make_fraction(mp,p.data.dval,q.data.dval);
 }
 
-/*:18*//*20:*/
 
 double mp_double_take_fraction(MP mp,double p,double q){
 return((p*q)/fraction_multiplier);
@@ -535,14 +517,12 @@ void mp_double_number_take_fraction(MP mp,mp_number*ret,mp_number p,mp_number q)
 ret->data.dval= mp_double_take_fraction(mp,p.data.dval,q.data.dval);
 }
 
-/*:20*//*22:*/
 
 void mp_double_number_take_scaled(MP mp,mp_number*ret,mp_number p_orig,mp_number q_orig){
 ret->data.dval= p_orig.data.dval*q_orig.data.dval;
 }
 
 
-/*:22*//*23:*/
 
 double mp_double_make_scaled(MP mp,double p,double q){
 return p/q;
@@ -551,7 +531,6 @@ void mp_double_number_make_scaled(MP mp,mp_number*ret,mp_number p_orig,mp_number
 ret->data.dval= p_orig.data.dval/q_orig.data.dval;
 }
 
-/*:23*//*27:*/
 
 void mp_wrapup_numeric_token(MP mp,unsigned char*start,unsigned char*stop){
 double result;
@@ -586,7 +565,6 @@ set_cur_mod(EL_GORDO);
 set_cur_cmd((mp_variable_type)mp_numeric_token);
 }
 
-/*:27*//*28:*/
 
 static void find_exponent(MP mp){
 if(mp->buffer[mp->cur_input.loc_field]=='e'||
@@ -619,7 +597,6 @@ mp_wrapup_numeric_token(mp,start,stop);
 }
 
 
-/*:28*//*29:*/
 
 void mp_double_scan_numeric_token(MP mp,int n){
 unsigned char*start= &mp->buffer[mp->cur_input.loc_field-1];
@@ -639,7 +616,6 @@ stop= &mp->buffer[mp->cur_input.loc_field-1];
 mp_wrapup_numeric_token(mp,start,stop);
 }
 
-/*:29*//*31:*/
 
 void mp_double_velocity(MP mp,mp_number*ret,mp_number st,mp_number ct,mp_number sf,
 mp_number cf,mp_number t){
@@ -667,7 +643,6 @@ mp_number_to_double(t));
 }
 
 
-/*:31*//*32:*/
 
 void mp_ab_vs_cd(MP mp,mp_number*ret,mp_number a_orig,mp_number b_orig,mp_number c_orig,mp_number d_orig){
 integer q,r;
@@ -682,7 +657,6 @@ a= a_orig.data.dval;
 b= b_orig.data.dval;
 c= c_orig.data.dval;
 d= d_orig.data.dval;
-/*33:*/
 
 if(a<0){
 a= -a;
@@ -719,7 +693,6 @@ ret->data.dval= (c==0?0:-1);
 goto RETURN;
 }
 
-/*:33*/
 ;
 while(1){
 q= a/d;
@@ -749,11 +722,10 @@ fprintf(stdout,"\n%f = ab_vs_cd(%f,%f,%f,%f)",mp_number_to_double(*ret),
 mp_number_to_double(a_orig),mp_number_to_double(b_orig),
 mp_number_to_double(c_orig),mp_number_to_double(d_orig));
 #endif
- return;
+return;
 }
 
 
-/*:32*//*34:*/
 
 static void mp_double_crossing_point(MP mp,mp_number*ret,mp_number aa,mp_number bb,mp_number cc){
 double a,b,c;
@@ -816,24 +788,21 @@ RETURN:
 fprintf(stdout,"\n%f = crossing_point(%f,%f,%f)",mp_number_to_double(*ret),
 mp_number_to_double(aa),mp_number_to_double(bb),mp_number_to_double(cc));
 #endif
- return;
+return;
 }
 
 
-/*:34*//*36:*/
 
 int mp_round_unscaled(mp_number x_orig){
 int x= (int)ROUND(x_orig.data.dval);
 return x;
 }
 
-/*:36*//*37:*/
 
 void mp_number_floor(mp_number*i){
 i->data.dval= floor(i->data.dval);
 }
 
-/*:37*//*38:*/
 
 void mp_double_fraction_to_round_scaled(mp_number*x_orig){
 double x= x_orig->data.dval;
@@ -843,13 +812,11 @@ x_orig->data.dval= x/fraction_multiplier;
 
 
 
-/*:38*//*40:*/
 
 void mp_double_square_rt(MP mp,mp_number*ret,mp_number x_orig){
 double x;
 x= x_orig.data.dval;
 if(x<=0){
-/*41:*/
 
 {
 if(x<0){
@@ -869,7 +836,6 @@ return;
 }
 
 
-/*:41*/
 ;
 }else{
 ret->data.dval= sqrt(x);
@@ -877,7 +843,6 @@ ret->data.dval= sqrt(x);
 }
 
 
-/*:40*//*42:*/
 
 void mp_double_pyth_add(MP mp,mp_number*ret,mp_number a_orig,mp_number b_orig){
 double a,b;
@@ -892,14 +857,12 @@ ret->data.dval= EL_GORDO;
 }
 
 
-/*:42*//*43:*/
 
 void mp_double_pyth_sub(MP mp,mp_number*ret,mp_number a_orig,mp_number b_orig){
 double a,b;
 a= fabs(a_orig.data.dval);
 b= fabs(b_orig.data.dval);
 if(a<=b){
-/*44:*/
 
 {
 if(a<b){
@@ -920,7 +883,6 @@ a= 0;
 }
 
 
-/*:44*/
 ;
 }else{
 a= sqrt(a*a-b*b);
@@ -929,11 +891,9 @@ ret->data.dval= a;
 }
 
 
-/*:43*//*46:*/
 
 void mp_double_m_log(MP mp,mp_number*ret,mp_number x_orig){
 if(x_orig.data.dval<=0){
-/*47:*/
 
 {
 char msg[256];
@@ -950,14 +910,12 @@ ret->data.dval= 0;
 }
 
 
-/*:47*/
 ;
 }else{
 ret->data.dval= log(x_orig.data.dval)*256.0;
 }
 }
 
-/*:46*//*48:*/
 
 void mp_double_m_exp(MP mp,mp_number*ret,mp_number x_orig){
 errno= 0;
@@ -973,11 +931,9 @@ ret->data.dval= 0;
 }
 
 
-/*:48*//*49:*/
 
 void mp_double_n_arg(MP mp,mp_number*ret,mp_number x_orig,mp_number y_orig){
 if(x_orig.data.dval==0.0&&y_orig.data.dval==0.0){
-/*50:*/
 
 {
 const char*hlp[]= {
@@ -990,7 +946,6 @@ ret->data.dval= 0;
 }
 
 
-/*:50*/
 ;
 }else{
 ret->type= mp_angle_type;
@@ -1005,7 +960,6 @@ mp_number_to_double(x_orig),mp_number_to_double(y_orig));
 }
 
 
-/*:49*//*53:*/
 
 void mp_double_sin_cos(MP mp,mp_number z_orig,mp_number*n_cos,mp_number*n_sin){
 double rad;
@@ -1030,7 +984,6 @@ mp_number_to_double(*n_cos),mp_number_to_double(*n_sin));
 #endif
 }
 
-/*:53*//*54:*/
 
 #define KK 100                     
 #define LL  37                     
@@ -1103,7 +1056,6 @@ return ran_arr_buf[0];
 
 
 
-/*:54*//*55:*/
 
 void mp_init_randoms(MP mp,int seed){
 int j,jj,k;
@@ -1130,7 +1082,6 @@ ran_start((unsigned long)seed);
 
 }
 
-/*:55*//*56:*/
 
 static double modulus(double left,double right);
 double modulus(double left,double right){
@@ -1147,7 +1098,6 @@ a->data.dval= modulus(a->data.dval,b.data.dval);
 
 
 
-/*:56*//*57:*/
 
 static void mp_next_unif_random(MP mp,mp_number*ret){
 double a;
@@ -1160,7 +1110,6 @@ ret->data.dval= a;
 
 
 
-/*:57*//*58:*/
 
 static void mp_next_random(MP mp,mp_number*ret){
 if(mp->j_random==0)
@@ -1171,7 +1120,6 @@ mp_number_clone(ret,mp->randoms[mp->j_random]);
 }
 
 
-/*:58*//*59:*/
 
 static void mp_double_m_unif_rand(MP mp,mp_number*ret,mp_number x_orig){
 mp_number y;
@@ -1202,7 +1150,6 @@ free_number(y);
 
 
 
-/*:59*//*60:*/
 
 static void mp_double_m_norm_rand(MP mp,mp_number*ret){
 mp_number ab_vs_cd;
@@ -1247,7 +1194,6 @@ free_number(u);
 
 
 
-/*:60*//*61:*/
 
 void mp_double_ab_vs_cd(MP mp,mp_number*ret,mp_number a_orig,mp_number b_orig,mp_number c_orig,mp_number d_orig){
 double ab,cd;
@@ -1261,4 +1207,3 @@ else if(ab<cd)
 ret->data.dval= -1;
 return;
 }
-/*:61*/

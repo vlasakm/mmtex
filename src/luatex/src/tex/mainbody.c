@@ -180,6 +180,11 @@ boolean luainit;
 
 boolean tracefilenames;
 
+/*tex Extra line in tracingmacros? */
+
+boolean traceextranewline;
+
+
 /*tex
 
 This program has two important variations: (1) There is a long and slow version
@@ -310,6 +315,10 @@ int get_luatexversion(void)
 /*tex the number of pages that have been shipped out */
 
 int total_pages = 0;
+
+/*tex abort when DVI exceeds 65535 pages  */
+
+int check_dvi_total_pages = 1;
 
 /*tex recent outputs that didn't ship anything out */
 

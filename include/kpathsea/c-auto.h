@@ -1,15 +1,15 @@
 #ifndef KPATHSEA_C_AUTO_H
 #define KPATHSEA_C_AUTO_H
 
-#define KPSEVERSION            "kpathsea version 6.3.5"
+#define KPSEVERSION            "kpathsea version 6.4.0"
 #define KPSE_PACKAGE           "kpathsea"
 #define KPSE_PACKAGE_BUGREPORT "tex-k@tug.org"
 #define KPSE_PACKAGE_NAME      "Kpathsea"
-#define KPSE_PACKAGE_STRING    "Kpathsea 6.3.5"
+#define KPSE_PACKAGE_STRING    "Kpathsea 6.4.0"
 #define KPSE_PACKAGE_TARNAME   "kpathsea"
 #define KPSE_PACKAGE_URL       ""
-#define KPSE_PACKAGE_VERSION   "6.3.5"
-#define KPSE_VERSION           "6.3.5"
+#define KPSE_PACKAGE_VERSION   "6.4.0"
+#define KPSE_VERSION           "6.4.0"
 
 /* Most of this should be standard. */
 #define HAVE_ASSERT_H            1

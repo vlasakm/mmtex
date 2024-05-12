@@ -1,4 +1,3 @@
-/*3:*/
 
 #ifndef MPPSOUT_H
 #define MPPSOUT_H 1
@@ -6,7 +5,6 @@
 #include "mplib.h"
 #include "mpmp.h"
 #include "mplibps.h"
-/*18:*/
 
 typedef struct{
 boolean loaded;
@@ -18,7 +16,6 @@ integer tounicode;
 }enc_entry;
 
 
-/*:18*//*36:*/
 
 enum _mode{FM_DUPIGNORE,FM_REPLACE,FM_DELETE};
 enum _ltype{MAPFILE,MAPLINE};
@@ -30,7 +27,6 @@ char*map_line;
 int lineno;
 }mapitem;
 
-/*:36*//*68:*/
 
 typedef char char_entry;
 #ifndef ZCONF_H
@@ -38,7 +34,6 @@ typedef unsigned char Byte;
 typedef Byte Bytef;
 #endif
 
-/*:68*//*81:*/
 
 typedef unsigned char byte;
 typedef struct{
@@ -56,12 +51,10 @@ boolean is_used;
 boolean valid;
 }cs_entry;
 
-/*:81*//*83:*/
 
 typedef char t1_line_entry;
 typedef char t1_buf_entry;
 
-/*:83*//*91:*/
 
 typedef struct{
 const char*pdfname;
@@ -70,14 +63,12 @@ float value;
 boolean valid;
 }key_entry;
 
-/*:91*//*95:*/
 
 typedef struct{
 char*ff_name;
 char*ff_path;
 }ff_entry;
 
-/*:95*//*102:*/
 
 typedef struct mp_ps_font{
 int font_num;
@@ -89,7 +80,6 @@ int subr_size;
 int t1_lenIV;
 int slant;
 int extend;
-/*107:*/
 
 double flex_hint_data[14];
 unsigned int flex_hint_index;
@@ -101,11 +91,9 @@ mp_graphic_object*p;
 mp_gr_knot pp;
 
 
-/*:107*/
 
 }mp_ps_font;
 
-/*:102*//*115:*/
 
 typedef struct{
 char*tfm_name;
@@ -130,11 +118,9 @@ short eid;
 }fm_entry;
 
 
-/*:115*//*138:*/
 
 enum mp_char_mark_state{mp_unused= 0,mp_used};
 
-/*:138*//*174:*/
 
 #define gr_left_type(A)  (A)->data.types.left_type
 #define gr_right_type(A) (A)->data.types.right_type
@@ -147,7 +133,6 @@ enum mp_char_mark_state{mp_unused= 0,mp_used};
 #define gr_next_knot(A)  (A)->next
 #define gr_originator(A) (A)->originator
 
-/*:174*//*187:*/
 
 #define gr_type(A)         (A)->type
 #define gr_link(A)         (A)->next
@@ -185,7 +170,6 @@ enum mp_char_mark_state{mp_unused= 0,mp_used};
 #define gr_tyx_val(A)      ((mp_text_object *)A)->tyx
 #define gr_tyy_val(A)      ((mp_text_object *)A)->tyy
 
-/*:187*//*191:*/
 
 typedef struct _gs_state{
 double red_field;
@@ -212,7 +196,6 @@ double width_field;
 }_gs_state;
 
 
-/*:191*//*228:*/
 
 typedef struct mp_font_size_node_data{
 NODE_BODY;
@@ -221,32 +204,26 @@ double sc_factor_;
 typedef struct mp_font_size_node_data*mp_font_size_node;
 
 
-/*:228*/
 
 typedef struct psout_data_struct{
-/*7:*/
 
 integer ps_offset;
 
 
-/*:7*//*19:*/
 
 #define ENC_BUF_SIZE  0x1000
 char enc_line[ENC_BUF_SIZE];
 void*enc_file;
 
-/*:19*//*23:*/
 
 avl_tree enc_tree;
 
-/*:23*//*33:*/
 
 void*fm_file;
 size_t fm_byte_waiting;
 size_t fm_byte_length;
 unsigned char*fm_bytes;
 
-/*:33*//*37:*/
 
 mapitem*mitem;
 fm_entry*fm_cur;
@@ -255,19 +232,16 @@ fm_entry*avail_tfm_found;
 fm_entry*non_tfm_found;
 fm_entry*not_avail_tfm_found;
 
-/*:37*//*43:*/
 
 avl_tree tfm_tree;
 avl_tree ps_tree;
 avl_tree ff_tree;
 
-/*:43*//*69:*/
 
 char_entry*char_ptr,*char_array;
 size_t char_limit;
 char*job_id_string;
 
-/*:69*//*75:*/
 
 #define PRINTF_BUF_SIZE     1024
 char*dvips_extra_charset;
@@ -279,7 +253,6 @@ size_t t1_byte_waiting;
 size_t t1_byte_length;
 unsigned char*t1_bytes;
 
-/*:75*//*79:*/
 
 char**t1_glyph_names;
 char*t1_builtin_glyph_names[256];
@@ -287,13 +260,11 @@ char charsetstr[0x4000];
 boolean read_encoding_only;
 int t1_encoding;
 
-/*:79*//*82:*/
 
 unsigned short t1_dr,t1_er;
 unsigned short t1_cslen;
 short t1_lenIV;
 
-/*:82*//*84:*/
 
 t1_line_entry*t1_line_ptr,*t1_line_array;
 size_t t1_line_limit;
@@ -307,7 +278,6 @@ cs_entry*subr_tab;
 char*subr_array_start,*subr_array_end;
 int subr_max,subr_size,subr_size_pos;
 
-/*:84*//*87:*/
 
 const char**cs_token_pair;
 boolean t1_pfa,t1_cs,t1_scan,t1_eexec_encrypt,t1_synthetic;
@@ -317,68 +287,53 @@ int last_hexbyte;
 void*t1_file;
 int hexline_length;
 
-/*:87*//*116:*/
 
 #define FONTNAME_BUF_SIZE 128
 boolean fontfile_found;
 boolean is_otf_font;
 char fontname_buf[FONTNAME_BUF_SIZE];
 
-/*:116*//*192:*/
 
 struct _gs_state*gs_state;
 
-/*:192*/
 
 }psout_data_struct;
-/*5:*/
 
 void mp_ps_backend_initialize(MP mp);
 void mp_ps_backend_free(MP mp);
 
-/*:5*//*55:*/
 
 fm_entry*mp_fm_lookup(MP mp,font_number f);
 
-/*:55*//*59:*/
 
 void mp_map_file(MP mp,mp_string t);
 void mp_map_line(MP mp,mp_string t);
 void mp_init_map_file(MP mp,int is_troff);
 
-/*:59*//*65:*/
 
 void mp_read_psname_table(MP mp);
 
-/*:65*//*72:*/
 
 void mp_set_job_id(MP mp);
 
-/*:72*//*104:*/
 
 mp_ps_font*mp_ps_font_parse(MP mp,int tex_font);
 
-/*:104*//*106:*/
 
 void mp_ps_font_free(MP mp,mp_ps_font*f);
 
 
-/*:106*//*109:*/
 
 mp_edge_object*mp_ps_font_charstring(MP mp,mp_ps_font*f,int c);
 mp_edge_object*mp_ps_do_font_charstring(MP mp,mp_ps_font*f,char*n);
 
 
-/*:109*//*189:*/
 
 mp_graphic_object*mp_new_graphic_object(MP mp,int type);
 
-/*:189*//*233:*/
 
 int mp_gr_ship_out(mp_edge_object*hh,int prologues,int procset,int standalone);
 
-/*:233*/
 
 #endif
 
-/*:3*/
