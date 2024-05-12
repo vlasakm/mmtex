@@ -260,6 +260,15 @@ local is_unit = function(word)
   return false
 end
 
+local function handle_unit(word, anchor)
+  -- insert nbsp between numbers and units
+  word = cut_off_end_chars(word, false)
+  if is_unit(word) then
+    anchor = replace_with_thin_space(anchor)
+    insert_penalty(anchor.prev)
+  end
+end
+
 local predegrees = Set (require "luavlna-predegrees")
 local sufdegrees = Set (require "luavlna-sufdegrees")
 
@@ -299,11 +308,7 @@ local function prevent_single_letter (head)
         if wasnumber then
           if word ~= "" then
             wasnumber = false
-            word = cut_off_end_chars(word, false)
-            if is_unit(word) then
-              anchor = replace_with_thin_space(anchor)
-              insert_penalty(anchor.prev)
-            end
+            handle_unit(word, anchor)
           end
         elseif is_number(word) then
           wasnumber = true
@@ -356,6 +361,10 @@ local function prevent_single_letter (head)
     end
     head = head.next                                                            
   end                                                                             
+  -- insert spaces at the end of node list
+  if wasnumber then
+    handle_unit(word, anchor)
+  end
   return  true
 end               
 
