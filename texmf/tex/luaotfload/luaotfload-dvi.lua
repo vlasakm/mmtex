@@ -6,8 +6,8 @@
 
 assert(luaotfload_module, "This is a part of luaotfload and should not be loaded independently") { 
     name          = "luaotfload-dvi",
-    version       = "3.26",       --TAGVERSION
-    date          = "2023-08-31", --TAGDATE
+    version       = "3.28",       --TAGVERSION
+    date          = "2024-02-14", --TAGDATE
     description   = "luaotfload submodule / DVI",
     license       = "GPL v2.0",
     author        = "Marcel Krüger",
@@ -85,7 +85,7 @@ function full_hprocess(head)
         end
         if last_mapping then
           local mapped = last_mapping[c]
-          if mapped then setfont(n, mapped_font, mapped) end
+          if mapped then setfont(n, last_mapped_font, mapped) end
         end
       end
     elseif id == glyph_t then

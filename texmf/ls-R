@@ -171,8 +171,9 @@ lualibs-extended-merged.lua
 lualibs.lua
 
 ./tex/luaotfload:
-fontloader-2023-08-19.lua
+fontloader-2023-12-28.lua
 fontloader-basics-gen.lua
+luaotfload-arabic.lua
 luaotfload-auxiliary.lua
 luaotfload-bcp47.lua
 luaotfload-case.lua
@@ -200,6 +201,7 @@ luaotfload-main.lua
 luaotfload-multiscript.lua
 luaotfload-notdef.lua
 luaotfload-parsers.lua
+luaotfload-realpath.lua
 luaotfload-resolvers.lua
 luaotfload-scripts.lua
 luaotfload-status.lua
