@@ -11,6 +11,26 @@
 
 \_input minim-mp
 
+\_let\.optex_rgb=\_setrgbcolor
+\_let\.optex_cmyk=\_setcmykcolor
+\_let\.optex_grey=\_setgreycolor
+
+\_def\.mp_rgb #1 #2 #3 ;{(#1, #2, #3)\_space}
+\_def\.mp_cmyk #1 #2 #3 #4 ;{(#1, #2, #3, #4)\_space}
+\_def\.mp_grey #1 ;{#1\_space}
+
+\_ea\_toksapp\everymp0{pre}{tex}{
+  \_def\_setrgbcolor#1{\.mp_rgb #1 ;}%
+  \_def\_setcmykcolor#1{\.mp_cmyk #1 ;}%
+  \_def\_setgreycolor#1{\.mp_grey #1 ;}%
+}
+
+\_ea\_toksapp\everymp0{post}{tex}{
+  \_let\_setrgbcolor=\.optex_rgb
+  \_let\_setcmykcolor=\.optex_cmyk
+  \_let\_setgreycolor=\.optex_grey
+}
+
 \_endnamespace
 \_endcode
 
