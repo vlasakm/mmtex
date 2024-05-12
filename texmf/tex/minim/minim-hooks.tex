@@ -16,7 +16,7 @@
 % know if you run into any problems.
 
 \ifdefined\minimhooksloaded
-    \message{(skipped)}
+    \wlog{(skipped)}
     \expandafter\endinput\fi
 \chardef\minimhooksloaded = \catcode`\:
 \catcode`\: = 11
@@ -48,7 +48,7 @@
         {\expandafter}\the\minim:atnextpar}
 \let\minim:changeparindent = \relax % as of yet unused
 
-% There is no need for the following.
+% There is presently no need for the following.
 
 %\let\minim:par = \par
 %\newtoks\minim:aftereverypar

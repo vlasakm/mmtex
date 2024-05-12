@@ -1,6 +1,6 @@
 
 \ifdefined \minimpdfresourcesloaded
-    \message{(skipped)}
+    \wlog{(skipped)}
     \expandafter\endinput\fi
 \chardef\minimpdfresourcesloaded=\catcode`\:
 \catcode`\:=11
@@ -13,6 +13,7 @@
 % 1 pgf compatibility
 
 % this ballet inserts our fix directly at the end of pgfsys-luatex.def
+% (see the \ProvidesFile redefinition in minim-alloc.tex)
 \expandafter\def\csname minim:intercept:pgfsys-luatex.def\endcsname
    {\wlog{minim: applying pgf patches...}\newtoks\minim:pgf:fix:toks
     \minim:pgf:fix:toks\csname pgfutil@everybye\endcsname

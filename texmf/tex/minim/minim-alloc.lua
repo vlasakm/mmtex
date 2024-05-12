@@ -45,7 +45,7 @@ end
 -- re-encode to utf-16
 local function pdf_hex_string(text)
     local str = { [1] = '<feff' }
-    for i in text:utfvalues() do
+    for _, i in utf8.codes(text) do
         if i <= 0xffff then
             insert_formatted(str, '%04x', i)
         else

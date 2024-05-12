@@ -4,7 +4,9 @@ local cb = require('minim-callbacks')
 local pdfres = require('minim-pdfresources')
 alloc.remember ('minim-mp')
 
-local M = {}
+local M = { } -- module contents
+local E = { } -- runscript environment
+local A = { } -- postprocessing functions
 
 --1 AUXILIARY FUNCTIONS
 
@@ -29,7 +31,6 @@ end
 -- We can call append:somefunction(...) to append a node or append:somevariable 
 -- to query the graphics state. These go via its metatable:
 
-local A = { } -- appending functions
 local append_meta =
 {
     -- Either return an appending function or an entry in the graphics state.
@@ -48,6 +49,7 @@ local function init_append()
         node_count = 0,             -- node count
         state = { },                -- graphics state variables
         user = { },                 -- user data for extensions
+        object_info = { },          -- data for current object
         }, append_meta)
 end
 
@@ -78,7 +80,8 @@ end
 
 -- The following callback is executed just before the final step of surrounding 
 -- the image in properly-dimensioned boxes. It receives the processed image 
--- object as argument. That object has the following fields:
+-- object as argument. That object may have the following fields (which can be 
+-- changed):
 --     head         the head of the node list
 --     name         the image name
 --     user         the image user table
@@ -96,6 +99,15 @@ function M.enable_debugging()
     debugging = true
     pdf.setcompresslevel(0)
     pdf.setobjcompresslevel(0)
+end
+E.enable_debugging = M.enable_debugging
+
+alloc.luadef('debugmetapost', M.enable_debugging)
+
+local function debug(...)
+    if debugging then
+        alloc.log(...)
+    end
 end
 
 local function print_prop(append, obj, prop)
@@ -132,9 +144,8 @@ local function print_knots(append, obj, ptype)
 end
 
 function A.printobj(append, obj)
-    if not debugging then return end
     local nc = append.node_count
-    append:literal('%%Object Type: %s', obj.type)
+    append:literal('%% Object Type: %s', obj.type)
     print_prop(append, obj, 'text')
     print_prop(append, obj, 'font')
     print_prop(append, obj, 'dsize')
@@ -147,16 +158,16 @@ function A.printobj(append, obj)
     print_knots(append, obj, 'htap')
     if obj.pen then
         local x = obj.pen.type or 'not elliptical'
-        append:literal('%%     pen: see below, form: %s', x)
+        append:literal('%%     pen is %s', x)
         x = mplib.pen_info(obj)
-        append:literal('%%        | width: %s', tostring(x.width))
-        append:literal('%%        |    sx: %s', tostring(x.sx))
-        append:literal('%%        |    sy: %s', tostring(x.sy))
-        append:literal('%%        |    rx: %s', tostring(x.rx))
-        append:literal('%%        |    ry: %s', tostring(x.ry))
-        append:literal('%%        |    tx: %s', tostring(x.tx))
-        append:literal('%%        |    ty: %s', tostring(x.ty))
-        print_knots(append, obj, 'pen')
+        append:literal('%%     width: %s', tostring(x.width))
+        append:literal('%%        sx: %s', tostring(x.sx))
+        append:literal('%%        sy: %s', tostring(x.sy))
+        append:literal('%%        rx: %s', tostring(x.rx))
+        append:literal('%%        ry: %s', tostring(x.ry))
+        append:literal('%%        tx: %s', tostring(x.tx))
+        append:literal('%%        ty: %s', tostring(x.ty))
+        print_knots(append, obj, 'pen path')
     end
     if obj.dash then
         local d = ''
@@ -179,13 +190,20 @@ end
 local function format_numbers(...)
     return (string.format(...)
         :gsub('[.]0+ ', ' ')
-        :gsub('([.][1-9]+)0+ ', '%1 '))
+        :gsub('([.][1-9]+)0+ ', '%1 ')
+        :gsub(' +$', ''))
 end
 
 -- Only to be used for coordinates: ‘cm’ parameters should not be rounded.
 local function pdfnum(operator, ...)
     local fmt = string.format('%%.%sf %s', pdf.getdecimaldigits(), operator)
     return format_numbers(fmt, ...)
+end
+
+local function make_pdf_dashpattern(dl)
+    return string.format('[%s] %s',
+        table.concat(dl.dashes or {},' '),
+        pdfnum('d', dl.offset))
 end
 
 local function point_fmt(operator, ...)
@@ -212,6 +230,43 @@ function A.literal(append, fmt, ...)
     append:node(lit)
 end
 
+--2 parsing helpers
+
+local function parse_lua_table(name, str)
+    local f, msg = load('return '..str, name, 't')
+    if msg then return alloc.err(msg) end
+    local t = f()
+    if not t or type(t) ~= 'table' then
+        return alloc.err('%s attributes must be given as lua table', name)
+    end
+    -- format all numbers with pdfnum
+    for k, v in pairs(t) do
+        if type(v) == 'number' then
+            t[k] = pdfnum('', v)
+        end
+    end
+    return t
+end
+
+--2 boxing helpers
+
+local function make_surrounding_box(nd_id, head)
+    local nd = node.new(nd_id)
+    nd.dir, nd.head = 'TLT', head
+    return nd
+end
+
+local function wrap_picture(head, x0, y0)
+    -- Note: this does not set the image dimensions
+    local horizontal = make_surrounding_box('hlist', head)
+    local vertical   = make_surrounding_box('vlist', horizontal)
+    local outer      = make_surrounding_box('hlist', vertical)
+    vertical.shift   = -y0
+    horizontal.shift = x0
+    return outer
+end
+M.wrap_picture = wrap_picture
+
 --2 colour conversion
 
 local function rgb_to_gray (r,g,b)
@@ -219,6 +274,7 @@ local function rgb_to_gray (r,g,b)
            + tex.count['GtoG'] * g / 10000
            + tex.count['BtoG'] * b / 10000 )
 end
+E.rgb_to_gray = rgb_to_gray
 
 local function cmyk_to_rgb (c,m,y,k)
     return (1-k)*(1-c), (1-k)*(1-m), (1-k)*(1-y)
@@ -283,7 +339,7 @@ local colour_fill_operators = { 'g', nil, 'rg', 'k' }
 local colour_pattern_spaces = { 'PsG', nil, 'PsRG', 'PsK' }
 
 local function get_colour_params(cr)
-    return format_numbers(colour_template[#cr], table.unpack(cr))
+    return format_numbers(colour_template[#cr], table.unpack(cr)) .. ' '
 end
 
 local function get_stroke_colour(cr)
@@ -362,7 +418,7 @@ function A.linestate (append, object)
     end
     local dl = object.dash
     if dl then
-        local d = string.format('[%s] %s', table.concat(dl.dashes or {},' '), pdfnum('d', dl.offset))
+        local d = make_pdf_dashpattern(dl)
         if d ~= append.dashed then
             append.dashed = d
             table.insert(res, d)
@@ -371,7 +427,9 @@ function A.linestate (append, object)
        append.dashed = false
        table.insert(res, '[] 0 d')
     end
-    append:literal(table.concat(res, ' '))
+    if #res > 0 then
+        append:literal(table.concat(res, ' '))
+    end
 end
 
 --2 path literals
@@ -433,7 +491,7 @@ function A.curve(append, path, open, concat)
     elseif #path == 1 then
         append_line(path[1], 'l') -- special case: draw a point
     end
-    append:literal(table.concat(res, ' '))
+    append:literal(table.concat(res, '\n'))
 end
 
 -- And actually draw the path.
@@ -507,7 +565,9 @@ end
 
 local function parse_object(append, object)
     append.object_info = { }
-    append:printobj(object)
+    if debugging then
+        append:printobj(object)
+    end
     local processor = nil
     for sp, instr in split_specials(object.prescript) do
         if not sp then
@@ -653,6 +713,105 @@ specials.BASELINE = function(append, _, object)
     append.baseline = object.path[1].y_coord
 end
 
+-- 2 box resources (xforms)
+
+-- The first problem that we run into is that we want to refer to xforms (from 
+-- the metapost side) whose numerical id* we do know know yet (because the 
+-- xform will only be made at the end of the run, during the lua-side 
+-- processing of mplib output).
+--
+-- Our solution is using negative ids for metapost-defined xforms, which will 
+-- be converted to actual boxresource ids by means of a conversion table.
+--
+-- The second problem is the need to position metapost-defined xforms by their 
+-- original (metapost) origin. This necessitates storing extra information 
+-- lua-side.
+--
+-- * Not to be confused with the object number which we, due to pdftex’s 
+-- special handling of xforms, will never come to know.
+
+local xform_nr_shim = { }
+
+local function resolve_xform_id(nr)
+    nr = tonumber(nr)
+    if nr < 0 then
+        return xform_nr_shim[-nr]
+    else
+        return nr
+    end
+end
+
+local function reserve_xform_id()
+    xform_nr_shim[1+#xform_nr_shim] = false
+    return -#xform_nr_shim
+end
+
+M.resolve_xform_id = resolve_xform_id
+E.resolve_xform_id = resolve_xform_id
+E.reserve_xform_id = reserve_xform_id
+
+-- When using xforms in metapost, the positive numbers refer to tex-defined and 
+-- the negative to metapost-defined box resources.
+
+specials.BOXRESOURCE = function(append, id, object)
+    local realid = resolve_xform_id(id)
+    local rule = tex.useboxresource(realid)
+    append:box(object, node.hpack(rule))
+end
+
+local xform_sizes = { }
+local xform_center = { }
+
+local function set_boxresource_dimensions (id, transf, center)
+    xform_sizes[id] = transf
+    xform_center[id] = center
+end
+
+local function get_boxresource_dimensions (id)
+    if xform_sizes[id] then
+        return xform_sizes[id]
+    else
+        return { 'box_size', tex.getboxresourcedimensions(id) }
+    end
+end
+
+local function get_boxresource_center (id)
+    if xform_center[id] then
+        return xform_center[id]
+    else
+        return "(0,0)"
+    end
+end
+
+E.set_boxresource_dimensions = set_boxresource_dimensions
+E.get_boxresource_dimensions = get_boxresource_dimensions
+E.get_boxresource_center = get_boxresource_center
+
+local function save_as_boxresource(pic)
+    -- attributes
+    local attrs = { '/Subtype/Form', bbox_fmt(0, -pic.dp, pic.wd, pic.ht) }
+    for k, v in pairs(pic.user.xform_attrs or { }) do
+        table.insert(attrs, string.format('%s %s', alloc.pdf_name(k), v))
+    end
+    -- box to-be-saved
+    local box = wrap_picture(node.copy_list(pic.head), pic.x0, pic.y0)
+    box.width, box.height, box.depth = pic.wd, pic.ht, pic.dp
+    -- save the box
+    local xform = tex.saveboxresource(box,
+        table.concat(attrs, ' '), nil, false, 4) -- 4: no /Type, /BBox or /Matrix
+    xform_nr_shim[-pic.user.xform_id] = xform
+end
+
+specials.XFORMINDEX = function(append, id, object)
+    append.user.xform_id = tonumber(id)
+    append.user.save_fn = save_as_boxresource
+end
+
+specials.XFORMATTRS = function(append, attrs, object)
+    local t = parse_lua_table('XForm attributes', attrs)
+    append.user.xform_attrs = t or { }
+end
+
 --2 patterns
 
 -- Saved patterns have the following fields:
@@ -678,27 +837,20 @@ prescripts.fillpattern = function(append, str, object)
     end
 end
 
-specials.definepattern = function(append, str, object)
-    local nr, tiling, paint, xs, ys, xx, xy, yx, yy = table.unpack(str:explode())
-    append.user.pattern_info = { nr = nr, xstep = xs, ystep = ys,
-        tilingtype = tiling, painttype = paint,
-        matrix = { xx = xx, xy = xy, yx = yx, yy = yy, x = 0, y = 0 } }
-end
-
 local function make_pattern_xform(head, bb)
     -- regrettably, pdf.refobj does not work with xforms, so we must 
     -- write it to the pdf immediately, whether the pattern will be 
     -- used or not.
-    local xform = tex.saveboxresource(node.hpack(node.copy_list(head)),
-        '/Subtype/Form '..bb, nil, true, 4)
+    local xform = tex.saveboxresource((node.hpack(node.copy_list(head))),
+        '/Subtype/Form '..bb, nil, true, 4) -- 4: no /Type, /BBox or /Matrix
     return string.format(' /Resources << /XObject << /PTempl %d 0 R >> >>', xform), '/PTempl Do'
 end
 
-local function definepattern(head, user, bbox)
-    local bb = bbox_fmt(table.unpack(bbox))
+local function definepattern(pic)
+    local bb = bbox_fmt(table.unpack(pic.bbox))
     local pat, literals, resources = { write = write_pattern_object }, { }
     -- pattern content
-    for n in node.traverse(head) do
+    for n in node.traverse(pic.head) do
         -- try if we can construct the content stream ourselves; otherwise, 
         -- stuff the pattern template into an xform.
         if n.id == WHATSIT_NODE then
@@ -710,18 +862,18 @@ local function definepattern(head, user, bbox)
             elseif n.subtype == node.subtype 'restore' then
                 table.insert(literals, 'Q')
             else
-                resources, pat.stream = make_pattern_xform(head, bb)
+                resources, pat.stream = make_pattern_xform(pic.head, bb)
                 goto continue
             end
         else
-            resources, pat.stream = make_pattern_xform(head, bb)
+            resources, pat.stream = make_pattern_xform(pic.head, bb)
             goto continue
         end
         pat.stream = table.concat(literals, '\n')
     end
     ::continue::
     -- construct the pattern object
-    local i = user.pattern_info
+    local i = pic.user.pattern_info
     local m = i.matrix
     pat.painttype = tonumber(i.painttype)
     pat.attr = table.concat({
@@ -733,12 +885,88 @@ local function definepattern(head, user, bbox)
     pdfres.add_resource('Pattern', 'MnmP'..i.nr, pat)
 end
 
-cb.register('finish_mpfigure', function(img)
-    if img.user.pattern_info then
-        definepattern(img.head, img.user, img.bbox)
-        img.discard = true
+specials.definepattern = function(append, str, object)
+    local nr, tiling, paint, xs, ys, xx, xy, yx, yy = table.unpack(str:explode())
+    append.user.pattern_info = { nr = nr, xstep = xs, ystep = ys,
+        tilingtype = tiling, painttype = paint,
+        matrix = { xx = xx, xy = xy, yx = yx, yy = yy, x = 0, y = 0 } }
+    append.user.save_fn = definepattern
+end
+
+-- 2 extgstates
+
+-- Specials for the graphics state:
+--
+--    gstate:save           q
+--    gstate:restore        Q
+--
+--    extgstate:label       /label gs
+--    extgstate:{...}       /newlabel gs
+--
+-- If a lua table is passed to the extgstate, minim will try and find an 
+-- earlier-defined matching ExtGState object. If it cannot be found, a new one 
+-- will be created and used. The values of the table will be written to the pdf 
+-- as-they-are (this means booleans and numbers are alright), but the keys will 
+-- be converted to pdf name objects.
+
+prescripts.gstate = function(append, str, object)
+    if str == 'save' or str == 'store' then
+        append:save()
+    elseif str == 'restore' then
+        append:restore()
+    else
+        alloc.err('Unknown gstate operator: »%s«', str)
     end
-end)
+end
+postscripts.gstate = prescripts.gstate
+
+local gs_next, gs_index = 1, { }
+
+function M.get_gstate_name(t)
+    -- format the pdf dict
+    local d = { }
+    for k,v in pairs(t) do
+        if type(v) == 'table' and t.dashes then
+            v = '[ '..make_pdf_dashpattern(v)..' ]'
+        end
+        table.insert(d, string.format('%s %s', alloc.pdf_name(k), v))
+    end
+    table.sort(d)
+    d[0] = '<<'; table.insert(d, '>>')
+    t.value = table.concat(d, ' ', 0)
+    -- check the index
+    if not gs_index[t.value] then
+        local name = string.format('MnmGs%d', gs_next)
+        gs_index[t.value] = name
+        gs_next = gs_next + 1
+        pdfres.add_resource('ExtGState', name, t)
+    end
+    -- return the resource name
+    return gs_index[t.value]
+end
+
+prescripts.extgstate = function(append, str, object)
+    -- determine resource name
+    local name, t = str
+    if string.find(str, '^[A-Za-z0-9_]+$') then
+        t = pdfres.get_resource('ExtGState', name)
+        if not t then return alloc.err('Unknown named ExtGState: %s', name) end
+    else
+        t = parse_lua_table('ExtGState', str)
+        if not t then return end
+        name = M.get_gstate_name(t)
+    end
+--  -- update state parameters (disabled for now; may be enabled if it has practical use)
+--  if t.LW then append.linewidth = t.LW end
+--  if t.ML then append.miterlimit = t.LW end
+--  if t.LJ then append.linejoin = t.LW end
+--  if t.LC then append.linecap = t.LW end
+--  if t.D and type(t.D) == 'table' then append.dashed = make_pdf_dashpattern(t.D) end
+    -- apply the state change
+    append:literal('%s gs', alloc.pdf_name(name))
+    append:node(pdfres.use_resource_node('ExtGState', name))
+end
+postscripts.extgstate = prescripts.extgstate
 
 -- 2 text
 
@@ -758,26 +986,13 @@ local function get_transform(rect)
     return sx, rx, ry, sy, tx, ty
 end
 
-local function make_surrounding_box(nd_id, head)
-    local nd = node.new(nd_id)
-    nd.dir, nd.head = 'TLT', head
-    return nd
-end
-
-local function wrap_picture(head, tx, ty)
-    local horizontal = make_surrounding_box('hlist', head)
-    local vertical   = make_surrounding_box('vlist', horizontal)
-    local outer      = make_surrounding_box('hlist', vertical)
-    vertical.shift   = tex.sp('-'..ty..'bp')
-    horizontal.shift = tex.sp(''..tx..'bp')
-    return outer
-end
-
 local function apply_transform(rect, box)
     local sx, rx, ry, sy, tx, ty = get_transform(rect)
     local transform = node.new('whatsit', 'pdf_setmatrix')
     transform.next, box.prev = box, transform
     transform.data = string.format('%f %f %f %f', sx, rx, ry, sy)
+    tx = tex.sp(''..tx..'bp')
+    ty = tex.sp(''..ty..'bp')
     return wrap_picture(transform, tx, ty)
 end
 
@@ -803,11 +1018,6 @@ specials.CHAR = function(append, data, object)
     append:box(object, node.hpack(n))
 end
 
-specials.BOXRESOURCE = function(append, resource, object)
-    local rule = tex.useboxresource(tonumber(resource))
-    append:box(object, rule)
-end
-
 --
 
 --1 METAPOST INSTANCES
@@ -819,8 +1029,8 @@ M.instances  = instances
 
 -- parameters: wd, ht+dp, dp
 local function make_transform(w, h, d)
-    return string.format('identity xscaled %fpt yscaled %fpt shifted (0,-%fpt)',
-        w/65536, (h+d)/65536, d/65536)
+    return string.format('identity xscaled %fpt yscaled %fpt shifted (0,%fpt)',
+        w/65536, (h+d)/65536, -d/65536)
 end
 
 local status_names = { [0] = 'good', 'warning', 'error', 'fatal' }
@@ -829,16 +1039,19 @@ local function print_status(st)
 end
 
 M.on_line = false
+M.max_errprint = 1
 local function print_log (nr, res, why)
     local i = instances[nr]
     -- only write to term if on_line or if exit status increases
-    local log, alog
+    local log, alog --luacheck:ignore 231
     if M.on_line or res.status > i.status then
-        local nrlines, maxlines = 0, 16
         alog = alloc.amsg
+        local nr_errs = 0
         log = function(...)
-            if M.on_line or nrlines < maxlines then
-                nrlines = nrlines + 1
+            if  string.sub(table.pack(...)[2],1,2) == "! " then
+                nr_errs = nr_errs + 1
+            end
+            if M.max_errprint < 1 or M.max_errprint >= nr_errs then
                 alloc.msg(...)
             else
                 alloc.log(...)
@@ -851,17 +1064,18 @@ local function print_log (nr, res, why)
     end
     -- split log into lines; discard empty lines at the end
     local report = res.log and res.log:explode('\n') or { }
-    while report[#report] == '' do
-        report[#report] = nil
-    end
     -- write out the log
-    log('┌ %smetapost instance %s (%d)', why or '', i.jobname, i.nr)
+    log('┌ %smetapost instance {%s} (%d)', why or '', i.jobname, i.nr)
     for _,line in ipairs(report) do
-        log('│ %s', line)
+        if line ~= '' and line ~= "(Please type a command or say `end')" then
+            log('│ %s', line)
+        end
     end
     log('└ %s', print_status(res.status))
     -- generate error or warning if needed
     if res.status > i.status then
+        local ecl = tex.errorcontextlines -- TODO: why does TeX fill the error context
+        tex.errorcontextlines = 0         -- with repeated <inserted text> BAD ???
         if res.status == 3 then
             alloc.err('Metapost instance now defunct')
         elseif res.status == 2 then
@@ -869,6 +1083,7 @@ local function print_log (nr, res, why)
         elseif res.status == 1 then
             alloc.msg('Metapost code caused warning')
         end
+        tex.errorcontextlines = ecl
     end
     -- save the exit status for later comparison
     i.status = res.status
@@ -908,6 +1123,9 @@ local function process_results(nr, res)
             local fig = res.fig[i]
             local name = fig:filename()
             local append = init_append()
+            if debugging then
+                append:literal('%% START OF MP FIGURE %s (instance %d)', name, nr)
+            end
             -- parse and append all objects
             append:save()
             local objects = fig:objects()
@@ -915,6 +1133,9 @@ local function process_results(nr, res)
                 parse_object (append, objects[j])
             end
             append:restore()
+            if debugging then
+                append:literal('%% END OF MP FIGURE %s (instance %d)', name, nr)
+            end
             -- bounding box and baseline information
             local bb = fig:boundingbox()
             local llx, lly, urx, ury = table.unpack(bb)
@@ -935,8 +1156,12 @@ local function process_results(nr, res)
                 pic.y0 = tex.sp(string.format('%s bp',  -bas    ))
             end
             cb.call_callback('finish_mpfigure', pic)
+            if pic.user.save_fn then
+                pic.discard = true
+                pic.user.save_fn(pic)
+            end
             if not pic.discard then
-                pic.head = wrap_picture(append.head, -llx, -bas)
+                pic.head = wrap_picture(pic.head, pic.x0, pic.y0)
             end
             if debugging then
                 alloc.msg('┌ image %s, with %s objects, %s nodes',
@@ -967,16 +1192,23 @@ end
 -- a string that metapost can understand.
 --
 -- Tables of the form { 'box_size', width, height, depth, margin } are  
--- converted to a transformation. (The margin will be ignored for now, this may 
+-- converted to a transform. (The margin will be ignored for now, this may 
 -- change in the future.)
 
 local function mkluastring(s)
-    return "'"..(s:gsub('\\', '\\\\'):gsub("'", "\\'")).."'"
+    return "'"..(s
+        :gsub('\\', '\\\\')
+        :gsub("'", "\\'")
+        :gsub('\n', '\\n')
+        :gsub('\013', '\\r')
+        :gsub('\000', '\\000')
+    ).."'"
 end
 
 local function runscript(code)
+    debug('┌ runscript: %s', code)
     -- (possibly) pass directly to function
-    local fn, arg = code:match('^%[%[(.+)%]%](.*)')
+    local fn, arg = code:match('^%[%[(.-)%]%](.*)')
     if fn then code = 'return '..fn .. mkluastring(arg) end
     -- execute the script
     local f, msg = load(code, current_instance.jobname, 't', current_instance.env)
@@ -984,25 +1216,39 @@ local function runscript(code)
     if f then
         local result = f()
         if result == nil then
+            debug('└ (no return value)')
             return
         else
             local t = type(result)
             if t == 'number' then
-                return string.format('%.16f', result)
+                result = string.format('%.16f', result)
             elseif t == 'string' then
-                return result
-            elseif t == 'table' and t[1] == 'box_size' then
-                -- TODO: take the margin into account if present (t[5])?
-                return make_transform(t[2], t[3], t[4])
-            elseif t == 'table' and #t < 5 then
-                local fmt = #t == 1 and '%.16f'
-                         or #t == 2 and '(%.16f, %.16f)'
-                         or #t == 3 and '(%.16f, %.16f, %.16f)'
-                         or #t == 4 and '(%.16f, %.16f, %.16f, %.16f)'
-                return fmt:format(table.unpack(t))
+                result = result
+            elseif t == 'table' and result[1] == 'box_size' then
+                result = make_transform(result[2], result[3], result[4])
+            elseif t == 'table' and #result < 5 then
+                local fmt = #result == 1 and '%.16f'
+                         or #result == 2 and '(%.16f, %.16f)'
+                         or #result == 3 and '(%.16f, %.16f, %.16f)'
+                         or #result == 4 and '(%.16f, %.16f, %.16f, %.16f)'
+                result = fmt:format(table.unpack(result))
+            elseif t == 'table' and #result == 6 then
+                result = table.concat({
+                        'begingroup save t; transform t',
+                        'xxpart t = %.16f', 'xypart t = %.16f',
+                        'yxpart t = %.16f', 'yypart t = %.16f',
+                        'xpart t = %.16f',  'ypart t = %.16f',
+                        't endgroup' },
+                    ';'):format(table.unpack(result))
             else
-                return tostring(result)
+                result = tostring(result)
             end
+            if #result > 120 then
+                debug('└ %s etc. etc.', result:sub(1,110))
+            else
+                debug('└ %s', result)
+            end
+            return result
         end
     else
         local mp_msg = string.gsub(msg, '"', '"&ditto&"')
@@ -1016,8 +1262,8 @@ end
 -- environment. The runscript environment will then be extended with all 
 -- elements of the M.mp_functions table.
 
-local E = { }
 M.mp_functions = E
+E.texmessage = alloc.msg
 
 local function prepare_env(e) -- in M.open()
     local env = e or copy_table(_G, { })
@@ -1038,8 +1284,21 @@ function E.quote_for_lua(s)
     return E.quote(mkluastring(s))
 end
 
-E.rgb_to_gray = rgb_to_gray
-E.enable_debugging = M.enable_debugging
+-- These are here so that luametafun does not bug out immediately. Please note 
+-- that using metafun is not otherwise supported or recommended.
+local cct_maketext = alloc.registernumber('minim:mp:catcodes:maketext')
+E.catcodes = { numbers =
+    { inicatcodes = cct_maketext , texcatcodes = cct_maketext
+    , luacatcodes = cct_maketext , notcatcodes = cct_maketext
+    , vrbcatcodes = cct_maketext , prtcatcodes = cct_maketext
+    , ctxcatcodes = cct_maketext , txtcatcodes = cct_maketext
+}   }
+E.mp = mp or { } --luacheck: ignore 113
+-- all functions below seem nonessential
+E.mp.mf_path_reset = E.mp.mf_path_reset or function() end
+E.mp.mf_finish_saving_data = E.mp.mf_finish_saving_data or function() end
+E.mp.report = E.mp.report or function() end
+
 
 --2 typesetting with tex
 
@@ -1061,20 +1320,51 @@ E.enable_debugging = M.enable_debugging
 local function maketext(text, mode)
     if mode == 0 then -- btex or maketext
         local nr = alloc.new_box()
+        debug('┌ btex: %s', text)
         table.insert(current_instance.boxes, nr)
         local assignment = string.format('\\global\\setbox%s=\\hbox{\\the\\everymaketext %s}', nr, text)
         tex.runtoks(function() tex.print(current_instance.catcodes, assignment:explode('\n')) end)
         local box = tex.box[nr]
-        return 'image ( fill unitsquare withprescript "TEXBOX:' ..nr..'";'..
-            'setbounds currentpicture to unitsquare transformed '..
-                make_transform(box.width, box.height, box.depth) .. ';)'
+        debug('└ etex: box %d', nr)
+        return string.format('_set_maketext_result_(%d, %s)', nr,
+            make_transform(box.width, box.height, box.depth))
     elseif mode == 1 then -- verbatimtex
+        debug('┌ verbatimtex: %s', text)
         tex.runtoks(function() tex.print(current_instance.catcodes, text:explode('\n')) end)
+        debug('└ etex')
     end
 end
 
+-- a font cache for infont and glyph of
+local infont_fonts = { }
+local function get_infont_font(fnt)
+    local csname = 'minim-mp infont '..fnt
+    local res = infont_fonts[csname]
+    if res then
+        debug('├ resolved font "%s" (%d)', fnt, res)
+    else
+        tex.runtoks(function()
+            tex.print(current_instance.catcodes, string.format(
+                '\\expandafter\\font\\csname %s\\endcsname={%s}\\relax', csname, fnt))
+        end)
+        res = font.id(csname)
+        infont_fonts[csname] = res
+        debug('├ loaded font "%s" (%d)', fnt, res)
+    end
+    return res
+end
+
+local function fontid_from_csname(fnt)
+    local id = font.id(fnt)
+    if id < 0 then return end
+    debug('├ resolved font \\%s (%d)', fnt, id)
+    return id
+end
+
 local function getfontid(fnt)
-    return tonumber(fnt) or font.id(fnt)
+    return tonumber(fnt)
+        or fontid_from_csname(fnt)
+        or get_infont_font(fnt)
 end
 
 local typeset_box = alloc.new_box('infont box')
@@ -1124,7 +1414,6 @@ function M.make_glyph(glyphname, fnt)
         alloc.err('Font not found: %s (id %s)', fnt, fontid)
         return { }, 10
     end
-    local fontname = thefont.psname
     local gid = luaotfload.aux.gid_of_name(fontid, glyphname)
     if not gid then
         alloc.err('Font %s has no glyph named %s', thefont.psname, glyphname)
@@ -1157,17 +1446,23 @@ function M.make_glyph(glyphname, fnt)
 end
 
 local function get_glyphname(c_id)
-    return luaotfload.aux.name_of_slot(c_id)
+    if type(c_id) == 'string' then return c_id end
+    local res = luaotfload.aux.name_of_slot(c_id)
+    debug('├ name of glyph %d is %s', c_id, res)
+    return res
 end
 
 function E.get_glyph(c_id, fnt)
-    local name = (type(c_id) == 'string') and c_id or get_glyphname(c_id)
+    debug('┌ glyph %s of %s', c_id, fnt)
+    local name = get_glyphname(c_id)
     local contours, size = M.make_glyph(name, fnt)
     local res = { }
     for _, c in ipairs(contours) do
-        table.insert(res, string.format(
-            '%s scaled %f', c, size/65536/1000))
+        local scaled = string.format('%s scaled %f', c, size/65536/1000)
+        debug('│ %s', scaled)
+        table.insert(res, scaled)
     end
+    debug('└ %d contours returned', #res)
     return table.concat(res, ', ')
 end
 
@@ -1187,6 +1482,9 @@ M.get_contours = E.get_contours
 
 --2 opening, running and and closing instances
 
+M.default_format = 'plain.mp'
+M.default_mathmode = 'scaled'
+
 local function apply_default_instance_opts(t)
     return
         { ini_version  = true
@@ -1195,8 +1493,8 @@ local function apply_default_instance_opts(t)
         , find_file    = new_file_finder()
         --, script_error = ...
         , job_name     = t.jobname
-        , math_mode    = t.math or 'scaled'
-        , random_seed  = t.seed or nil
+        , math_mode    = t.mathmode or t.math or M.default_mathmode
+        , random_seed  = t.randomseed or t.seed or nil
         -- , file_line_error_style
         , make_text    = maketext
         , run_script   = runscript
@@ -1228,22 +1526,38 @@ function M.run (nr, code)
         return
     end
     current_instance = self
+    if debugging then
+        alloc.log('┌ metapost chunk for {%s} (%d)', self.jobname, nr)
+        for _, line in ipairs(code:explode('\013')) do
+            alloc.log('│ %s', line)
+        end
+        alloc.log('└')
+    end
+    local cct = tex.catcodetable
+    tex.catcodetable = self.catcodes
     local res = self.instance:execute(code)
+    tex.catcodetable = cct
     print_log(nr, res)
     local picts = process_results(nr, res)
     save_image_list(self, picts)
 end
 
-M.init_code = { 'let dump=endinput;', 'input INIT;', 'input minim-mp.mp;', 'input minim.mp;' }
+M.init_code = { 'let dump=endinput;'
+              , 'boolean mplib; mplib:=true;'
+              , 'input INIT;'
+              , 'input minim.mp;'
+              , 'input minim-mp.mp;' }
 local maketext_catcodes = alloc.registernumber('minim:mp:catcodes:maketext')
 
 function M.open (t)
     local nr = #instances + 1
-    t.jobname = t.jobname or ':metapost:'
+    tex.count['mp:cur:inst'] = nr
     -- creating instance options
-    local init = string.gsub(table.concat(M.init_code, ''), 'INIT', t.format or 'plain.mp')
+    t.jobname = t.jobname or ':metapost:'
+    local init = string.gsub(table.concat(M.init_code, ''), 'INIT', t.format or M.default_format)
     local opts = apply_default_instance_opts(t)
     local instance = mplib.new(opts)
+    tex.runtoks 'mp:init:env'
     -- adding the instance
     instances[nr] =
         { nr        = nr
@@ -1257,11 +1571,13 @@ function M.open (t)
         }
     current_instance = instances[nr]
     print_log(nr, instance:execute(init), 'opening ')
+    tex.count['mp:cur:inst'] = -1
     return nr
 end
 
 function M.close (nr)
     local i = instances[nr]
+    tex.count['mp:cur:inst'] = nr
     if i.instance then
         local res = i.instance:finish()
         print_log(nr, res, 'closing ')
@@ -1271,6 +1587,7 @@ function M.close (nr)
         tex.box[b] = nil
     end
     instances[nr] = false
+    tex.count['mp:cur:inst'] = -1
 end
 
 --2 retrieving and using results
@@ -1311,7 +1628,7 @@ end
 function M.get_image(nr, name)
     local image = retrieve(nr, name)
     if image then
-        local box = node.hpack(image.head)
+        local box = image.head
         box.width  = image.wd
         box.height = image.ht
         box.depth  = image.dp
@@ -1329,7 +1646,7 @@ function M.shipout(nr)
         tex.pageheight = (image.ht + image.dp)
         tex.pagewidth  = image.wd
         tex.voffset    = image.ht
-        tex.box[255]   = node.vpack(node.hpack(image.head))
+        tex.box[255]   = image.head
         tex.shipout(255)
         tex.count[0] = tex.count[0] + 1
     end
@@ -1342,25 +1659,30 @@ end
 local scan_int = token.scan_int
 local scan_string = token.scan_string
 
-local code_catcodes = alloc.registernumber('minim:mp:catcodes:mpcode')
-local function scan_codestring()
-    local cct = tex.catcodetable
-    tex.catcodetable = code_catcodes
-    local res = token.scan_string()
-    tex.catcodetable = cct
-    return res
-end
-
 alloc.luadef('closemetapostinstance', function() M.close(scan_int()) end)
 
+local code_catcodes = alloc.registernumber('minim:mp:catcodes:mpcode')
+
 alloc.luadef('runmetapost', function()
-    M.run(scan_int(), scan_codestring())
-end, 'protected')
-alloc.luadef('runmetapostimage', function()
-    local i = scan_int()
-    local code = 'beginfig(0)'..scan_codestring()..';endfig;'
-    M.run(i, code)
-    node.write(M.get_image(i))
+    local id = scan_int()
+    tex.count['mp:cur:inst'] = id
+    -- run tex code before
+    tex.runtoks 'mp:inst:pre:tex'
+    -- scan the argument with inert catcodes
+    local cct = tex.catcodetable
+    tex.catcodetable = code_catcodes
+    token.scan_keyword '\013' -- ^^M has catcode 12 now
+    local code = token.scan_string()
+    tex.catcodetable = cct
+    -- prepare the argument further
+    tex.toks['mp:mpcode'] = code
+    tex.runtoks 'mp:makempcode'
+    code = tex.toks['mp:mpcode']
+    -- run the code
+    M.run(id, code)
+    -- run tech code after
+    tex.runtoks 'mp:inst:post:tex'
+    tex.count['mp:cur:inst'] = -1
 end, 'protected')
 
 alloc.luadef('getnextmpimage', function()

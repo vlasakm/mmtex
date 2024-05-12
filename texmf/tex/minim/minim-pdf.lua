@@ -7,9 +7,11 @@ alloc.remember('minim-pdf')
 
 -- 1 helper functions
 
+local HLIST_NODE = node.id 'hlist'
 local GLUE_NODE = node.id 'glue'
 local GLYPH_NODE = node.id 'glyph'
 local RULE_NODE = node.id 'rule'
+local DISC_NODE = node.id 'disc'
 local WHATSIT_NODE = node.id 'whatsit'
 local USER_DEFINED = node.subtype 'user_defined'
 local START_LINK = node.subtype 'pdf_start_link'
@@ -51,9 +53,8 @@ local function singleton(t)
     return one
 end
 
--- in-depth node list traversal
--- returns current and parent node
--- only dives into hbox, vbox and ins nodes
+-- in-depth node list traversal; returns current and parent node
+-- only dives into hbox, vbox and ins nodes, and in disc no-break text
 -- returns node and enclosing box
 local function full_traverse(head)
     return function(stack, last)
@@ -178,7 +179,7 @@ local structure_types = alloc.saved_table('structure types', {
     -- inline structure elements ILSE
     Span       = { type = 'inline' },
     Quote      = { type = 'inline' },
-    Note       = { type = 'inline' },
+    Note       = { type = 'extern' },
     Reference  = { type = 'inline' },
     BibEntry   = { type = 'inline' },
     Code       = { type = 'inline', attributes = { ['CSS-2.00'] = { ['white-space'] = '(pre)' } } },
@@ -198,9 +199,10 @@ local structure_type_compatibility = {
     none    = { none=1, section=1, group=1, block=1, inline=1, contain=1 },
     section = { none=1, section=1, group=1, block=1 },
     group   = { none=1, group=1, block=1 },
-    block   = { none=1, inline=1 },
-    inline  = { none=1, inline=1 },
-    contain = { none=1, inline=1, block=1, group=1 },
+    extern  = { none=1, group=1, block=1 },
+    block   = { none=1, inline=1, extern=1 },
+    inline  = { none=1, inline=1, extern=1 },
+    contain = { none=1, inline=1, block=1, group=1, extern=1 },
 }
 
 local function check_structure_compatibility(parent, child, childtype)
@@ -227,7 +229,13 @@ local function determine_parent_node(current, se)
         end
     end
     if not c then
-        alloc.err('Structure type mismatch: %s in %s', se.struct, current.struct)
+        if tagging_enabled() then
+            alloc.err('Structure type mismatch: %s in %s',
+                    pdf_name(se.struct), pdf_name(current.struct))
+        else
+            alloc.msg('Warning (minim-pdf): Structure type mismatch (%s in %s)',
+                    pdf_name(se.struct), pdf_name(current.struct))
+        end
     end
     return c or current
 end
@@ -354,10 +362,19 @@ local function write_structure()
     local id_tree, id_tree_obj = { }, pdf.reserveobj()
     structure[1].parent = { objnum = root_obj }
     for _, se in ipairs(structure) do
-        if not se.hidden then se.objnum = pdf.reserveobj() end
+        if not se.hidden then
+            se.objnum = pdf.reserveobj()
+            if se.id then
+                id_tree[se.id] = se.objnum
+            end
+        end
     end
     -- update the document catalog
-    add_to_catalog('/MarkInfo << /Marked true >>')
+    if tex.count['pdfuaconformancelevel'] > 0 then
+        add_to_catalog('/MarkInfo << /Marked true /Suspects false >>')
+    else
+        add_to_catalog('/MarkInfo << /Marked true >>')
+    end
     add_to_catalog('/StructTreeRoot %s 0 R', root_obj)
     -- write the structure tree root
     pdf.immediateobj(root_obj, string.format(
@@ -368,10 +385,11 @@ local function write_structure()
         if not se.hidden then
             local res = { '<<' }
             insert_formatted(res, '/Type/StructElem /S%s /P %d 0 R', pdf_name(se.struct), se.parent.objnum)
-            if se.id then id_tree[se.id] = se.objnum; insert_formatted(res, '/ID %s', pdf_string(se.id)) end
-            if se.lang and se.lang ~= se.parent.lang then insert_formatted(res, '/Lang (%s)', se.lang) end
+            if se.id then insert_formatted(res, '/ID %s', pdf_string(se.id)) end
+            if se.lang and se.lang ~= se.parent.lang then insert_formatted(res, '/Lang %s', pdf_string(se.lang)) end
             if se.alt then insert_formatted(res, '/Alt %s', pdf_string(se.alt)) end
             if se.actual then insert_formatted(res, '/ActualText %s', pdf_string(se.actual)) end
+            if se.title then insert_formatted(res, '/T %s', pdf_string(se.title)) end
             if #se.children > 0 then insert_formatted(res, '\n/K %s', format_K_array(se)) end
             if se.mainpage then insert_formatted(res, '/Pg %d 0 R', se.mainpage) end
             if se.class then
@@ -381,6 +399,19 @@ local function write_structure()
                     insert_formatted(res, '%s', pdf_name(c))
                 end
                 if #se.class > 1 then table.insert(res, ']') end
+            end
+            if se.ref then
+                table.insert(res, '/Ref')
+                table.insert(res, '[')
+                for _, c in ipairs(se.ref) do
+                    local onum = id_tree[c]
+                    if onum then
+                        insert_formatted(res, '%d 0 R', onum)
+                    else
+                        alloc.err('Invalid structure element ID: %s', c)
+                    end
+                end
+                table.insert(res, ']')
             end
             if not is_empty(se.attributes) then
                 table.insert(res, '/A')
@@ -481,7 +512,7 @@ cb.register('uselanguage', function(name)
 end)
 
 local function write_language()
-    add_to_catalog('/Lang (%s)', structure[1].lang or 'und')
+    add_to_catalog('/Lang %s', pdf_string(structure[1].lang or 'und'))
 end
 
 -- 1 marking structure elements
@@ -559,9 +590,11 @@ end
 alloc.luadef('tagging:startelement', function()
     local s = options_scanner()
         :string('id')
+        :string('ref', true)
         :string('type') -- 'section', 'group', 'block' etc.
         :argument('alt')
         :argument('actual')
+        :argument('title')
         :string('lang')
         :subtable('attr')
         :string('class', true)
@@ -736,7 +769,7 @@ function M.mark_content_items(box)
         elseif marker and marker.what == 'mci_stop' then
             end_node = end_node and n; insert_tags(b)
         -- finally, see if we need to intervene between content nodes
-        elseif n.id == RULE_NODE or n.id == GLYPH_NODE
+        elseif n.id == RULE_NODE or n.id == GLYPH_NODE or n.id == DISC_NODE
         or marker and marker.what == 'content' then
             local _se, _order = n[current_struct], n[current_order]
             if n.id == RULE_NODE and (n.width == 0 or n.height == 0 and n.depth == 0) then
@@ -768,7 +801,7 @@ cb.register('pre_shipout', function(nr)
     end
 end)
 
--- 1 destinations
+-- 1 links and destinations
 
 local dest_count = alloc.new_count('link dest count')
 local function new_dest_name()
@@ -791,10 +824,65 @@ end
 alloc.luadef('newdestinationname', function() tex.sprint(new_dest_name()) end)
 alloc.luadef('lastdestinationname', function() tex.sprint(last_dest_name()) end)
 
--- 1 bookmarks
+-- provide the arguments to \pdfextension startlink
+local link_types = { }
+local function make_link_attr(s)
+    local attr = { 'attr {\\csname minim:linkattr\\endcsname' }
+    if s.attr then table.insert(attr, s.attr) end
+    if s.alt or s.contents then insert_formatted(attr, '/Contents %s', pdf_string(s.alt or s.contents)) end
+    table.insert(attr, '}')
+    return attr
+end
+alloc.luadef('hyper:makelink', function()
+    local s = options_scanner()
+        :argument('alt'):argument('contents') -- same thing
+        :argument('attr')
+        :scan()
+    local type = token.scan_word()
+    local userf = link_types[type]
+    if not userf then
+        alloc.err('Unknown hyperlink type: %s', type)
+        userf = link_types.first
+    end
+    local user = userf()
+    local attr = make_link_attr(s)
+    tex.sprint(table.concat(attr, ' '))
+    tex.sprint('user {')
+    tex.write(user)
+    tex.sprint('}\\ignorespaces')
+end)
+
+local function scan_escaped_argument(chars_to_escape)
+    local stored = { }
+    for char in string.utfvalues(chars_to_escape) do
+        stored[char] = tex.getcatcode(char)
+        tex.setcatcode(char, 12)
+    end
+    local res = token.scan_argument()
+    for char, code in pairs(stored) do
+        tex.setcatcode(char, code)
+    end
+    return res
+end
+
+function link_types.dest()
+    return string.format('/Subtype/Link /A <</S/GoTo /D %s>>', pdf_string(token.scan_argument()))
+end
+function link_types.url()
+    local url = scan_escaped_argument ('~#$%^&_')
+    return string.format('/Subtype/Link /A <</S/URI /URI %s>>', pdf_string(url))
+end
+
+function link_types.user() return token.scan_argument() end
+function link_types.next() return '/Subtype/Link /A <</S/Named /N/NextPage>>' end
+function link_types.prev() return '/Subtype/Link /A <</S/Named /N/PrevPage>>' end
+function link_types.first() return '/Subtype/Link /A <</S/Named /N/FirstPage>>' end
+function link_types.last() return '/Subtype/Link /A <</S/Named /N/LastPage>>' end
+
+-- 1 bookmarks (outlines)
 
 -- start with a dummy top-level bookmark
-local bookmarks = { { count = 0 } }
+local bookmarks = { { count = 0, level = 0 } }
 structure[1].bookmark = bookmarks[1]
 
 local function write_bookmarks()
@@ -809,13 +897,13 @@ local function write_bookmarks()
         ' <</Type /Outlines /First %s 0 R /Last %s 0 R /Count %s >> ',
         bookmarks[2].outline_obj, bookmarks[1].last.outline_obj, #bookmarks - 1))
     -- write bookmark objects
-    for i=2, #bookmarks do
+    for i=2, #bookmarks do -- skip the root (i=1)
         local bm, res = bookmarks[i], { }
-        insert_formatted(res, '<< /Title %s\n/Parent %s 0 R /Dest (%s)', pdf_string(bm.title),
-            bm.parent and bm.parent.outline_obj or bookmarks[1].outline_obj, bm.dest)
+        insert_formatted(res, '<< /Title %s\n/Parent %s 0 R /Dest %s', pdf_string(bm.title),
+            bm.parent and bm.parent.outline_obj or bookmarks[1].outline_obj, pdf_string(bm.dest))
         if bm.next then insert_formatted(res, '/Next %s 0 R', bm.next.outline_obj) end
         if bm.prev then insert_formatted(res, '/Prev %s 0 R', bm.prev.outline_obj) end
-        if bm.struct and bm.struct.objnum then
+        if bm.struct and bm.struct.objnum then -- false if no structures are written out
             insert_formatted(res, '/SE %s 0 R', bm.struct.objnum)
         end
         if bm.count > 0 then
@@ -827,37 +915,51 @@ local function write_bookmarks()
 end
 
 function M.add_bookmark(bm)
-    local se = current_structure_element()
+    local pbm
+    if bm.level then
+        for i = #bookmarks, 1, -1 do
+            pbm = bookmarks[i]
+            if pbm.level < bm.level then
+                break
+            end
+        end
+    else
+        local se = current_structure_element()
+        if se.bookmark then
+            return alloc.err('Structure element %s already has a bookmark', pdf_name(se.struct))
+        end
+        se.bookmark, bm.struct = bm, se
+        -- derive parent from strucrure
+        pbm = se.parent
+        while not pbm.bookmark do
+            pbm = pbm.parent
+        end
+        pbm = pbm.bookmark
+    end
+    -- initial values; links to other bookmarks
     bm.parent, bm.count = false, 0
     bm.dest = bm.dest or write_new_dest()
-    se.bookmark, bm.struct = bm, se
-    -- find and update the parent bookmarks
-    local p = se.parent
-    while p do
-        local pbm = p.bookmark
-        if pbm then
-            if not bm.parent then
-                if pbm.last then pbm.last.next = bm end
-                bm.parent, bm.prev = pbm, pbm.last
-                pbm.first, pbm.last = pbm.first or bm, bm
-            end
-            -- update the count until the first closed bookmark
-            pbm.count = pbm.count + 1
-            p = pbm.open and pbm.parent
-        else
-            p = p.parent
-        end
-    end
+    if pbm.last then pbm.last.next = bm end
+    bm.parent, bm.prev = pbm, pbm.last
+    pbm.first, pbm.last = pbm.first or bm, bm
+    bm.level = bm.level or (pbm.level + 1)
+    -- update the count until the first closed bookmarks
+    repeat
+        pbm.count = pbm.count + 1
+        pbm = pbm.open and pbm.parent
+    until not pbm
+    -- append to the list
     table.insert(bookmarks, bm)
 end
 
 alloc.luadef('outline', function()
-    local s = options_scanner()
+    local bm = options_scanner()
         :keyword('open', 'closed')
         :string('dest')
+        :int('level')
         :scan()
-    s.title = token.scan_string()
-    M.add_bookmark(s)
+    bm.title = token.scan_string()
+    M.add_bookmark(bm)
 end, 'protected')
 
 
@@ -926,7 +1028,7 @@ alloc.luadef('embedfile', function()
         t.name = t.file or alloc.err('No name specified for embedded file stream')
     end
     t.name = pdf_string(t.name or '(unnamed)')
-    local fs, ef = M.embed_file(t, t.global)
+    local fs, _ = M.embed_file(t, t.global)
     -- where to attach?
     if t.global then
         table.insert(attached_files, { name = t.name, objnum = fs } )
@@ -945,13 +1047,13 @@ end, 'protected')
 
 function M.mark_discretionaries(head, gc)
     if not spaces_enabled() then return end
-    for disc in node.traverse_id(7, head) do
+    for disc in node.traverse_id(DISC_NODE, head) do
         if disc.subtype ~= 2 then -- ‘automatic’ (exclude explicit hyphens)
             local pre, post, replace = disc.pre, disc.post, disc.replace
             local se, order = disc[current_struct], disc[current_order]
             -- get the replacement text
             local actual = { }
-            for c in node.traverse_id(29, replace) do
+            for c in node.traverse_id(GLYPH_NODE, replace) do
                 table.insert(actual, c.char)
             end
             -- special case: a single hyphen
@@ -982,7 +1084,7 @@ local space_attr = alloc.new_attribute('space insertion marker')
 
 function M.mark_spaces(head, gc)
     if not spaces_enabled() then return end
-    for g in node.traverse_id(12, head) do -- glue
+    for g in node.traverse_id(GLUE_NODE, head) do
         if g.prev and g.subtype == 13 or g.subtype == 14 then -- (x)spaceskip
             local p = g.prev
             p[space_attr] = p.id == GLYPH_NODE and p.font
@@ -1011,7 +1113,7 @@ end
 
 function M.insert_spaces(head, gc)
     if not spaces_enabled() then return end
-    for line in node.traverse_id(0, head) do
+    for line in node.traverse_id(HLIST_NODE, head) do
         insert_spaces(line.head)
     end
     return true
@@ -1085,10 +1187,10 @@ local function write_output_intents()
             attr = string.format('/N %d', oi.N),
             immediate = true }
         insert_formatted(res, '<< /Type/OutputIntent /DestOutputProfile %d 0 R', p)
-        insert_formatted(res, '/S/%s /OutputConditionIdentifier (%s)', oi.subtype, oi.id)
-        if oi.info then insert_formatted(res, '/Info (%s)', oi.info) end
-        if oi.condition then insert_formatted(res, '/OutputCondition (%s)', oi.condition) end
-        if oi.registry then insert_formatted(res, '/RegistryName (%s)', oi.registry) end
+        insert_formatted(res, '/S/%s /OutputConditionIdentifier %s', oi.subtype, pdf_string(oi.id))
+        if oi.info then insert_formatted(res, '/Info %s', pdf_string(oi.info)) end
+        if oi.condition then insert_formatted(res, '/OutputCondition %s', pdf_string(oi.condition)) end
+        if oi.registry then insert_formatted(res, '/RegistryName %s', pdf_string(oi.registry)) end
         table.insert(res, '>>')
     end
     table.insert(res, ']')
@@ -1121,9 +1223,31 @@ end
 alloc.luadef('minim:default:rgb:profile', function() M.add_default_rgb_output_intent() end)
 alloc.luadef('minim:default:cmyk:profile', function() M.add_default_cmyk_output_intent() end)
 
+-- 1 pdf/ua
+
+alloc.luadef('tagging:enablepdfua', function()
+    add_to_catalog('/ViewerPreferences << /DisplayDocTitle true >>')
+    local pageattr = pdf.getpageattributes()
+    if pageattr then
+        pdf.setpageattributes(pageattr .. ' /Tabs /S')
+    else
+        pdf.setpageattributes('/Tabs /S')
+    end
+end)
+
+local function perform_pdfua_checks()
+    local xmp = require 'minim-xmp'
+    if xmp.get_metadata('dc:title') == '' then
+        alloc.err('PDF/UA error: no dc:title metadata')
+    end
+end
+
 --
 
-cb.register ('finish_pdffile', function()
+cb.register('finish_pdffile', function()
+    if tex.count['pdfuaconformancelevel'] > 0 then
+        perform_pdfua_checks()
+    end
     if tagging_enabled() then
         write_language()
         write_structure()

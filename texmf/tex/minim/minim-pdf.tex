@@ -167,8 +167,8 @@
 \newcount\tagging:tablecolspan \tagging:tablecolspan 1
 \newcount\tagging:tablerowspan \tagging:tablerowspan 1
 \newcount\tagging:i
-\def\tagging:TH{TH}
-\def\tagging:TD{TD}
+\def\tagging:TH{{TH}\markcolumnhead}
+\def\tagging:TD{{TD}}
 % initialising variables
 \def\marktable{\startelement{Table}%
     \global\advance\tagging:tablec1
@@ -205,7 +205,7 @@
 \def\marktablecell{%
     \global\advance\tagging:tablecol1
     \continueelementfrom\tagging:row
-    \startelement{\tagging:cell}%
+    \expandafter\startelement\tagging:cell%
     \tagging:assignheaders}
 
 % spans
@@ -301,13 +301,105 @@
 \def\marktocentry#1#2#3#4#5{%
     \ifx\marktocentry#1\marktocentry
         \def\marktocentry:link##1{##1}\else
-        \def\marktocentry:link##1{\hyperlink dest{#1}##1\endlink}\fi
+        \def\marktocentry:link##1{\hyperlink
+            alt{\csname minim:str:page\endcsname#5}
+            dest{#1}##1\endlink}\fi
     \markelement{TOCI}{\nextpartag{}\quitvmode
         \ifx\marktocentry#2\marktocentry\else
             \markelement{Lbl}{\marktocentry:link{#2}}\fi
         \markelement{Reference}{\marktocentry:link{#3%
             \ifx\marktocentry#4\marktocentry\else
                 \markartifact{Layout}{#4}\fi#5}}}}
+\def\minim:str:page{Page }
+
+% \marknoteref {*}
+\def\marknoteref#1{%
+    \startelement ref{\newdestinationname}{Reference}%
+    {\stopformulatagging#1}\stopelement{Reference}}
+% \marknotelbl {*}
+\def\marknotelbl#1{%
+    \startelement id{\lastdestinationname}{Note}%
+    \aftergroup\tagging:ensurestopNote
+    \markelement{Lbl}{{\stopformulatagging#1}}}
+\def\tagging:ensurestopNote{\ensurestopelement{Note}}
+
+% \sectionstructure { subsection, section, chapter }
+\def\sectionstructure{%
+    \newtoks\tag:sect:resets \tag:sect:resets{}%
+    \splitcommalist\tag:sect:a}
+\def\tag:sect:a#1{\expandafter\tag:sect:b
+    \expandafter{\Uchar\uccode`#1}{#1}}
+\def\tag:sect:b#1#2{% Section section
+    \addstructuretype Sect #1\relax
+    \expandafter\newcount\csname #2nr\endcsname
+    \expandafter\edef\csname mark#2\endcsname{%
+        \noexpand\withoptions[]%
+        \expandafter\noexpand\csname #2:domark\endcsname}%
+    \expandafter\edef\csname #2:domark\endcsname[##1]{%
+        \unexpanded{\ifhmode\errhelp{You should place section markers
+            in the vertical list, before the header.}\errmessage
+            {Section marker in horizontal list}\fi}%
+        \global\advance\expandafter\noexpand
+            \csname #2nr\endcsname1
+        \noexpand\the\expandafter\noexpand
+            \csname #2:resets\endcsname
+        \startelement\noexpand\ifx=##1=\noexpand\else
+            title{##1}\noexpand\fi{#1}%
+        \nextpartag{H}\ignorespaces}%
+    \expandafter\newtoks\csname #2:resets\endcsname
+    \csname #2:resets\endcsname \tag:sect:resets
+    \etoksapp\tag:sect:resets{%
+        \noexpand\ensurestopelement{#1}%
+        \global\expandafter\noexpand\csname#2nr\endcsname0 }}
+
+% tagging the plain output routine
+\begingroup\catcode`\@=11
+\gdef\autotagplainoutput{%
+    \let \vfootnot = \tag:vfootnote
+    \begingroup
+        % these should not be expanded
+        \tag:mkrelax
+            \ifhmode \ifvmode \ifnum \ifdim \ifodd \ifeven
+            \ifcondition \unless \else \fi \next \tmp
+            \strut \strutbox \footstrut
+            \the \number \empty \folio
+            \line \leftline \rightline \centerline
+            \nointerlineskip \offinterlineskip
+            \textindent \narrower \hang \llap \rlap
+            \enspace \thinspace \hidewidth
+            \quad \qquad \enskip
+            \@sf \fo@t \footins
+        \tag:mkrelax
+        % redefine head- and footlines
+        \def\footline{\taggedfootline}%
+        \def\headline{\taggedheadline}%
+        \xdef\makeheadline{\makeheadline}%
+        \xdef\makefootline{\makefootline}%
+        \xdef\footnoterule{\markartifact{Layout}\footnoterule}
+        % redefine vfootnote
+        \def\textindent##1{\noexpand\nextpartag{}%
+            \noexpand\marknotelbl{\noexpand\textindent{##1}}%
+            \noexpand\startelement{P}}%
+        \xdef\vfootnote##1{\vfootnote{##1}}%
+        % redefine footnote
+        \let\vfootnote=\relax \let\textindent=\relax
+        \def\fi##1\@sf{\noexpand\fi\noexpand\marknoteref{##1}\@sf}
+        \xdef\footnote##1{\footnote{##1}}%
+    \endgroup}
+\endgroup
+\def\tag:mkrelax#1{\ifx\tag:mkrelax#1\tag:else
+    \let#1=\relax\expandafter\tag:mkrelax\tag:fi}
+\let\tag:else=\else \let\tag:fi=\fi
+\newtoks \taggedheadline \newtoks \taggedfootline
+\taggedheadline{\tagtoks:nonempty{Pagination /Subtype/Header}\headline}
+\taggedfootline{\tagtoks:nonempty{Pagination /Subtype/Footer}\footline}
+\def\tagtoks:nonempty#1#2{%
+    \edef\tagtoks:tmp{\the#2}%
+    \ifx\tagtoks:tmp\tagtoks:hfil
+        \the#2\else
+        \markartifact{#1}{\the#2}\fi}
+\def\tagtoks:hfil{\hfil}
+
 
 % 1 tagging formulas
 
@@ -351,7 +443,7 @@
 \def\formulasource:set#1{%
     \begingroup
         % strip \setalttext, \setactualtext
-        \def\setalttext#1{}\def\setactualtext#1{}%
+        \def\setalttext##1{}\def\setactualtext##1{}%
         \xdef\formulasource:thesource{#1}%
     \endgroup
     \expandafter\splitcommalist
@@ -370,6 +462,7 @@
             relation Source desc {Equation source}
             name {\formulafilename.tex}
             string {\tagging:formulasource{#1}}\fi}
+\def\formulasource:none#1{}
 \newtoks\includeformulasources
 \includeformulasources{actualtext,attachment}
 
@@ -390,17 +483,18 @@
 \def\linkdest:h#1{\vadjust pre{\linkdest:v{#1}}}
 \def\linkdest:v#1{\pdfextension dest name {#1} xyz\nobreak}
 
-% \hyperlink dest {name} ... \endlink
-% \hyperlink url {url} ... \endlink
-\protected\def\endlink{\pdfextension endlink\stopelement{Link}\relax}
+% \hyperlink <args> ... \endlink
+%   args: alt {...} attr {...} <type>
+%   type: dest {name} | url {url} | next | prev | first | last
+\protected\def\endlink{\pdfextension endlink\ensurestopelement{Link}\relax}
 \protected\def\startlink{\startelement{Link}\pdfextension startlink}
-\def\hyperlink#1#{\quitvmode\hyperlink:rmspace#1 \hyperlink:rmspace}
-\def\hyperlink:rmspace#1 #2\hyperlink:rmspace{%
-    \startlink attr {\minim:linkattr}%
-    \csname hyperlink:#1\endcsname}
-\def\hyperlink:dest#1{user {/Subtype/Link /F 4 /A <</S/GoTo /D (#1)>>}}
-\def\hyperlink:url#1{user {/Subtype/Link /F 4 /A <</S/URI /URI (#1)>>}}
-\def\minim:linkattr{/Border [0 0 0]}
+\protected\def\hyperlink{\quitvmode\startlink\hyper:makelink}
+
+% \hyperlinkstyle { ... }
+\def\minim:linkattr{\the\hyperlinkstyle\the\minim:pdfalinkattr}
+\newtoks\hyperlinkstyle
+\newtoks\minim:pdfalinkattr
+\hyperlinkstyle{/Border [0 0 0]}
 
 % 1 languages
 
@@ -449,9 +543,12 @@
 
 \newcount \pdfaconformancelevel
 \pdfaconformancelevel = 0
+\newcount \pdfuaconformancelevel
+\pdfuaconformancelevel = 0
 
 % \pdfalevel 2b
 \def\pdfalevel#1#2{%
+    \minim:pdfalinkattr{ /F 4}% hyperlinks must be printed
     \global\pdfaconformancelevel=#1\relax
     \ifcsname minim:pdfa:#1#2\endcsname \lastnamedcs\else
         \errmessage{Unknown pdf/a standard pdf/a-#1}\fi}
@@ -473,6 +570,12 @@
 \expandafter\def\csname minim:pdfa:3a\endcsname{\minim:pdfasettings 7A3}
 \expandafter\def\csname minim:pdfa:3b\endcsname{\minim:pdfasettings 7B3}
 \expandafter\def\csname minim:pdfa:3u\endcsname{\minim:pdfasettings 7U3}
+
+% \pdfualavel 1
+\def\pdfualevel{\input minim-xmp
+    \setmetadata pdfuaid:part {1}
+    \tagging:enablepdfua
+    \global\pdfuaconformancelevel= }
 
 % 
 

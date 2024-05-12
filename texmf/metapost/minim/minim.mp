@@ -1,8 +1,7 @@
 
 if known minim.mp:
-    message "skipping: already read";
     expandafter endinput fi
-minim.mp := 1.3;
+minim.mp := 1.6;
 
 % This file only contains code that is not specific to the minim metapost 
 % processor. See minim-mp.mp for the wireup of minim-mp’s extensions.
@@ -42,6 +41,9 @@ vardef clipto text t =
 vardef clipout text t =
     clip currentpicture to
         for c = t: c -- cycle -- endfor cycle enddef;
+vardef getbounds primary p = % without bboxmargin
+    llcorner p -- lrcorner p -- urcorner p -- ulcorner p -- cycle
+enddef;
 
 % cmyk colours
 cmykcolor cyan, magenta, yellow, key;
@@ -50,12 +52,9 @@ magenta = (0,1,0,0);
 yellow  = (0,0,1,0);
 key     = (0,0,0,1);
 
-% also in minim-mp.mp
-if unknown rgb_to_gray red:
-    vardef rgb_to_gray expr c =
-        0.2126*redpart c + 0.7152*greenpart c + 0.0722*bluepart c
-    enddef;
-fi
+vardef rgb_to_gray expr c =
+    0.2126*redpart c + 0.7152*greenpart c + 0.0722*bluepart c
+enddef;
 
 % shorthands
 def save_pen       text t = save t; pen       t; enddef;
@@ -70,8 +69,8 @@ def save_string    text t = save t; string    t; enddef;
 
 % missing trigonometric functions
 vardef tand    primary x = sind(x)/cosd(x) enddef;
-vardef arcsind primary x = angle((1+-+x, x)) enddef;
-vardef arccosd primary x = angle((x, 1+-+x)) enddef;
+vardef arcsind primary x = angle(1+-+x, x) enddef;
+vardef arccosd primary x = angle(x, 1+-+x) enddef;
 vardef arctand primary x = angle(1, x) enddef;
 
 % segments of the circle (counterclockwise)
@@ -90,4 +89,32 @@ vardef arc (expr thetafrom, thetalen) =
             c := l * (-sind theta, cosd theta);)
         and (p - c) .. p
     endfor; a enddef;
+
+% some linear algebra
+primarydef v extprod w = begingroup
+    xpart v * ypart w - ypart v * xpart w
+endgroup enddef;
+
+vardef collinear(expr p,q,r) =
+    (p <> q) and (q <> r) and (p <> r)
+    and (eps > abs( (p-q) extprod (q-r) ))
+enddef;
+
+% type helpers
+def typeof (expr v) =
+    if numeric v: numeric
+    elseif pair v: pair
+    elseif color v: color
+    elseif cmykcolor v: cmykcolor
+    elseif boolean v: boolean
+    elseif path v: path
+    elseif picture v: picture
+    elseif transform v: transform
+    elseif string v: string
+    elseif pen v: pen
+    fi enddef;
+
+vardef empty suffix s = save_boolean b;
+    b := string _EMPTY_ s; b enddef;
+string _EMPTY_;
 

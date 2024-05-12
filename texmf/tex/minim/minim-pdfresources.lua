@@ -50,7 +50,7 @@ function M.use_resource(kind, name)
     return res._entry_
 end
 
--- global resources are mainly for pgf compatibility: contains adds entries to 
+-- global resources are mainly for pgf compatibility: it contains entries to 
 -- the resource dictionaries that will be added for every page.
 --
 local global_resources = init_resources() -- name ↦ '/Key <value>'
@@ -77,8 +77,8 @@ end
 -- those, the M.use_resouce() function will be called automatically.
 --
 local page_resources = init_resources() -- name ↦ '/Key <value>'
---
-function _with_pdf_resource_(kind, name) -- global, for use in latelua
+-- global, for use in latelua
+function _with_pdf_resource_(kind, name) --luacheck: ignore 111
     page_resources[kind][name] = M.use_resource(kind, name)
 end
 function M.use_resource_node(kind, name)
@@ -86,6 +86,10 @@ function M.use_resource_node(kind, name)
     n.data = string.format('_with_pdf_resource_("%s", "%s")', kind, name)
     return n
 end
+
+alloc.luadef('withpdfresource', function()
+    node.write(M.use_resource_node(token.scan_string(), token.scan_string()))
+end, 'protected')
 
 -- construction and caching of resource dictionaries.
 --
@@ -117,7 +121,7 @@ local removal_regex = {
 local function update_page_resources(shippingout)
     if M.self_destruct then return end
     local resources = shippingout and pdf.getpageresources() or pdf.getxformresources() or ''
-    for kind, used in pairs(page_resources) do
+    for kind, _ in pairs(page_resources) do
         resources = string.gsub(resources, removal_regex[kind], '')
         local entry = make_resource_entry(kind)
         if entry then

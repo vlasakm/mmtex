@@ -1,6 +1,6 @@
 
 \ifdefined\minimmploaded
-    \message{(skipped)}
+    \wlog{(skipped)}
     \expandafter\endinput\fi
 \chardef\minimmploaded = \catcode`\:
 \catcode`\: = 11
@@ -14,9 +14,11 @@
     \savecatcodetable\csname minim:mp:catcodes:maketext\endcsname}
 % and an empty catcode table for reading metapost code
 \newcatcodetable \minim:mp:catcodes:mpcode
-{\catcodetable\minim:initcatcodes
+{\def\\{}\catcodetable\minim:initcatcodes
     \catcode`\{=1 \catcode`\}=2 \catcode9=10
-    \savecatcodetable\csname minim:mp:catcodes:mpcode\endcsname}
+    \catcode`\$=12 \catcode`\^=12 \catcode`\_=12 \catcode`\&=12
+    \catcode`\#=12 \catcode`\%=12 \catcode`\~=12
+    \catcode"0D=12 \savecatcodetable\csname\\minim:mp:catcodes:mpcode\endcsname}
 
 \directlua { require('minim-mp') }
 
@@ -27,24 +29,39 @@
 %
 %   \closemetapostinstance \instance
 %   \runmetapost           \instance { code } % \protected
-%   \runmetapostimage      \instance { code } % \protected
 %   \getnextmpimage        \instance
 %   \getnamedmpimage       \instance {name}
 %   \remainingmpimages     \instance
 %   \boxnextmpimage        \instance box-nr
 %   \boxnamedmpimage       \instance box-nr {name}
 
+% \getallmpimages \instance
+\newcount\mp:tmpcount
+\protected\def\getallmpimages{%
+    \afterassignment\getallmpimages:do\mp:tmpcount=}
+\def\getallmpimages:do{\loop
+    \ifnum \remainingmpimages\mp:tmpcount>0\relax
+        \getnextmpimage\mp:tmpcount \repeat}
+
+% \runmetapostimage \instance { code }
+\protected\def\runmetapostimage{\begingroup
+    \afterassignment\runmetapostimage:do\mp:tmpcount=}
+\def\runmetapostimage:do{%
+    \toksapp\everymp\mp:tmpcount{pre}{mp}{beginfig(0) }%
+    \tokspre\everymp\mp:tmpcount{post}{mp}{ endfig;}%
+    \toksapp\everymp\mp:tmpcount{post}{tex}{%
+        \getallmpimages\mp:tmpcount \endgroup}%
+    \runmetapost\mp:tmpcount}
+
 % \directmetapost [ options ] { code }
 \protected\def\directmetapost{%
-    \begingroup\catcodetable\minim:mp:catcodes:mpcode
-    \withoptions[]\directmetapost:}
-\long\def\directmetapost:[#1]#2{%
-        \newmetapostinstance[#1]\:mpinst:
-        \runmetapost\:mpinst:{#2}%
-        \loop \ifnum\remainingmpimages\:mpinst:>0\relax
-            \getnextmpimage\:mpinst: \repeat
-        \closemetapostinstance\:mpinst:
-    \endgroup}
+    \withoptions[]\directmetapost:opt}
+\long\def\directmetapost:opt[#1]{%
+    \newmetapostinstance[#1]\:mpinst:
+    \everymp\:mpinst:{post}{tex}{%
+        \getallmpimages\:mpinst:
+        \closemetapostinstance\:mpinst:}%
+    \runmetapost\:mpinst:}
 
 % \newmetapostinstance [ options ] \instance
 \protected\def\newmetapostinstance{\withoptions[]\newmetapostinstance:}
@@ -52,6 +69,41 @@
     \chardef#2=\directlua{
             tex.sprint(require('minim-mp').open{#1})
         }\relax}
+
+% tex side of metapost instance initialisation
+\newcount \mp:cur:inst
+\newtoks \mp:init:env \mp:init:env{%
+    % four token lists for every instance
+    \expandafter\newtoks\csname mp:inst:pre:tex:\the\mp:cur:inst\endcsname
+    \expandafter\newtoks\csname mp:inst:pre:mp:\the\mp:cur:inst\endcsname
+    \expandafter\newtoks\csname mp:inst:post:mp:\the\mp:cur:inst\endcsname
+    \expandafter\newtoks\csname mp:inst:post:tex:\the\mp:cur:inst\endcsname}
+% the zeroth quarted applies to all
+\mp:cur:inst=0 \the\mp:init:env \mp:cur:inst=-1
+
+% \everymp \id {pre|post}{mp|tex} % accesses the above token lists
+\def\everymp#1#2#3{\csname mp:inst:#2:#3:\the
+    \ifcsname \string#1@instance\endcsname % for the latex environments
+        \lastnamedcs\else\numexpr#1\fi
+    \endcsname}
+
+% combining the relevant toks registers
+\newtoks\mp:inst:pre:tex \mp:inst:pre:tex{%
+    \the\everymp0{pre}{tex}%
+    \the\everymp\mp:cur:inst{pre}{tex}}
+\newtoks\mp:inst:post:tex \mp:inst:post:tex{%
+    \the\everymp\mp:cur:inst{post}{tex}%
+    \the\everymp0{post}{tex}}
+\newtoks\mp:mpcode % see lua function scan_mp_chunk()
+\newtoks\mp:makempcode \mp:makempcode{%
+    \edef\minim:mp:tmp{%
+        \the\everymp0{pre}{mp}%
+        \the\everymp\mp:cur:inst{pre}{mp}%
+        \unexpanded{\the\mp:mpcode}%
+        \the\everymp\mp:cur:inst{post}{mp}%
+        \the\everymp0{post}{mp}}%
+    \edef\minim:mp:tmp{\minim:mp:tmp}%
+    \mp:mpcode=\expandafter{\minim:mp:tmp}}
 
 % colour conversion: 1 grayscale 2 cmyk 3 rgb 4 rgb as spot
 \newcount \convertmpcolours
@@ -61,10 +113,9 @@
 \newcount\GtoG \GtoG = 7152
 \newcount\BtoG \BtoG = 0722
 
+% miscellaneous bits and ends
 \newtoks \everymaketext
+\def\mpdim#1{\the\dimexpr#1\relax}
 
 \catcode`\: = \minimmploaded
-
-
-
 

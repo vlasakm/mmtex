@@ -158,6 +158,12 @@ M.add_namespace('PDF/A Identification', 'pdfaid', 'http://www.aiim.org/pdfa/ns/i
     part        = { 'Integer', 'Version identifier', true },
 }, nil, true)
 
+M.add_namespace('PDF/UA Identification', 'pdfuaid', 'http://www.aiim.org/pdfua/ns/id/', {
+    amd         = { 'Text', 'Amendment identifier', true },
+    corr        = { 'Text', 'Corrigendum identifier', true },
+    part        = { 'Integer', 'Version identifier', true },
+})
+
 M.add_namespace('Dublin Core', 'dc', 'http://purl.org/dc/elements/1.1/', {
     contributor = { 'Bag ProperName', 'Other contributors' },
     coverage    = { 'Text', 'Extent or scope' },

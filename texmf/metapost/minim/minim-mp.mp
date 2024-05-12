@@ -2,21 +2,17 @@
 delimiters ();
 
 % This file is specific to the minim metapost processor (minim-mp) and cannot 
-% be used with luaotfload or other metapost implementations. See minim.mp for 
+% be used with luamplib or other metapost implementations. See minim.mp for 
 % general-purpose extensions.
 
 message "Setting up the minim MetaPost extensions";
 
-def save_picture   text t = save t; picture   t; enddef;
-def save_boolean   text t = save t; boolean   t; enddef;
-def save_string    text t = save t; string    t; enddef;
-
-% 1 lua scripts, functions and variables
+% 1 lua scripts and functions
 
 def luafunction = gobble inner_luafunction enddef;
 vardef inner_luafunction @# (text args) = endgroup
     % we remove the grouping so that the function may return any fragment of 
-    % lua code, in particular lists to-be-parsed as text parameters
+    % metapost code, in particular lists to-be-parsed as text parameters
     runscript ("return " & (str @#) & build_lua_arguments(args))
     gobble begingroup enddef;
 
@@ -38,7 +34,7 @@ vardef setluavariable @# expr val=
 vardef lua_string(expr s) =
     runscript ("[[quote_for_lua]]"&s) enddef;
 
-vardef hexadecimal expr n =
+vardef hexadecimal tertiary n =
     % TODO: support other number systems
     save d, a, m; a = ASCII("a"); m := abs n;
     save_string res; res =
@@ -49,7 +45,7 @@ vardef hexadecimal expr n =
         if i = 3: & "." fi
     endfor; res enddef;
 
-vardef scaledpoints expr n =
+vardef scaledpoints tertiary n =
     % use the fact that 800bp = 803pt
     save a, m; m := abs n;
     a1 = m div (1025/1024); % 1025/1024 = 800epsilon * 82
@@ -64,31 +60,35 @@ vardef scaledpoints expr n =
         & decimal(a3) & ")";
     res enddef;
 
-vardef quote_for_lua expr a =
+vardef quote_for_lua tertiary a =
     save_string res; res =
     if string a:
         lua_string(a)
     elseif numeric a:
         hexadecimal(a)
     elseif pair a:
-        "{"&hexadecimal(xpart a) &
-        ","&hexadecimal(ypart a) & "}"
+        "{"& (hexadecimal xpart a) &
+        ","& (hexadecimal ypart a) & "}"
     elseif boolean a:
         if a: "true" else: "false" fi
     elseif color a:
-        "{"&hexadecimal(redpart a) &
-        ","&hexadecimal(greenpart a) &
-        ","&hexadecimal(bluepart a) & "}"
+        "{"& (hexadecimal redpart a) &
+        ","& (hexadecimal greenpart a) &
+        ","& (hexadecimal bluepart a) & "}"
     elseif cmykcolor a:
-        "{"&hexadecimal(cyanpart a) &
-        ","&hexadecimal(magentapart a) &
-        ","&hexadecimal(yellowpart a) &
-        ","&hexadecimal(blackpart a) & "}"
+        "{"& (hexadecimal cyanpart a) &
+        ","& (hexadecimal magentapart a) &
+        ","& (hexadecimal yellowpart a) &
+        ","& (hexadecimal blackpart a) & "}"
+    elseif transform a:
+        "{"& (hexadecimal xxpart a) &
+        ","& (hexadecimal xypart a) &
+        ","& (hexadecimal yxpart a) &
+        ","& (hexadecimal yypart a) &
+        ","& (hexadecimal xpart a) &
+        ","& (hexadecimal ypart a) & "}"
     elseif pen a:
         hide(errmessage("I cannot pass a pen value to lua");)
-        "nil"
-    elseif transform a:
-        hide(errmessage("I cannot pass a transform value to lua");)
         "nil"
     elseif picture a:
         hide(errmessage("I cannot pass a picture value to lua");)
@@ -97,14 +97,33 @@ vardef quote_for_lua expr a =
         "nil"
     fi; res enddef;
 
-% tex registers
+% constructing lua tables
+
+def make_lua_dict (text t) = begingroup
+    % Note that though the argument may contain = signs and commas, the rest of 
+    % the arguments must consist of suffixes.
+    save_boolean first; first := true;
+    "{ " forsuffixes kv =
+        hide(let = _EQ_ undefined)
+        t hide(let = _EQ_ _EQ_) : &
+        if first: hide(first := false;) else: ", "& fi
+        begingroup make_lua_keyval kv endgroup
+    endfor & " }" endgroup
+enddef;
+let _EQ_ = =;
+
+vardef make_lua_keyval @# expr e =
+    (str @#) & " = " & quote_for_lua e
+enddef;
+
+% 1 tex registers
 
 string _SUFFIX_HACK_[];
 vardef index_or_suffix (suffix s) =
     save_string res; res =
-    if string _SUFFIX_HACK_ s: % this is a number
+    if string _SUFFIX_HACK_ s: % s is a number
         "["&decimal(s)&"]"
-    else: % this is a suffix
+    else: % s is a suffix
         "."&(str s)
     fi ; res enddef;
 
@@ -114,6 +133,8 @@ vardef tex.attribute @# =
     runscript ("return tex.attribute" & index_or_suffix(@#)) enddef;
 vardef tex.dimen @# =
     runscript ("return sp_to_pt(tex.dimen" & index_or_suffix(@#) & ")") enddef;
+vardef tex.skip @# =
+    runscript ("return sp_to_pt(tex.skip" & index_or_suffix(@#) & ".width)") enddef;
 vardef tex.toks @# =
     runscript ("return quote(tex.toks" & index_or_suffix(@#) & ")") enddef;
 
@@ -128,20 +149,33 @@ vardef set tex.toks @# expr val =
 
 % 1 typesetting
 
+boolean debug_tex_bboxes;
+debug_tex_bboxes := false;
+
 let textext = maketext;
 let TEX = maketext;
+
+def _set_maketext_result_ (expr nr)(text tr) = image (
+    fill unitsquare withprescript "TEXBOX:"&decimal nr;
+    save_path bb; bb := unitsquare transformed tr;
+    if debug_tex_bboxes: draw bb dashed evenly; fi
+    setbounds currentpicture to bb;) enddef;
 
 % baseline pair or numeric -> fill statement
 vardef baseline expr o =
     fill if numeric o : (0,o) else: o fi
         -- cycle withprescript "BASELINE:"; enddef;
 
-% boxresource number -> fill statement + setbounds
-vardef boxresource expr nr = image(
-    fill unitsquare withprescript "BOXRESOURCE:" & decimal nr ;
-    setbounds currentpicture to unitsquare transformed runscript
-        ("return { 'box_size', tex.getboxresourcedimensions(" & decimal nr & ") }");
-    ) enddef;
+vardef find_baseline expr p =
+    save_pair bl, ibl;
+    for c within p:
+        if clipped c or bounded c:
+            ibl := find_baseline c;
+            if known ibl: bl := ibl; fi
+        elseif "BASELINE:" = substring (0,9) of prescriptpart c:
+            bl := point 0 of pathpart c;
+        fi
+    endfor bl enddef;
 
 % actual typesetting
 
@@ -167,6 +201,129 @@ vardef thelabel@#(expr s,z) =  % Position s near z
      (labxf@#*lrcorner p + labyf@#*ulcorner p
        + (1-labxf@#-labyf@#)*llcorner p
   )  ) enddef;
+
+% 1 box resources (xforms)
+
+% boxresource number -> fill statement + setbounds
+vardef boxresource primary nr = image(
+    fill unitsquare withprescript "BOXRESOURCE:" & decimal nr ;
+    save btf; transform btf;
+    btf = luafunction get_boxresource_dimensions (nr);
+    save_path bb; bb = unitsquare transformed btf;
+    if debug_tex_bboxes: draw bb dashed evenly; fi
+    setbounds currentpicture to bb;
+    currentpicture := currentpicture
+        shifted luafunction get_boxresource_center (nr);
+    ) enddef;
+
+% id = saveboxresource (attributes) image ( ... );
+vardef saveboxresource (text attrs) expr p =
+    save id; id = luafunction reserve_xform_id();
+    % save the dimensions
+    save t, o; transform t; pair o;
+    (0,0) transformed t = llcorner p;
+    (1,0) transformed t = lrcorner p;
+    (0,1) transformed t = ulcorner p;
+    save bl; bl = -ypart find_baseline p;
+    o = (-xpart llcorner p, if known bl: bl else: 0 fi);
+    luafunction set_boxresource_dimensions (id, t shifted o, -o);
+    % shipout the xform
+    shipout image(draw p;
+        special "XFORMATTRS:" & make_lua_dict (attrs);
+        special "XFORMINDEX:" & decimal id;
+    ); id enddef;
+
+% 1 extended graphics state
+
+vardef modify_scripts text t =
+    % Note: this is a no-op when the picture is empty
+    save_picture curr;
+    save_string pre, post;
+    % extract script parts
+    curr := image(drawdot origin t;);
+    pre = prescriptpart curr;
+    post = postscriptpart curr;
+    % add the prescript
+    if pre <> "":
+        curr := currentpicture; clearit;
+        draw curr withprescript pre;
+    fi
+    % add the postscript
+    if post <> "":
+        % here we find the reason for this routine: metapost *should* apply the 
+        % postscript to the last element of a picture, but chooses the first 
+        % instead.
+        curr := currentpicture; clearit;
+        setbounds curr to llcorner curr -- lrcorner curr --
+            urcorner curr -- ulcorner curr -- cycle;
+        % these bounds force an extra nesting level of the next function
+        draw with_postscript_to_last(curr, post);
+    fi
+enddef;
+
+vardef with_postscript_to_last (expr p, script) =
+    image( save i; i := 0;
+    for c within p:
+        if incr i < length(p): draw c;
+        elseif clipped c:
+            save_picture q; q:= with_postscript_to_last(c, script);
+            clip q to pathpart c;
+            addto currentpicture also q;
+        elseif bounded c:
+            save_picture q; q:= with_postscript_to_last(c, script);
+            setbounds q to pathpart c;
+            addto currentpicture also q;
+        else:
+            draw c withpostscript script;
+        fi
+    endfor) enddef;
+
+def append_postscript expr s =
+    if length(currentpicture) = 0: special s;
+    else: modify_scripts withpostscript s;
+    fi enddef;
+
+def savegstate =
+    append_postscript "gstate:save"; enddef;
+def restoregstate =
+    append_postscript "gstate:restore"; enddef;
+def setgstate =
+    append_postscript "extgstate:" & make_lua_dict enddef;
+
+def withgstate (text t) =
+    withprescript "extgstate:" & make_lua_dict (t)
+    withprescript "gstate:save"
+    withpostscript "gstate:restore" enddef;
+
+% 1 transparency
+
+newinternal string blend_mode;
+newinternal string transparency_group_attrs;
+
+% setalpha (α)
+vardef setalpha expr alpha =
+    save a; a = alpha;
+    save_string bm; bm = "/" & blend_mode;
+    setgstate(CA=a, ca=a if bm <> "/":, BM=bm fi) enddef;
+
+% <drawing_cmd> withalpha (α)
+def withalpha = gobble _withalpha_ enddef;
+string _blend_mode_;
+vardef _withalpha_ (expr alpha) =
+    _with_alpha_ := alpha;
+    _blend_mode_ := "/" & blend_mode;
+    endgroup
+    withgstate(CA=_with_alpha_,ca=_with_alpha_ if _blend_mode_ <> "/":, BM=_blend_mode_ fi)
+    gobble begingroup enddef;
+
+% transparent (α) image (...)
+vardef transparent (expr alpha) expr p =
+    save_string attrs; attrs = "<< /S/Transparency "&transparency_group_attrs&">>";
+    save g; g = saveboxresource (Group=attrs) p;
+    savegstate; setalpha (alpha);
+    draw boxresource g;
+    restoregstate;
+enddef;
 
 % 1 even-odd rule and multidraw
 
@@ -205,6 +362,9 @@ def beginpattern(suffix s) =
     def withcolor = hide(painttype:=1) _withcolor enddef;
     save matrix; transform matrix; enddef;
 def endpattern (expr xstep, ystep) =
+    modify_scripts
+        withprescript "pdf:/Artifact BMC"
+        withpostscript "pdf:EMC";
     if unknown matrix : matrix:=identity; fi
     special "definepattern:" for e = charcode, tilingtype, painttype,
         xstep, ystep, xxpart matrix, xypart matrix, yxpart matrix, yypart matrix:
@@ -213,15 +373,10 @@ def endpattern (expr xstep, ystep) =
 newinternal tilingtype; tilingtype:=1;
 _patterns_._last_ := 0;
 
-
 % 1 miscellaneous
 
-vardef debug_pdf = luafunction enable_debugging () enddef;
+def debug_pdf = luafunction enable_debugging(); enddef;
 
-def texmessage text msg = luafunction texio.write_nl (msg) enddef;
-
-vardef rgb_to_gray expr c =
-    luafunction rgb_to_gray (redpart c, greenpart c, bluepart c)
-enddef;
+vardef texmessage text msg = luafunction texmessage (msg) enddef;
 
 % 

@@ -1,6 +1,6 @@
 
 \ifdefined \minimloaded
-    \message{(skipped)}
+    \wlog{(skipped)}
     \expandafter\endinput\fi
 \chardef\minimloaded=\catcode`\:
 \catcode`\:=11
@@ -115,6 +115,10 @@
 \ifdefined \documentclass
     % latex has no \globcount etc.
     \alloc:globoffset = 10
+    \ifnum\count10<256 \count10=256 \fi
+    \ifnum\count11<256 \count11=256 \fi
+    \ifnum\count12<256 \count12=256 \fi
+    \ifnum\count14<256 \count14=256 \fi
 \else \ifdefined \globcount
     % use global allocation (see etex.src)
     \let\newcount  = \globcount
